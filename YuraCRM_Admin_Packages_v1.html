@@ -1567,7 +1567,7 @@
 
 <nav class="bottom-nav">
     <button class="nav-item active" id="navPackages" onclick="toggleDirectionPopup()">
-        <span>👥</span>
+        <span>📦</span>
         <span id="navPackagesLabel">Посилки</span>
     </button>
     <button class="nav-item" onclick="showToast('👥 Пасажири — окрема CRM')"><span>👥</span>Пасажири</button>
@@ -2536,7 +2536,31 @@ function render() {
         const mkSelect = (label, field, val, opts) => `<div class="inline-edit-field select-field"><span class="inline-edit-label">${label}</span><select class="inline-edit-select" onchange="inlineSave('${uk}','${field}',this.value)" onclick="event.stopPropagation()"><option value="">—</option>${selOpt(field,val,opts)}</select></div>`;
         const mkSelectVeh = () => `<div class="inline-edit-field select-field"><span class="inline-edit-label">Авто</span><select class="inline-edit-select" onchange="inlineSave('${uk}','vehicle',this.value)" onclick="event.stopPropagation()"><option value="">—</option>${vehOpts}</select></div>`;
 
+        // TTN multi-value support: parse comma-separated TTNs
+        const ttnArr = (p.ttn || '').split(',').map(t => t.trim()).filter(Boolean);
+        const ttnEditHtml = `<div class="inline-edit-field" style="grid-column:1/-1;">
+            <span class="inline-edit-label">НОМЕРИ ТТН</span>
+            <div id="ttnList_${uk.replace(/[^a-zA-Z0-9]/g,'_')}" style="display:flex;flex-direction:column;gap:4px;">
+                ${ttnArr.length ? ttnArr.map((t, ti) => `<div style="display:flex;gap:4px;align-items:center;">
+                    <input class="inline-edit-input" style="flex:1;" value="${esc(t)}" placeholder="ТТН..." onchange="updateTtnList('${uk}')" onclick="event.stopPropagation()">
+                    <button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(t)}',this)" title="Копіювати" style="opacity:0.7;">📋</button>
+                    ${ttnArr.length > 1 ? `<button class="copy-btn-mini" onclick="event.stopPropagation();removeTtnItem('${uk}',${ti})" title="Видалити" style="opacity:0.7;color:var(--danger);">✕</button>` : ''}
+                </div>`).join('') : `<div style="display:flex;gap:4px;align-items:center;">
+                    <input class="inline-edit-input" style="flex:1;" value="" placeholder="ТТН..." onchange="updateTtnList('${uk}')" onclick="event.stopPropagation()">
+                </div>`}
+            </div>
+            <button onclick="event.stopPropagation();addTtnItem('${uk}')" style="margin-top:4px;border:1px dashed var(--border);background:var(--bg-main);border-radius:4px;padding:4px 8px;font-size:10px;font-weight:600;color:var(--info);cursor:pointer;font-family:inherit;">+ Додати ТТН</button>
+        </div>`;
+
         let inlineHtml = `<div class="inline-edit-grid">`;
+
+        // Editable header fields (name, phone, address)
+        inlineHtml += `<div class="inline-section-title">Основні дані</div>`;
+        inlineHtml += mkInput('ПіБ отримувача','name',p.name,'ПіБ...');
+        inlineHtml += mkInput('Телефон отримувача','phone',p.phone,'+380...');
+        inlineHtml += mkInput('Тел. реєстратора','phoneReg',p.phoneReg,'+380...');
+        inlineHtml += `<div class="inline-edit-field" style="grid-column:1/-1;"><span class="inline-edit-label">Адреса отримувача</span><input class="inline-edit-input" value="${esc(p.address || '')}" placeholder="Адреса..." onchange="inlineSave('${uk}','address',this.value)" onclick="event.stopPropagation()"></div>`;
+        inlineHtml += ttnEditHtml;
 
         if (isUaEu) {
             inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
@@ -2591,7 +2615,7 @@ function render() {
                     </div>
                     <div class="card-row2-wrap">
                         <div class="card-route-row">
-                            <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}</span>
+                            <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()"><a href="https://www.google.com/maps/search/${encodeURIComponent(p.address || '')}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;" onclick="event.stopPropagation()">📍 ${addressDisplay}</a><button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(p.address || '')}',this)" title="Копіювати адресу">📋</button></span>
                         </div>
                         <div class="card-info-row">
                             <span class="card-id" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${idDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(idRaw)}',this)" title="Копіювати ІД">📋</button></span>
@@ -2614,7 +2638,7 @@ function render() {
                 <button class="btn-card-action btn-call" onclick="event.stopPropagation();location.href='tel:${p.phone}'">📞 Дзвонити</button>
                 <button class="btn-card-action btn-msg" onclick="event.stopPropagation();showToast('💬 Скоро!')">💬 Писати</button>
                 <button class="btn-card-action btn-map" onclick="event.stopPropagation();openMapModal('${uk}')">🗺️ Карта</button>
-                <button class="btn-card-action btn-edit" onclick="event.stopPropagation();editPackage('${uk}')">✏️ Все</button>
+                <button class="btn-card-action" style="background:#d1fae5;color:#065f46;" onclick="event.stopPropagation();restorePackageToOriginal('${uk}')">↩️ Відновити</button>
                 <button class="btn-card-action btn-delete" onclick="event.stopPropagation();deletePackage('${uk}')">🗑️ Видалити</button>
             </div>
         </div>`;
@@ -4972,11 +4996,92 @@ function inlineSave(uid, field, value) {
     }
 
     // Оновлюємо заголовок картки без повного ре-рендеру (для key fields)
-    if (['weight','amount','number','vehicle'].includes(field)) {
-        updateCardHeader(uid, p);
+    if (['weight','amount','number','vehicle','name','phone','address','ttn'].includes(field)) {
+        // re-render for header fields
+        render();
     }
 
     updateAllCounts();
+}
+
+// === TTN MULTI-VALUE FUNCTIONS ===
+function updateTtnList(uid) {
+    const p = findPackageByUid(uid);
+    if (!p) return;
+    const safeId = uid.replace(/[^a-zA-Z0-9]/g, '_');
+    const container = document.getElementById('ttnList_' + safeId);
+    if (!container) return;
+    const inputs = container.querySelectorAll('.inline-edit-input');
+    const vals = [];
+    inputs.forEach(inp => { if (inp.value.trim()) vals.push(inp.value.trim()); });
+    const newTtn = vals.join(', ');
+    inlineSave(uid, 'ttn', newTtn);
+}
+
+function addTtnItem(uid) {
+    const safeId = uid.replace(/[^a-zA-Z0-9]/g, '_');
+    const container = document.getElementById('ttnList_' + safeId);
+    if (!container) return;
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;gap:4px;align-items:center;';
+    div.innerHTML = `<input class="inline-edit-input" style="flex:1;" value="" placeholder="ТТН..." onchange="updateTtnList('${uid}')" onclick="event.stopPropagation()">
+        <button class="copy-btn-mini" onclick="event.stopPropagation();this.parentElement.remove();updateTtnList('${uid}')" title="Видалити" style="opacity:0.7;color:var(--danger);">✕</button>`;
+    container.appendChild(div);
+    div.querySelector('input').focus();
+}
+
+function removeTtnItem(uid, index) {
+    const safeId = uid.replace(/[^a-zA-Z0-9]/g, '_');
+    const container = document.getElementById('ttnList_' + safeId);
+    if (!container) return;
+    const items = container.children;
+    if (items[index]) items[index].remove();
+    updateTtnList(uid);
+}
+
+// === RESTORE PACKAGE TO ORIGINAL STATE ===
+function restorePackageToOriginal(uid) {
+    const p = findPackageByUid(uid);
+    if (!p) return;
+
+    if (!confirm('Відновити лід до початкового стану?\nВсі внесені зміни будуть скинуті.')) return;
+
+    // Зберігаємо тільки основні ідентифікатори
+    const keepFields = ['id', '_sheet', '_rowNum', 'direction', 'isNew', 'isNew24h', 'dateReg'];
+
+    // Скидаємо статус до new
+    p.status = 'new';
+    p.statusDate = '';
+
+    // Очищаємо поля що міг змінити менеджер
+    const clearFields = ['vehicle', 'vo', 'number', 'note', 'smsNote', 'timing', 'dateReceive', 'photo', 'order'];
+    clearFields.forEach(f => { p[f] = ''; });
+
+    // Якщо є серверні дані — оновлюємо на сервері
+    if (p._sheet && p._rowNum) {
+        showLoader('Відновлення...', '');
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                action: 'bulkUpdateStatus',
+                items: [{ sheet: p._sheet, rowNum: p._rowNum }],
+                status: 'new'
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            hideLoader();
+            if (!data.success) console.warn('Restore error:', data.error);
+        })
+        .catch(err => { hideLoader(); console.error('Restore error:', err); });
+    }
+
+    openActionsId = null;
+    saveSettings();
+    render();
+    updateAllCounts();
+    showToast('↩️ Лід відновлено до початкового стану');
 }
 
 // Копіювання в буфер обміну
