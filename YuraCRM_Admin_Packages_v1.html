@@ -667,6 +667,7 @@
         .detail-block-label { font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 2px; }
         .detail-block-value { font-size: 12px; font-weight: 600; color: var(--text-primary); word-break: break-word; }
         .detail-block-value.empty { color: var(--text-secondary); opacity: 0.5; }
+        .card-ttn { font-size: 10px; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 600; letter-spacing: 0.3px; max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         
         /* Actions panel - 2x2 grid */
         .card-actions { display: none; padding: 10px 12px; background: white; border-top: 1px solid var(--border); }
@@ -1530,23 +1531,25 @@
     <div class="modal">
         <div class="modal-header"><span class="modal-title" id="packageModalTitle">📦 Додати посилку</span><button class="modal-close" onclick="closeModal('packageModal')">×</button></div>
         <div class="modal-body">
-            <div class="form-group">
-                <label>Напрямок</label>
-                <select id="fDirection" style="background:var(--bg-main);">
-                    <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
-                    <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
-                </select>
+            <div class="form-row">
+                <div class="form-group"><label>Напрямок</label>
+                    <select id="fDirection" style="background:var(--bg-main);">
+                        <option value="ua-eu">UA-EU</option>
+                        <option value="eu-ua">EU-UA</option>
+                    </select>
+                </div>
+                <div class="form-group"><label>ВО (менеджер)</label><input type="text" id="fVo"></div>
             </div>
-            <div class="form-row"><div class="form-group"><label>Дата виїзду</label><input type="date" id="fDate"></div><div class="form-group"><label>Місць</label><input type="number" id="fSeats" value="1" min="1"></div></div>
-            <div class="form-group"><label>ПіБ отримувача</label><input type="text" id="fName"></div>
+            <div class="form-group"><label>ПiБ отримувача</label><input type="text" id="fName"></div>
             <div class="form-row"><div class="form-group"><label>Телефон отримувача</label><input type="tel" id="fPhone"></div><div class="form-group"><label>Тел. реєстратора</label><input type="tel" id="fPhoneReg"></div></div>
-            <div class="form-group"><label>Адреса отримувача</label><input type="text" id="fAddress"></div>
-            <div class="form-group"><label>Адреса прибуття</label><input type="text" id="fTo"></div>
-            <div class="form-row"><div class="form-group"><label>Оплата €</label><input type="text" id="fPayment"></div><div class="form-group"><label>Відсоток %</label><input type="text" id="fPercent"></div></div>
-            <div class="form-row"><div class="form-group"><label>Авто</label><select id="fVehicle"><option value="">—</option></select></div><div class="form-group"><label>Відмітка</label><input type="text" id="fMark"></div></div>
-            <div class="form-row"><div class="form-group"><label>Диспечер</label><input type="text" id="fDispatcher"></div><div class="form-group"><label>Вага (кг)</label><input type="text" id="fWeight"></div></div>
-            <div class="form-row"><div class="form-group"><label>Таймінг</label><input type="text" id="fTiming"></div><div class="form-group"><label>Дата оформлення</label><input type="date" id="fDateReg"></div></div>
-            <div class="form-group"><label>Примітка</label><textarea id="fNote" rows="2"></textarea></div>
+            <div class="form-group"><label>Адреса отримувача</label><input type="text" id="fAddress" placeholder="Nitra, Slancikova 595/1..."></div>
+            <div class="form-row"><div class="form-group"><label>Номер ТТН</label><input type="text" id="fTtn" placeholder="59001..."></div><div class="form-group"><label>Вага (кг)</label><input type="text" id="fWeight"></div></div>
+            <div class="form-row"><div class="form-group"><label>Сума EUR</label><input type="text" id="fAmount"></div><div class="form-group"><label>Статус оплати</label><input type="text" id="fPayStatus"></div></div>
+            <div class="form-row"><div class="form-group"><label>Оплата</label><input type="text" id="fPayment"></div><div class="form-group"><label>Статус посилки</label><input type="text" id="fParcelStatus"></div></div>
+            <div class="form-row"><div class="form-group"><label>Авто</label><select id="fVehicle"><option value="">---</option></select></div><div class="form-group"><label>Таймiнг</label><input type="text" id="fTiming"></div></div>
+            <div class="form-row"><div class="form-group"><label>Дата оформлення</label><input type="date" id="fDateReg"></div><div class="form-group"><label>Дата отримання</label><input type="date" id="fDateReceive"></div></div>
+            <div class="form-group"><label>Примiтка</label><textarea id="fNote" rows="2"></textarea></div>
+            <div class="form-group"><label>Примiтка СМС</label><input type="text" id="fSmsNote"></div>
         </div>
         <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('packageModal')">Скасувати</button><button class="btn-save" onclick="savePackage()">💾 Зберегти</button></div>
     </div>
@@ -1792,7 +1795,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Тиха синхронізація (без loader)
 function silentSync() {
     // Не оновлюємо якщо відкрита модалка редагування
-    if (document.getElementById('passengerModal')?.classList.contains('show')) return;
+    if (document.getElementById('packageModal')?.classList.contains('show')) return;
     
     fetch(API_URL, {
         method: 'POST',
@@ -1803,45 +1806,42 @@ function silentSync() {
     .then(data => {
         if (data.success) {
             const oldCount = packages.length;
-            const serverPassengers = data.packages.map(p => {
-                // Нормалізуємо статус (lowercase, trim)
-                let normalizedStatus = (p.status || '').toString().toLowerCase().trim();
-                if (!normalizedStatus) normalizedStatus = 'new';
-                
-                return {
-                    id: p.id || 'srv_' + p.rowNum,
-                    date: normalizeDate(p.dateReg),
-                    name: p.name || '',
-                    phone: p.phone || '',
-                    phoneReg: p.phoneReg || '',
-                    from: p.from || '',
-                    to: p.to || '',
-                    seats: p.weight || '',
-                    payment: p.payment || '',
-                    percent: p.percent || '',
-                    mark: p.mark || '',
-                    dispatcher: p.dispatcher || '',
-                    weight: p.weight || '',
-                    vehicle: p.vehicle || '',
-                    timing: p.timing || '',
-                    dateReg: normalizeDate(p.dateReg),
-                    note: p.note || '',
-                    direction: p.direction,
-                    status: normalizedStatus,
-                    statusDate: p.statusDate || '',
-                    isNew: p.isNew,
-                    isNew24h: p.isNew,
-                    _sheet: p.sheet,
-                    _rowNum: p.rowNum
-                };
-            });
+            const serverPackages = data.packages.map(p => ({
+                id: p.id || 'srv_' + p.rowNum,
+                vo: p.vo || '',
+                number: p.number || '',
+                ttn: p.ttn || '',
+                weight: p.weight || '',
+                address: p.address || '',
+                directionRaw: p.directionRaw || '',
+                direction: p.direction || 'ua-eu',
+                phone: p.phone || '',
+                amount: p.amount || '',
+                payStatus: p.payStatus || '',
+                payment: p.payment || '',
+                phoneReg: p.phoneReg || '',
+                note: p.note || '',
+                parcelStatus: p.parcelStatus || '',
+                name: p.name || '',
+                dateReg: p.dateReg || '',
+                timing: p.timing || '',
+                smsNote: p.smsNote || '',
+                dateReceive: p.dateReceive || '',
+                photo: p.photo || '',
+                status: (p.status || '').toLowerCase().trim() || 'new',
+                dateArchive: p.dateArchive || '',
+                isNew: p.isNew || false,
+                vehicle: p.vehicle || '',
+                _sheet: p.sheet,
+                _rowNum: p.rowNum
+            }));
             
             // Перевіряємо чи є нові ліди
             const hiddenStatuses = ['archived', 'refused', 'transferred', 'deleted'];
-            const newCount = serverPassengers.filter(p => p.isNew && !hiddenStatuses.includes(p.status)).length;
+            const newCount = serverPackages.filter(p => p.isNew && !hiddenStatuses.includes(p.status)).length;
             const oldNewCount = packages.filter(p => p.isNew && !hiddenStatuses.includes(p.status)).length;
-            
-            packages = serverPassengers;
+
+            packages = serverPackages;
             saveSettings();
             
             // Оновлюємо UI тільки якщо не в режимі маршруту
@@ -2059,8 +2059,8 @@ function renderCalendarTo(containerId) {
     const leadCounts = {};
     packages.filter(p => p.status !== 'archived').forEach(p => { 
         if(p.dateReg) {
-            leadCounts[p.date] = (leadCounts[p.date]||0) + 1;
-            seatCounts[p.date] = (seatCounts[p.date]||0) + (parseFloat(p.weight) || 1);
+            leadCounts[p.dateReg] = (leadCounts[p.dateReg]||0) + 1;
+            seatCounts[p.dateReg] = (seatCounts[p.dateReg]||0) + (parseFloat(p.weight) || 1);
         }
     });
     
@@ -2145,8 +2145,8 @@ function selectDate(dateStr) {
 // Перевірка місткості на дату (при виборі)
 function checkCapacityWarning(dateStr) {
     const totalCapacity = vehicles.reduce((sum, v) => sum + (parseInt(v.maxPoints) || 60), 0);
-    const seatsOnDate = passengers
-        .filter(p => p.date === dateStr && p.status !== 'archived')
+    const seatsOnDate = packages
+        .filter(p => p.dateReg === dateStr && p.status !== 'archived')
         .reduce((sum, p) => sum + (parseFloat(p.weight) || 1), 0);
     
     if (seatsOnDate > totalCapacity) {
@@ -2163,7 +2163,7 @@ function checkAllCapacityWarnings() {
     // Групуємо по датах
     const seatsByDate = {};
     packages.filter(p => p.status !== 'archived' && p.dateReg).forEach(p => {
-        seatsByDate[p.date] = (seatsByDate[p.date] || 0) + (parseFloat(p.weight) || 1);
+        seatsByDate[p.dateReg] = (seatsByDate[p.dateReg] || 0) + (parseFloat(p.weight) || 1);
     });
     
     // Шукаємо перевищення (тільки майбутні дати)
@@ -2274,25 +2274,23 @@ function getFieldValue(p, key) {
     const v = vehicles.find(x => x.id === p.vehicle);
     const val = p[key];
     if (!val && val !== 0) return '';
-    if (key === 'date' || key === 'dateReg') { 
-        const d = new Date(val); 
+    if (key === 'dateReg' || key === 'dateReceive' || key === 'dateArchive') {
+        const d = new Date(val);
         if (isNaN(d.getTime())) return val;
-        // Формат DD.MM.YYYY
         const day = String(d.getDate()).padStart(2, '0');
         const month = String(d.getMonth() + 1).padStart(2, '0');
         const year = d.getFullYear();
         return `${day}.${month}.${year}`;
     }
-    if (key === 'amount') return val ? '€' + val : '';
-    if (key === 'payStatus') return val;
+    if (key === 'amount') return val ? '\u20AC' + val : '';
     if (key === 'vehicle') return v ? v.name : '';
-    if (key === 'weight') return val ? val + ' кг' : '';
-    if (key === 'weight') return val ? val + ' кг' : '';
+    if (key === 'weight') return val ? val + ' \u043A\u0433' : '';
+    if (key === 'photo' && val) return '<a href="' + val + '" target="_blank">&#128247; \u0424\u043E\u0442\u043E</a>';
     return val;
 }
 
 function getFilteredData() {
-    let data = [...passengers];
+    let data = [...packages];
     
     // Фільтр "Нові" - заявки за останні 24 години
     if (filters.showNewOnly) {
@@ -2304,8 +2302,8 @@ function getFilteredData() {
         data = data.filter(p => {
             // Якщо є dateReg - перевіряємо чи за останні 24 год
             if (p.dateReg && p.dateReg >= yesterdayStr) return true;
-            // Або якщо позначено як isNew24h
-            if (p.isNew24h) return true;
+            // Або якщо позначено як isNew
+            if (p.isNew) return true;
             return false;
         });
         
@@ -2336,17 +2334,23 @@ function getFilteredData() {
                 p.name || '',
                 p.phone || '',
                 p.phoneReg || '',
-                p.from || '',
-                p.to || '',
+                p.address || '',
+                p.ttn || '',
                 p.note || '',
-                p.dispatcher || '',
-                p.payment || '',
-                p.mark || ''
+                p.vo || '',
+                p.amount || '',
+                p.smsNote || '',
+                p.parcelStatus || ''
             ].join(' ').toLowerCase();
             return searchStr.includes(s);
         }); 
     }
-    if (!filters.showNewOnly && filters.date) data = data.filter(p => p.dateReg === filters.date);
+    if (!filters.showNewOnly && filters.date) {
+        data = data.filter(p => {
+            if (!p.dateReg) return false;
+            return p.dateReg === filters.date || normalizeDate(p.dateReg) === filters.date;
+        });
+    }
     if (filters.vehicle === 'none') {
         data = data.filter(p => !p.vehicle);
     } else if (filters.vehicle && !filters.routeVehicle) {
@@ -2425,11 +2429,11 @@ function render() {
         
         // Format values з підсвічуванням
         const phoneDisplay = hasSearch ? highlightSearch(p.phone || '—') : (p.phone || '—');
-        const seatsDisplay = p.weight || '';
-        const dateDisplay = p.date ? getFieldValue(p, 'date') : '—';
-        const priceDisplay = p.payment ? '€' + p.payment : '';
-        const routeFrom = hasSearch ? highlightSearch(p.from || '—') : (p.from || '—');
-        const routeTo = hasSearch ? highlightSearch(p.to || '—') : (p.to || '—');
+        const weightDisplay = p.weight ? p.weight + ' кг' : '';
+        const dateDisplay = p.dateReg ? getFieldValue(p, 'dateReg') : '—';
+        const priceDisplay = p.amount ? '\u20AC' + p.amount : '';
+        const addressDisplay = hasSearch ? highlightSearch(p.address || '—') : (p.address || '—');
+        const ttnDisplay = hasSearch ? highlightSearch(p.ttn || '') : (p.ttn || '');
         const idDisplay = hasSearch ? highlightSearch(p.id || '—') : (p.id || '—');
         const nameDisplay = hasSearch ? highlightSearch(p.name || '—') : (p.name || '—');
         
@@ -2466,17 +2470,18 @@ function render() {
                         ${orderNum}
                         <span class="card-direction" title="${p.direction === 'ua-eu' ? 'Україна → Європа' : 'Європа → Україна'}">${dirEmoji}</span>
                         <span class="card-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}</span>
-                        <span class="card-seats">👥 ${seatsDisplay}</span>
+                        <span class="card-seats">${weightDisplay}</span>
                         <span class="card-date">${dateDisplay}</span>
                         <span class="card-price">${priceDisplay}</span>
                     </div>
                     <div class="card-row2-wrap">
                         <div class="card-route-row">
-                            <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${routeFrom} <span class="card-route-arrow">→</span> ${routeTo}</span>
+                            <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${addressDisplay}</span>
                         </div>
                         <div class="card-info-row">
                             <span class="card-id" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${idDisplay}</span>
                             <span class="card-name" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${nameDisplay}</span>
+                            ${ttnDisplay ? '<span class="card-ttn" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">' + ttnDisplay + '</span>' : ''}
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
                         </div>
                     </div>
@@ -2661,7 +2666,7 @@ function updateAllCounts() {
     const now = new Date();
     const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const yesterdayStr = yesterday.toISOString().split('T')[0];
-    const newLeads = active.filter(p => (p.dateReg && p.dateReg >= yesterdayStr) || p.isNew24h);
+    const newLeads = active.filter(p => (p.dateReg && p.dateReg >= yesterdayStr) || p.isNew);
     
     document.getElementById('countAll').textContent = active.length;
     // countRoute оновлюється через updateAllRoutesCount() API
@@ -2998,7 +3003,7 @@ async function loadAllRoutePassengers() {
                 loaded++;
                 updateLoader(`Обробка: ${route.name}`, `${loaded} / ${routes.length}`);
                 
-                if (data.success && data.passengers && data.packages.length > 0) {
+                if (data.success && data.packages && data.packages.length > 0) {
                     // Знаходимо відповідне авто
                     const matchedVehicle = vehicles.find(v => 
                         v.name === route.name || 
@@ -3345,72 +3350,66 @@ function bulkRestore() {
     const closedStatuses = ['archived', 'refused', 'transferred', 'deleted'];
     
     // Збираємо дані для API
-    const passengersToRestore = [];
+    const itemsToRestore = [];
     selectedIds.forEach(uid => {
         const p = findPackageByUid(uid);
         if (p && p._sheet && p._rowNum && closedStatuses.includes(p.status)) {
-            passengersToRestore.push({
-                sheet: p._sheet,
-                rowNum: p._rowNum
-            });
+            itemsToRestore.push({ sheet: p._sheet, rowNum: p._rowNum });
         }
     });
-    
-    if (passengersToRestore.length === 0) {
-        return showToast('⚠️ Немає заявок для відновлення');
+
+    if (itemsToRestore.length === 0) {
+        return showToast('Nemaye zayavok dlya vidnovlennya');
     }
-    
-    showLoader('Відновлюю...', '');
-    
-    // Викликаємо API
+
+    showLoader('Vidnovlyuyu...', '');
+
     fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({
-            action: 'restorePassengers',
-            payload: { passengers: passengersToRestore }
+            action: 'bulkUpdateStatus',
+            items: itemsToRestore,
+            status: ''
         })
     })
     .then(r => r.json())
     .then(data => {
         hideLoader();
         if (data.success) {
-            // Оновлюємо локально
             selectedIds.forEach(uid => {
                 const p = findPackageByUid(uid);
                 if (p && closedStatuses.includes(p.status)) {
                     p.status = 'new';
-                    p.statusDate = '';
-                    // Очищаємо причину відмови/пересадки з примітки
+                    p.dateArchive = '';
                     if (p.note) {
-                        p.note = p.note.replace(/^(Відмова|Пересадка|Видалено):.*?\|?\s*/i, '');
+                        p.note = p.note.replace(/^(Vidmova|Peresadka|Vydaleno):.*?\|?\s*/i, '');
                     }
                 }
             });
             clearSelection();
             render();
             updateAllCounts();
-            showToast(`↩️ Відновлено: ${data.restored || passengersToRestore.length}`);
+            showToast('Vidnovleno: ' + (data.count || itemsToRestore.length));
         } else {
-            showToast('❌ ' + data.error);
+            showToast('Pomylka: ' + data.error);
         }
     })
     .catch(err => {
         hideLoader();
         console.error('Restore error:', err);
-        // Відновлюємо локально
         selectedIds.forEach(uid => {
             const p = findPackageByUid(uid);
             if (p && closedStatuses.includes(p.status)) {
                 p.status = 'new';
-                p.statusDate = '';
+                p.dateArchive = '';
             }
         });
         clearSelection();
         saveSettings();
         render();
         updateAllCounts();
-        showToast('↩️ Відновлено локально');
+        showToast('Vidnovleno lokalno');
     });
 }
 
@@ -3646,57 +3645,53 @@ function bulkArchive() {
     if (selectedIds.size === 0) return showToast('⚠️ Оберіть заявки');
     
     // Збираємо дані для API
-    const passengersToArchive = [];
+    const itemsToArchive = [];
     selectedIds.forEach(uid => {
         const p = findPackageByUid(uid);
         if (p && p._sheet && p._rowNum) {
-            passengersToArchive.push({
-                sheet: p._sheet,
-                rowNum: p._rowNum
-            });
+            itemsToArchive.push({ sheet: p._sheet, rowNum: p._rowNum });
         }
     });
-    
-    if (passengersToArchive.length === 0) {
-        return showToast('⚠️ Немає заявок для архівації');
+
+    if (itemsToArchive.length === 0) {
+        return showToast('Nemaye zayavok dlya arhivaciyi');
     }
-    
-    showLoader('Архівую...', '');
-    
-    // Викликаємо API
+
+    showLoader('Arhivuyu...', '');
+
     fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({
-            action: 'archivePassengers',
-            payload: { passengers: passengersToArchive }
+            action: 'bulkUpdateStatus',
+            items: itemsToArchive,
+            status: 'archived'
         })
     })
     .then(r => r.json())
     .then(data => {
         hideLoader();
         if (data.success) {
-            // Оновлюємо локально
             selectedIds.forEach(uid => {
                 const p = findPackageByUid(uid);
                 if (p) {
                     p.status = 'archived';
-                    p.statusDate = new Date().toISOString().split('T')[0];
+                    p.dateArchive = new Date().toISOString().split('T')[0];
                 }
             });
             clearSelection();
             render();
             updateAllCounts();
             renderCalendars();
-            showToast(`📦 Архівовано: ${data.archived}`);
+            showToast('Arhivovano: ' + data.count);
         } else {
-            showToast('❌ ' + data.error);
+            showToast('Pomylka: ' + data.error);
         }
     })
     .catch(err => {
         hideLoader();
         console.error('Archive error:', err);
-        showToast('❌ Помилка архівації');
+        showToast('Pomylka arhivaciyi');
     });
 }
 
@@ -4155,7 +4150,7 @@ function applyOptimizedOrder(orderedPassengers, notGeocodedList) {
         });
     }
     
-    // Оновлюємо порядок в масиві passengers
+    // Оновлюємо порядок в масиві packages
     orderedPassengers.forEach((op, idx) => {
         const uid = op._uid || (op._sheet && op._rowNum ? `${op._sheet}_${op._rowNum}` : null);
         if (!uid) return;
@@ -4200,7 +4195,7 @@ function undoLastAction() {
     last.snapshot.forEach(snap => {
         const idx = packages.findIndex(p => p.id === snap.id);
         if (idx !== -1) {
-            passengers[idx] = { ...snap };
+            packages[idx] = { ...snap };
         }
     });
     
@@ -4252,13 +4247,13 @@ function updateVehiclesList() {
 function openAddVehicleModal() {
     document.getElementById('vehicleDropdown')?.classList.remove('show');
     document.getElementById('vName').value = '';
-    document.getElementById('vSeats').value = 8;
+    document.getElementById('vPoints').value = 60;
     document.getElementById('vehicleModal').classList.add('show');
 }
 
 function saveVehicle() {
     const name = document.getElementById('vName').value.trim();
-    const seats = parseInt(document.getElementById('vSeats').value) || 8;
+    const seats = parseInt(document.getElementById('vPoints').value) || 60;
     
     if (!name) return showToast('❌ Введіть назву авто');
     
@@ -4350,46 +4345,45 @@ function deleteVehicle(vehicleId) {
 }
 
 // PASSENGERS
-function openAddModal() { 
-    editingId = null; 
-    document.getElementById('passengerModalTitle').textContent = 'Додати'; 
-    document.getElementById('fDate').value = filters.date || new Date().toISOString().split('T')[0]; 
+function openAddModal() {
+    editingId = null;
+    document.getElementById('packageModalTitle').textContent = 'Dodaty posylku';
     document.getElementById('fDirection').value = filters.direction !== 'all' ? filters.direction : 'ua-eu';
-    ['fName','fPhone','fPhoneReg','fFrom','fTo','fPayment','fPercent','fMark','fDispatcher','fWeight','fTiming','fNote'].forEach(id => document.getElementById(id).value = ''); 
-    document.getElementById('fSeats').value = 1; 
-    document.getElementById('fVehicle').value = filters.vehicle || ''; 
+    ['fName','fPhone','fPhoneReg','fAddress','fTtn','fWeight','fAmount','fPayStatus','fPayment','fParcelStatus','fTiming','fNote','fSmsNote','fVo'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+    document.getElementById('fVehicle').value = filters.vehicle || '';
     document.getElementById('fDateReg').value = new Date().toISOString().split('T')[0];
-    document.getElementById('passengerModal').classList.add('show'); 
+    const dr = document.getElementById('fDateReceive'); if(dr) dr.value = '';
+    document.getElementById('packageModal').classList.add('show');
 }
 
 function editPackage(uid) {
     const p = findPackageByUid(uid);
     if (!p) return;
     editingId = uid;
-    updateVehiclesList(); // Оновлюємо список авто
-    document.getElementById('passengerModalTitle').textContent = 'Редагувати';
+    updateVehiclesList();
+    document.getElementById('packageModalTitle').textContent = 'Redahuvaty';
     document.getElementById('fDirection').value = p.direction || 'ua-eu';
-    document.getElementById('fDate').value = p.date || '';
     document.getElementById('fName').value = p.name || '';
     document.getElementById('fPhone').value = p.phone || '';
     document.getElementById('fPhoneReg').value = p.phoneReg || '';
-    document.getElementById('fFrom').value = p.from || '';
-    document.getElementById('fTo').value = p.to || '';
-    document.getElementById('fSeats').value = p.weight || '';
-    document.getElementById('fPayment').value = p.payment || '';
-    document.getElementById('fPercent').value = p.percent || '';
-    document.getElementById('fVehicle').value = p.vehicle || '';
-    document.getElementById('fMark').value = p.mark || '';
-    document.getElementById('fDispatcher').value = p.dispatcher || '';
+    document.getElementById('fAddress').value = p.address || '';
+    document.getElementById('fTtn').value = p.ttn || '';
     document.getElementById('fWeight').value = p.weight || '';
+    document.getElementById('fAmount').value = p.amount || '';
+    document.getElementById('fPayStatus').value = p.payStatus || '';
+    document.getElementById('fPayment').value = p.payment || '';
+    document.getElementById('fParcelStatus').value = p.parcelStatus || '';
+    document.getElementById('fVehicle').value = p.vehicle || '';
+    document.getElementById('fVo').value = p.vo || '';
     document.getElementById('fTiming').value = p.timing || '';
     document.getElementById('fDateReg').value = p.dateReg || '';
+    const dr = document.getElementById('fDateReceive'); if(dr) dr.value = p.dateReceive || '';
     document.getElementById('fNote').value = p.note || '';
-    // Закриваємо дії картки
+    const sms = document.getElementById('fSmsNote'); if(sms) sms.value = p.smsNote || '';
     openActionsId = null;
     document.querySelectorAll('.card-actions').forEach(el => el.classList.remove('show'));
     document.querySelectorAll('.card-actions-toggle').forEach(el => el.classList.remove('open'));
-    document.getElementById('passengerModal').classList.add('show');
+    document.getElementById('packageModal').classList.add('show');
 }
 
 // Видалення ліда (в архів з підтвердженням)
@@ -4453,15 +4447,15 @@ function confirmDeletePassenger(uid) {
     // Якщо є серверні дані - архівуємо на сервері
     if (p._sheet && p._rowNum) {
         showLoader('Видалення...', '');
-        
+
         fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
             body: JSON.stringify({
-                action: 'archivePassengers',
-                payload: {
-                    passengers: [{ sheet: p._sheet, rowNum: p._rowNum }]
-                }
+                action: 'updateStatus',
+                sheet: p._sheet,
+                rowNum: p._rowNum,
+                status: 'archived'
             })
         })
         .then(r => r.json())
@@ -4494,57 +4488,55 @@ function confirmDeletePassenger(uid) {
     }
 }
 
-function savePackage() { 
+function savePackage() {
     const isEditing = !!editingId;
     const existingP = isEditing ? findPackageByUid(editingId) : null;
-    
+
     const d = {
         id: existingP?.id || 'p' + Date.now(),
         direction: document.getElementById('fDirection').value,
-        date: document.getElementById('fDate').value,
-        name: document.getElementById('fName').value || '—',
+        vo: document.getElementById('fVo')?.value || '',
+        name: document.getElementById('fName').value || '',
         phone: document.getElementById('fPhone').value,
         phoneReg: document.getElementById('fPhoneReg').value,
-        from: document.getElementById('fFrom').value,
-        to: document.getElementById('fTo').value,
-        seats: parseInt(document.getElementById('fSeats').value) || 1,
-        payment: document.getElementById('fPayment').value,
-        percent: document.getElementById('fPercent').value,
-        vehicle: document.getElementById('fVehicle').value,
-        mark: document.getElementById('fMark').value,
-        dispatcher: document.getElementById('fDispatcher').value,
+        address: document.getElementById('fAddress').value,
+        ttn: document.getElementById('fTtn')?.value || '',
         weight: document.getElementById('fWeight').value,
+        amount: document.getElementById('fAmount')?.value || '',
+        payStatus: document.getElementById('fPayStatus')?.value || '',
+        payment: document.getElementById('fPayment').value,
+        parcelStatus: document.getElementById('fParcelStatus')?.value || '',
+        vehicle: document.getElementById('fVehicle').value,
         timing: document.getElementById('fTiming').value,
         dateReg: document.getElementById('fDateReg').value,
+        dateReceive: document.getElementById('fDateReceive')?.value || '',
         note: document.getElementById('fNote').value,
+        smsNote: document.getElementById('fSmsNote')?.value || '',
         status: existingP?.status || 'new',
         isNew: !editingId,
         order: packages.length * 10
-    }; 
-    
+    };
+
     if (isEditing && existingP) {
-        // Знаходимо індекс в масиві
         const i = packages.findIndex(p => p._sheet === existingP._sheet && p._rowNum === existingP._rowNum);
         if (i !== -1) {
-            d._sheet = passengers[i]._sheet;
-            d._rowNum = passengers[i]._rowNum;
-            passengers[i] = {...passengers[i], ...d};
-            // Оновлюємо на сервері
-            updatePackageOnServer(passengers[i]);
+            d._sheet = packages[i]._sheet;
+            d._rowNum = packages[i]._rowNum;
+            packages[i] = {...packages[i], ...d};
+            updatePackageOnServer(packages[i]);
         }
     } else {
-        passengers.unshift(d);
-        // Додаємо на сервер
-        savePassengerToServer(d);
+        packages.unshift(d);
+        savePackageToServer(d);
     }
-    
+
     editingId = null;
-    saveSettings(); 
-    closeModal('packageModal'); 
-    render(); 
-    updateVehiclesList(); 
-    updateAllCounts(); 
-    renderCalendars(); 
+    saveSettings();
+    closeModal('packageModal');
+    render();
+    updateVehiclesList();
+    updateAllCounts();
+    renderCalendars();
 }
 
 // COLUMNS
@@ -4684,9 +4676,9 @@ function openMapModal(uid) {
     
     currentMapPassengerId = uid;
     
-    document.getElementById('mapFromAddress').textContent = p.from || '—';
-    document.getElementById('mapToAddress').textContent = p.to || '—';
-    document.getElementById('mapRouteAddress').textContent = (p.from && p.to) ? `${p.from} → ${p.to}` : '—';
+    document.getElementById('mapFromAddress').textContent = p.address || '---';
+    document.getElementById('mapToAddress').textContent = p.address || '---';
+    document.getElementById('mapRouteAddress').textContent = p.address || '---';
     
     document.getElementById('mapModal').classList.add('show');
 }
@@ -4697,12 +4689,8 @@ function openMapLocation(type) {
     
     let url = '';
     
-    if (type === 'from' && p.from) {
-        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.from)}`;
-    } else if (type === 'to' && p.to) {
-        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.to)}`;
-    } else if (type === 'route' && p.from && p.to) {
-        url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(p.from)}&destination=${encodeURIComponent(p.to)}`;
+    if (p.address) {
+        url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.address)}`;
     }
     
     if (url) {
@@ -4716,8 +4704,8 @@ function openMapLocation(type) {
 // ============================================
 // GOOGLE SHEETS API
 // ============================================
-// 📦 API для посилок — ЗАМІНІТЬ НА СВІЙ URL ПІСЛЯ ДЕПЛОЯ
-const API_URL = 'YOUR_PACKAGES_API_URL_HERE';
+// API для посилок
+const API_URL = 'https://script.google.com/macros/s/AKfycbwhyGKKN1QhVfN7PNYl-T0qSS5EmSMWAccBNx8jaYmtE49oB3tT0V2PY3knztbnpE7ZWw/exec';
 
 // API для маршрутів посилок (поки не використовується)
 // const ROUTE_API_URL = 'YOUR_ROUTE_API_URL_HERE';
@@ -4800,34 +4788,36 @@ function syncWithSheets() {
     });
 }
 
-// SAVE - Додати нового пасажира на сервер
-function savePassengerToServer(passenger) {
+// SAVE - Додати нову посилку на сервер
+function savePackageToServer(pkg) {
     showLoader('Збереження...', '');
-    
+
+    const sheetName = pkg.direction === 'eu-ua' ? 'Виклик кур\'єра' : 'Реєстрація ТТН';
+
     const payload = {
-        action: 'addPassenger',
-        payload: {
-            direction: passenger.direction,
-            initials: getUserInitials(),
-            date: passenger.date,
-            from: passenger.from,
-            to: passenger.to,
-            seats: passenger.seats,
-            name: passenger.name,
-            phone: passenger.phone,
-            phoneReg: passenger.phoneReg,
-            mark: passenger.mark,
-            payment: passenger.payment,
-            percent: passenger.percent,
-            dispatcher: passenger.dispatcher || 'CRM',
-            weight: passenger.weight,
-            vehicle: passenger.vehicle,
-            timing: passenger.timing,
-            dateReg: passenger.dateReg,
-            note: passenger.note
+        action: 'addPackage',
+        sheet: sheetName,
+        fields: {
+            vo: pkg.vo || '',
+            ttn: pkg.ttn || '',
+            weight: pkg.weight || '',
+            address: pkg.address || '',
+            direction: pkg.direction || '',
+            phone: pkg.phone || '',
+            amount: pkg.amount || '',
+            payStatus: pkg.payStatus || '',
+            payment: pkg.payment || '',
+            phoneReg: pkg.phoneReg || '',
+            note: pkg.note || '',
+            parcelStatus: pkg.parcelStatus || '',
+            name: pkg.name || '',
+            dateReg: pkg.dateReg || '',
+            timing: pkg.timing || '',
+            smsNote: pkg.smsNote || '',
+            dateReceive: pkg.dateReceive || ''
         }
     };
-    
+
     fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
@@ -4837,8 +4827,7 @@ function savePassengerToServer(passenger) {
     .then(data => {
         hideLoader();
         if (data.success) {
-            // Оновлюємо локальний ID
-            const p = packages.find(x => x.id === passenger.id);
+            const p = packages.find(x => x.id === pkg.id);
             if (p) {
                 p.id = data.id;
                 p._sheet = data.sheet;
@@ -4846,53 +4835,52 @@ function savePassengerToServer(passenger) {
             }
             saveSettings();
             render();
-            showToast('✅ Збережено: ' + data.id);
-            
-            // Перевіряємо місткість після додавання
+            showToast('Zberezheno: ' + data.id);
             checkAllCapacityWarnings();
         } else {
-            showToast('⚠️ Помилка: ' + data.error);
+            showToast('Pomylka: ' + data.error);
         }
     })
     .catch(err => {
         hideLoader();
         console.error('Save error:', err);
-        showToast('⚠️ Збережено локально');
+        showToast('Zberezheno lokalno');
     });
 }
 
-// UPDATE - Оновити пасажира на сервері
-function updatePackageOnServer(passenger) {
-    if (!passenger._sheet || !passenger._rowNum) {
-        console.warn('❌ Немає _sheet або _rowNum:', passenger);
-        showToast('⚠️ Синхронізуй спочатку');
+// UPDATE - Оновити посилку на сервері
+function updatePackageOnServer(pkg) {
+    if (!pkg._sheet || !pkg._rowNum) {
+        console.warn('No _sheet or _rowNum:', pkg);
+        showToast('Synhronizuj spochatku');
         return;
     }
-    
+
     const payload = {
-        action: 'updatePassenger',
-        payload: {
-            sheet: passenger._sheet,
-            rowNum: passenger._rowNum,
-            date: passenger.date,
-            from: passenger.from,
-            to: passenger.to,
-            seats: passenger.seats,
-            name: passenger.name,
-            phone: passenger.phone,
-            phoneReg: passenger.phoneReg,
-            mark: passenger.mark || '',
-            payment: passenger.payment,
-            percent: passenger.percent,
-            dispatcher: passenger.dispatcher,
-            weight: passenger.weight,
-            vehicle: passenger.vehicle,
-            timing: passenger.timing,
-            dateReg: passenger.dateReg,
-            note: passenger.note
+        action: 'updatePackage',
+        sheet: pkg._sheet,
+        rowNum: pkg._rowNum,
+        fields: {
+            vo: pkg.vo || '',
+            ttn: pkg.ttn || '',
+            weight: pkg.weight || '',
+            address: pkg.address || '',
+            phone: pkg.phone || '',
+            amount: pkg.amount || '',
+            payStatus: pkg.payStatus || '',
+            payment: pkg.payment || '',
+            phoneReg: pkg.phoneReg || '',
+            note: pkg.note || '',
+            parcelStatus: pkg.parcelStatus || '',
+            name: pkg.name || '',
+            dateReg: pkg.dateReg || '',
+            timing: pkg.timing || '',
+            smsNote: pkg.smsNote || '',
+            dateReceive: pkg.dateReceive || '',
+            status: pkg.status || ''
         }
     };
-    
+
     fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
@@ -4901,14 +4889,14 @@ function updatePackageOnServer(passenger) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            showToast('✅ Збережено');
+            showToast('Zberezheno');
         } else {
-            showToast('❌ ' + data.error);
+            showToast('Pomylka: ' + data.error);
         }
     })
     .catch(err => {
-        console.error('❌ Fetch error:', err);
-        showToast('❌ Помилка зв\'язку');
+        console.error('Fetch error:', err);
+        showToast('Pomylka zviazku');
     });
 }
 
