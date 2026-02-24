@@ -706,10 +706,13 @@
         /* EDITABLE HEADER MODE */
         .lead-card .card-header-edit { display: none; }
         .lead-card.details-open .card-header-display { display: none; }
-        .lead-card.details-open .card-header-edit { display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 8px 10px; min-width: 0; }
+        .lead-card.details-open .card-header-edit { display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 8px 10px; min-width: 0; position: relative; }
+        .card-header-edit .collapse-btn { position: absolute; top: 4px; right: 4px; background: none; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; font-size: 14px; color: var(--text-secondary); padding: 2px 7px; line-height: 1; z-index: 2; }
+        .card-header-edit .collapse-btn:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
         .lead-card.details-open .card-header-edit .edit-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
         .lead-card.details-open .card-header-edit .edit-field { border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px; font-size: 12px; font-weight: 600; font-family: inherit; outline: none; background: white; min-width: 80px; }
         .lead-card.details-open .card-header-edit .edit-field:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,58,94,0.1); }
+        .lead-card.details-open .card-header-edit .edit-field.saved { animation: fieldSaved 0.6s ease; }
         .lead-card.details-open .card-header-edit .edit-field-wide { flex: 1; min-width: 150px; }
         .lead-card.details-open .card-body { pointer-events: none; }
 
@@ -2713,19 +2716,20 @@ function render() {
                     </div>
                 </div>
                 <div class="card-header-edit">
+                    <button class="collapse-btn" onclick="event.stopPropagation();toggleDetails('${uk}')" title="Згорнути">✕</button>
                     <div class="edit-row">
                         ${orderNum}
                         <span class="card-direction${dirClass}">${dirLabel}</span>
-                        <input class="edit-field" style="flex:1;min-width:100px;" value="${esc(phoneRaw)}" placeholder="Телефон" onchange="inlineSave('${uk}','phone',this.value)" onclick="event.stopPropagation()">
-                        <input class="edit-field" style="width:60px;" value="${esc(p.weight||'')}" placeholder="Вага" onchange="inlineSave('${uk}','weight',this.value)" onclick="event.stopPropagation()">
-                        <input class="edit-field" style="width:60px;" value="${esc(p.amount||'')}" placeholder="€" onchange="inlineSave('${uk}','amount',this.value)" onclick="event.stopPropagation()">
+                        <input class="edit-field" style="flex:1;min-width:100px;" value="${esc(phoneRaw)}" placeholder="Телефон" onchange="inlineSaveHeader(this,'${uk}','phone',this.value)" onclick="event.stopPropagation()">
+                        <input class="edit-field" style="width:60px;" value="${esc(p.weight||'')}" placeholder="Вага" onchange="inlineSaveHeader(this,'${uk}','weight',this.value)" onclick="event.stopPropagation()">
+                        <input class="edit-field" style="width:60px;" value="${esc(p.amount||'')}" placeholder="€" onchange="inlineSaveHeader(this,'${uk}','amount',this.value)" onclick="event.stopPropagation()">
                     </div>
                     <div class="edit-row">
-                        <input class="edit-field edit-field-wide" value="${esc(p.name||'')}" placeholder="ПІБ" onchange="inlineSave('${uk}','name',this.value)" onclick="event.stopPropagation()">
-                        <input class="edit-field edit-field-wide" value="${esc(p.ttn||'')}" placeholder="ТТН" onchange="inlineSave('${uk}','ttn',this.value)" onclick="event.stopPropagation()">
+                        <input class="edit-field edit-field-wide" value="${esc(p.name||'')}" placeholder="ПІБ" onchange="inlineSaveHeader(this,'${uk}','name',this.value)" onclick="event.stopPropagation()">
+                        <input class="edit-field edit-field-wide" value="${esc(p.ttn||'')}" placeholder="ТТН" onchange="inlineSaveHeader(this,'${uk}','ttn',this.value)" onclick="event.stopPropagation()">
                     </div>
                     <div class="edit-row">
-                        <input class="edit-field edit-field-wide" value="${esc(p.address||'')}" placeholder="Адреса" onchange="inlineSave('${uk}','address',this.value)" onclick="event.stopPropagation()">
+                        <input class="edit-field edit-field-wide" value="${esc(p.address||'')}" placeholder="Адреса" onchange="inlineSaveHeader(this,'${uk}','address',this.value)" onclick="event.stopPropagation()">
                     </div>
                 </div>
                 <div class="card-right-section">
@@ -5112,6 +5116,38 @@ function inlineSave(uid, field, value) {
         render();
     }
 
+    updateAllCounts();
+}
+
+// === INLINE SAVE for header edit fields (with green flash, no re-render) ===
+function inlineSaveHeader(el, uid, field, value) {
+    const p = findPackageByUid(uid);
+    if (!p) return;
+
+    // Оновлюємо локально
+    p[field] = value;
+    saveSettings();
+
+    // Зелена підсвітка на полі
+    el.classList.add('saved');
+    setTimeout(() => el.classList.remove('saved'), 600);
+
+    // Показуємо індикатор збереження
+    const indId = 'saveInd_' + uid.replace(/[^a-zA-Z0-9]/g, '_');
+    const ind = document.getElementById(indId);
+    if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 1500); }
+
+    // Зберігаємо на сервері
+    if (p._sheet && p._rowNum) {
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'updateField', sheet: p._sheet, rowNum: p._rowNum, field: field, value: value })
+        })
+        .then(r => r.json())
+        .then(data => { if (!data.success) console.warn('Header save error:', data.error); })
+        .catch(err => console.error('Header save error:', err));
+    }
     updateAllCounts();
 }
 
