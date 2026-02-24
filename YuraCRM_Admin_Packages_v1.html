@@ -703,6 +703,16 @@
         .inline-save-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--success); font-weight: 600; opacity: 0; transition: opacity 0.3s; margin-top: 6px; }
         .inline-save-indicator.show { opacity: 1; }
 
+        /* EDITABLE HEADER MODE */
+        .lead-card .card-header-edit { display: none; }
+        .lead-card.details-open .card-header-display { display: none; }
+        .lead-card.details-open .card-header-edit { display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 8px 10px; min-width: 0; }
+        .lead-card.details-open .card-header-edit .edit-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
+        .lead-card.details-open .card-header-edit .edit-field { border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px; font-size: 12px; font-weight: 600; font-family: inherit; outline: none; background: white; min-width: 80px; }
+        .lead-card.details-open .card-header-edit .edit-field:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,58,94,0.1); }
+        .lead-card.details-open .card-header-edit .edit-field-wide { flex: 1; min-width: 150px; }
+        .lead-card.details-open .card-body { pointer-events: none; }
+
         /* Section title in inline edit */
         .inline-section-title { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 2px; padding-bottom: 3px; border-bottom: 1px dashed var(--border); grid-column: 1 / -1; }
         
@@ -1070,6 +1080,7 @@
         .scanner-btn.capture { background: white; color: #000; border-radius: 50%; width: 64px; height: 64px; padding: 0; justify-content: center; }
         .scanner-btn.capture .btn-icon { font-size: 24px; }
         .scanner-btn.capture:active { transform: scale(0.9); background: #ddd; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         /* Scanner preview (after photo taken) */
         .scanner-preview { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #000; display: none; flex-direction: column; z-index: 5; }
@@ -2636,13 +2647,7 @@ function render() {
 
         let inlineHtml = `<div class="inline-edit-grid">`;
 
-        // Editable header fields (name, phone, address)
-        inlineHtml += `<div class="inline-section-title">Основні дані</div>`;
-        inlineHtml += mkInput('ПіБ отримувача','name',p.name,'ПіБ...');
-        inlineHtml += mkInput('Телефон отримувача','phone',p.phone,'+380...');
         inlineHtml += mkInput('Тел. реєстратора','phoneReg',p.phoneReg,'+380...');
-        inlineHtml += `<div class="inline-edit-field" style="grid-column:1/-1;"><span class="inline-edit-label">Адреса отримувача</span><input class="inline-edit-input" value="${esc(p.address || '')}" placeholder="Адреса..." onchange="inlineSave('${uk}','address',this.value)" onclick="event.stopPropagation()"></div>`;
-        inlineHtml += ttnEditHtml;
 
         if (isUaEu) {
             inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
@@ -2683,7 +2688,7 @@ function render() {
                 <div class="card-checkbox-wrap">
                     <input type="checkbox" class="card-checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleSelect('${uk}')">
                 </div>
-                <div class="card-body" onclick="toggleDetails('${uk}')">
+                <div class="card-header-display card-body" onclick="toggleDetails('${uk}')">
                     <div class="card-top-row">
                         ${orderNum}
                         <span class="card-direction${dirClass}">${dirLabel}</span>
@@ -2705,6 +2710,22 @@ function render() {
                             <span class="card-date">${dateDisplay}</span>
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
                         </div>
+                    </div>
+                </div>
+                <div class="card-header-edit">
+                    <div class="edit-row">
+                        ${orderNum}
+                        <span class="card-direction${dirClass}">${dirLabel}</span>
+                        <input class="edit-field" style="flex:1;min-width:100px;" value="${esc(phoneRaw)}" placeholder="Телефон" onchange="inlineSave('${uk}','phone',this.value)" onclick="event.stopPropagation()">
+                        <input class="edit-field" style="width:60px;" value="${esc(p.weight||'')}" placeholder="Вага" onchange="inlineSave('${uk}','weight',this.value)" onclick="event.stopPropagation()">
+                        <input class="edit-field" style="width:60px;" value="${esc(p.amount||'')}" placeholder="€" onchange="inlineSave('${uk}','amount',this.value)" onclick="event.stopPropagation()">
+                    </div>
+                    <div class="edit-row">
+                        <input class="edit-field edit-field-wide" value="${esc(p.name||'')}" placeholder="ПІБ" onchange="inlineSave('${uk}','name',this.value)" onclick="event.stopPropagation()">
+                        <input class="edit-field edit-field-wide" value="${esc(p.ttn||'')}" placeholder="ТТН" onchange="inlineSave('${uk}','ttn',this.value)" onclick="event.stopPropagation()">
+                    </div>
+                    <div class="edit-row">
+                        <input class="edit-field edit-field-wide" value="${esc(p.address||'')}" placeholder="Адреса" onchange="inlineSave('${uk}','address',this.value)" onclick="event.stopPropagation()">
                     </div>
                 </div>
                 <div class="card-right-section">
@@ -2778,7 +2799,7 @@ function findPackageByUid(uid) {
 }
 
 // SELECTION & BULK ACTIONS
-function toggleDetails(uid) { 
+function toggleDetails(uid) {
     const p = findPackageByUid(uid);
     if (p?.isNew) { p.isNew = false; saveSettings(); }
     // Закриваємо дії інших карток
@@ -2787,8 +2808,14 @@ function toggleDetails(uid) {
         document.querySelector(`[data-uid="${openActionsId}"] .card-actions-toggle`)?.classList.remove('open');
         openActionsId = null;
     }
-    if (openDetailsId && openDetailsId !== uid) document.querySelector(`[data-uid="${openDetailsId}"] .card-details`)?.classList.remove('show');
+    if (openDetailsId && openDetailsId !== uid) {
+        const prevCard = document.querySelector(`[data-uid="${openDetailsId}"]`);
+        if (prevCard) prevCard.classList.remove('details-open');
+        document.querySelector(`[data-uid="${openDetailsId}"] .card-details`)?.classList.remove('show');
+    }
     openDetailsId = openDetailsId === uid ? null : uid;
+    const cardEl = document.querySelector(`[data-uid="${uid}"]`);
+    if (cardEl) cardEl.classList.toggle('details-open', openDetailsId === uid);
     document.querySelector(`[data-uid="${uid}"] .card-details`)?.classList.toggle('show', openDetailsId === uid);
     document.querySelector(`[data-uid="${uid}"] .new-tag`)?.remove();
 }
@@ -2801,6 +2828,8 @@ function toggleActions(uid) {
     }
     // Закриваємо деталі інших карток
     if (openDetailsId && openDetailsId !== uid) {
+        const prevCard = document.querySelector(`[data-uid="${openDetailsId}"]`);
+        if (prevCard) prevCard.classList.remove('details-open');
         document.querySelector(`[data-uid="${openDetailsId}"] .card-details`)?.classList.remove('show');
         openDetailsId = null;
     }
@@ -5234,29 +5263,108 @@ function closeScanner() {
 }
 
 // --- Camera ---
+let cameraReady = false;
+
 async function startCamera() {
+    cameraReady = false;
+    updateCameraStatus('loading');
+
     try {
+        // Check secure context
+        if (!window.isSecureContext) {
+            updateCameraStatus('error', 'Камера потребує HTTPS. Відкрийте сайт через https://');
+            return;
+        }
+
+        // Check if API available
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            updateCameraStatus('error', 'Ваш браузер не підтримує камеру');
+            return;
+        }
+
+        // Check permission state
+        try {
+            const permResult = await navigator.permissions.query({ name: 'camera' });
+            if (permResult.state === 'denied') {
+                updateCameraStatus('error', 'Камера заблокована. Дозвольте камеру в налаштуваннях браузера (іконка 🔒 зліва від адреси)');
+                return;
+            }
+        } catch(e) { /* permissions API not supported, proceed anyway */ }
+
         if (scannerStream) stopCamera();
+
         scannerStream = await navigator.mediaDevices.getUserMedia({
             video: { facingMode: currentFacingMode, width: { ideal: 1920 }, height: { ideal: 1080 } },
             audio: false
         });
+
         const video = document.getElementById('scannerVideo');
         video.srcObject = scannerStream;
-        video.play();
+
+        // Wait for video to be ready
+        await new Promise((resolve, reject) => {
+            video.onloadedmetadata = () => {
+                video.play().then(resolve).catch(reject);
+            };
+            video.onerror = reject;
+            setTimeout(() => reject(new Error('Таймаут камери')), 10000);
+        });
+
+        // Wait one more frame for dimensions
+        await new Promise(r => requestAnimationFrame(r));
+
+        cameraReady = true;
+        updateCameraStatus('ready');
+
     } catch(err) {
         console.error('Camera error:', err);
-        showToast('❌ Не вдалось відкрити камеру: ' + err.message);
+        let msg = 'Не вдалось відкрити камеру';
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+            msg = 'Ви відхилили доступ до камери. Натисніть 🔒 біля адресного рядка → Дозволити камеру → Оновити сторінку';
+        } else if (err.name === 'NotFoundError' || err.name === 'DevicesNotFoundError') {
+            msg = 'Камеру не знайдено на цьому пристрої';
+        } else if (err.name === 'NotReadableError' || err.name === 'TrackStartError') {
+            msg = 'Камера зайнята іншим додатком. Закрийте інші програми з камерою';
+        } else if (err.name === 'OverconstrainedError') {
+            msg = 'Не вдалось знайти камеру з такими параметрами. Спробуйте перемкнути камеру';
+        }
+        updateCameraStatus('error', msg);
+    }
+}
+
+function updateCameraStatus(state, message) {
+    let overlay = document.getElementById('cameraStatusOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'cameraStatusOverlay';
+        overlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.85);z-index:3;color:white;text-align:center;padding:20px;gap:12px;';
+        document.querySelector('.scanner-video-wrap').appendChild(overlay);
+    }
+
+    if (state === 'ready') {
+        overlay.style.display = 'none';
+        return;
+    }
+
+    overlay.style.display = 'flex';
+
+    if (state === 'loading') {
+        overlay.innerHTML = '<div style="font-size:40px;animation:spin 1s linear infinite;">⏳</div><div style="font-size:14px;font-weight:600;">Камера завантажується...</div><div style="font-size:11px;opacity:0.7;">Дозвольте доступ до камери у спливаючому вікні</div>';
+    } else if (state === 'error') {
+        overlay.innerHTML = `<div style="font-size:40px;">📷</div><div style="font-size:14px;font-weight:600;max-width:280px;">${message}</div><button onclick="startCamera()" style="margin-top:8px;padding:10px 24px;border:none;border-radius:8px;background:var(--info);color:white;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;">🔄 Спробувати знову</button>`;
     }
 }
 
 function stopCamera() {
+    cameraReady = false;
     if (scannerStream) {
         scannerStream.getTracks().forEach(t => t.stop());
         scannerStream = null;
     }
     const video = document.getElementById('scannerVideo');
-    if (video) video.srcObject = null;
+    if (video) { video.srcObject = null; video.onloadedmetadata = null; video.onerror = null; }
+    const overlay = document.getElementById('cameraStatusOverlay');
+    if (overlay) overlay.style.display = 'none';
 }
 
 function switchCamera() {
@@ -5269,7 +5377,7 @@ function switchCamera() {
 function capturePhoto() {
     const video = document.getElementById('scannerVideo');
     const canvas = document.getElementById('scannerCanvas');
-    if (!video || !video.videoWidth) return showToast('⚠️ Камера не готова');
+    if (!cameraReady || !video || !video.videoWidth) return showToast('⚠️ Камера ще завантажується...');
 
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -5302,7 +5410,7 @@ function usePhoto() {
 // --- Barcode Detection (live, without photo) ---
 async function scanBarcode() {
     const video = document.getElementById('scannerVideo');
-    if (!video || !video.videoWidth) return showToast('⚠️ Камера не готова');
+    if (!cameraReady || !video || !video.videoWidth) return showToast('⚠️ Камера ще завантажується...');
 
     // Спробуємо вбудований Barcode Detection API (Chrome/Android)
     if ('BarcodeDetector' in window) {
