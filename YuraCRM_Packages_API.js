@@ -1,5 +1,5 @@
 // ============================================
-// 📦 ЮРА ТРАНСПОРТЕЙШН — CRM ПОСИЛКИ
+// YURA TRANSPORTEYSHN — CRM POSYLKY
 // Apps Script API для таблиці "Бот Посилки"
 // ID: 1RyWJ-ZQ-OQbeD65fZXR-WEwP_kwuNllikiA3Q1rjtlo
 // ============================================
@@ -637,7 +637,7 @@ function testGetAll() {
 function testStructure() {
   var result = getStructure();
   result.sheets.forEach(function(s) {
-    Logger.log('📋 ' + s.sheet + ' — ' + s.rows + ' рядків, ' + s.cols + ' колонок');
+    Logger.log('[' + s.sheet + '] ' + s.rows + ' rows, ' + s.cols + ' cols');
     Logger.log('   Колонки: ' + s.headers.join(' | '));
   });
 }
