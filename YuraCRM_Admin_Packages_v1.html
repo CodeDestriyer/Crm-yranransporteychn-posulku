@@ -620,12 +620,24 @@
         }
         
         /* Row 1: Direction, Phone, Seats, Date, Price */
-        .card-top-row { display: flex; align-items: center; gap: 8px; flex-wrap: nowrap; min-height: 24px; }
-        .card-direction { font-size: 14px; flex-shrink: 0; width: 32px; text-align: center; }
-        .card-phone { font-size: 14px; font-weight: 700; color: var(--primary); letter-spacing: 0.3px; white-space: nowrap; min-width: 120px; }
+        .card-top-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; min-height: 24px; }
+        .card-direction { font-size: 11px; flex-shrink: 0; font-weight: 800; letter-spacing: 0.3px; background: linear-gradient(135deg, #1e40af, #7c3aed); color: white; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+        .card-direction.eu-ua { background: linear-gradient(135deg, #7c3aed, #1e40af); }
+        .card-phone { font-size: 13px; font-weight: 700; color: var(--primary); letter-spacing: 0.3px; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
         .card-seats { background: var(--info); color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 700; flex-shrink: 0; min-width: 36px; text-align: center; }
         .card-date { background: var(--bg-main); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
-        .card-price { font-size: 14px; font-weight: 700; color: var(--success); flex-shrink: 0; margin-left: auto; }
+        .card-price { font-size: 13px; font-weight: 700; color: var(--success); flex-shrink: 0; }
+
+        /* Copy button mini */
+        .copy-btn-mini { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: none; border-radius: 4px; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 10px; opacity: 0.4; transition: all 0.15s; padding: 0; flex-shrink: 0; }
+        .copy-btn-mini:hover { opacity: 1; background: var(--primary); color: white; }
+        .copy-btn-mini.copied { opacity: 1; background: var(--success); color: white; }
+
+        /* Payment badges in header */
+        .card-pay-badge { font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
+        .card-pay-badge.paid { background: #d1fae5; color: #065f46; }
+        .card-pay-badge.unpaid { background: #fee2e2; color: #991b1b; }
+        .card-pay-badge.neutral { background: #f1f5f9; color: #475569; }
         
         /* Row 2 wrapper */
         .card-row2-wrap { display: flex; flex-direction: column; gap: 3px; }
@@ -669,30 +681,30 @@
         .detail-block-value.empty { color: var(--text-secondary); opacity: 0.5; }
 
         /* INLINE EDIT FIELDS */
-        .inline-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
-        .inline-edit-field { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
-        .inline-edit-field:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,58,94,0.1); }
-        .inline-edit-label { font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 3px; display: block; }
+        .inline-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 6px; }
+        .inline-edit-field { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; transition: all 0.2s; }
+        .inline-edit-field:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,58,94,0.08); }
+        .inline-edit-label { font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 3px; display: block; letter-spacing: 0.3px; }
         .inline-edit-input { width: 100%; border: none; outline: none; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text-primary); background: transparent; padding: 2px 0; }
         .inline-edit-input::placeholder { color: #cbd5e1; font-weight: 400; }
-        .inline-edit-select { width: 100%; border: none; outline: none; font-size: 11px; font-weight: 600; font-family: inherit; color: var(--text-primary); background: transparent; padding: 1px 0; cursor: pointer; -webkit-appearance: none; appearance: none; }
-        .inline-edit-field.select-field { position: relative; }
-        .inline-edit-field.select-field::after { content: '\25BC'; position: absolute; right: 8px; bottom: 8px; font-size: 8px; color: var(--text-secondary); pointer-events: none; }
-        .inline-edit-field.saved { animation: fieldSaved 0.5s ease; }
-        @keyframes fieldSaved { 0% { background: #d1fae5; } 100% { background: white; } }
 
-        /* Courier call buttons */
-        .courier-call-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
-        .courier-call-btn { width: 32px; height: 28px; border: 1px solid var(--border); border-radius: 6px; background: white; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-        .courier-call-btn:hover { border-color: var(--primary); background: #f0f4f8; }
-        .courier-call-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        /* MODERN SELECT DROPDOWN */
+        .inline-edit-select { width: 100%; border: none; outline: none; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text-primary); background: transparent; padding: 2px 20px 2px 0; cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
+        .inline-edit-select option { font-family: 'Montserrat', sans-serif; font-size: 13px; padding: 10px; font-weight: 500; }
+        .inline-edit-field.select-field { position: relative; cursor: pointer; }
+        .inline-edit-field.select-field::after { content: ''; position: absolute; right: 10px; bottom: 12px; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--primary); pointer-events: none; opacity: 0.6; }
+        .inline-edit-field.select-field:hover { background: #f8fafc; }
+        .inline-edit-field.select-field:hover::after { opacity: 1; }
+
+        .inline-edit-field.saved { animation: fieldSaved 0.6s ease; }
+        @keyframes fieldSaved { 0% { background: #d1fae5; border-color: var(--success); } 100% { background: white; border-color: var(--border); } }
 
         /* Quick save indicator */
-        .inline-save-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--success); font-weight: 600; opacity: 0; transition: opacity 0.3s; }
+        .inline-save-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--success); font-weight: 600; opacity: 0; transition: opacity 0.3s; margin-top: 6px; }
         .inline-save-indicator.show { opacity: 1; }
 
         /* Section title in inline edit */
-        .inline-section-title { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 0 4px; padding-bottom: 3px; border-bottom: 1px dashed var(--border); grid-column: 1 / -1; }
+        .inline-section-title { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 2px; padding-bottom: 3px; border-bottom: 1px dashed var(--border); grid-column: 1 / -1; }
         
         /* Actions panel - 2x2 grid */
         .card-actions { display: none; padding: 10px 12px; background: white; border-top: 1px solid var(--border); }
@@ -1483,6 +1495,12 @@
         <button class="bulk-sidebar-btn" onclick="bulkSetParcelStatus()">
             <span class="btn-icon">📋</span> Статус посилки
         </button>
+        <button class="bulk-sidebar-btn" onclick="bulkSetSmsNote()">
+            <span class="btn-icon">💬</span> Примітка СМС
+        </button>
+        <button class="bulk-sidebar-btn" onclick="bulkSetDateReceive()">
+            <span class="btn-icon">📅</span> Дата отримання
+        </button>
         <button class="bulk-sidebar-btn" id="btnSidebarNotify" onclick="bulkMarkNotified()" style="display:none;">
             <span class="btn-icon">🔔</span> Сповіщено
         </button>
@@ -1524,6 +1542,8 @@
             <button class="bulk-btn optimize" onclick="bulkOptimize()">⚡</button>
             <button class="bulk-btn route" onclick="bulkMoveToRoute()">🚀</button>
             <button class="bulk-btn" onclick="bulkSetParcelStatus()" style="background:var(--info);">📋</button>
+            <button class="bulk-btn" onclick="bulkSetSmsNote()" style="background:#7c3aed;">💬</button>
+            <button class="bulk-btn" onclick="bulkSetDateReceive()" style="background:var(--success);">📅</button>
             <button class="bulk-btn notify" id="btnBulkNotify" onclick="bulkMarkNotified()" style="display:none;background:#f97316;">🔔</button>
             <button class="bulk-btn archive" id="btnBulkArchive" onclick="bulkArchive()">📦</button>
             <button class="bulk-btn restore" id="btnBulkRestore" onclick="bulkRestore()" style="display:none;background:var(--success);">↩️</button>
@@ -2463,201 +2483,118 @@ function render() {
     const hasSearch = filters.search && filters.search.trim();
     
     c.innerHTML = data.map((p, idx) => {
-        // Унікальний ключ для картки (sheet + rowNum)
         const uniqueKey = (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : `local_${idx}`;
-
         const sel = selectedIds.has(uniqueKey);
         const dOpen = openDetailsId === uniqueKey;
         const aOpen = openActionsId === uniqueKey;
         const veh = vehicles.find(v => v.id === p.vehicle || v.name === p.vehicle);
-        const isArchived = p.status === 'archived';
         const isUaEu = p.direction === 'ua-eu';
+        const uk = uniqueKey;
+        const esc = (v) => (v || '').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-        // Direction emoji
-        const dirEmoji = isUaEu ? '🇺🇦→🇪🇺' : '🇪🇺→🇺🇦';
+        // Direction label (bold text, no emoji)
+        const dirLabel = isUaEu ? 'UA→EU' : 'EU→UA';
+        const dirClass = isUaEu ? '' : ' eu-ua';
 
-        // Format values з підсвічуванням
-        const phoneDisplay = hasSearch ? highlightSearch(p.phone || '—') : (p.phone || '—');
+        // Header values
+        const phoneRaw = p.phone || '—';
+        const phoneDisplay = hasSearch ? highlightSearch(phoneRaw) : phoneRaw;
         const weightDisplay = p.weight ? p.weight + ' кг' : '';
-        const dateDisplay = p.dateReg ? getFieldValue(p, 'dateReg') : '—';
         const priceDisplay = p.amount ? '€' + p.amount : '';
-        const addressShort = p.address ? (p.address.length > 35 ? p.address.substring(0, 35) + '...' : p.address) : '—';
-        const addressDisplay = hasSearch ? highlightSearch(addressShort) : addressShort;
-        const ttnDisplay = hasSearch ? highlightSearch(p.ttn || '') : (p.ttn || '');
-        const idDisplay = hasSearch ? highlightSearch(p.id || '—') : (p.id || '—');
+        const ttnRaw = p.ttn || '';
+        const ttnDisplay = hasSearch ? highlightSearch(ttnRaw) : ttnRaw;
+        const idRaw = p.id || '—';
+        const idDisplay = hasSearch ? highlightSearch(idRaw) : idRaw;
         const nameDisplay = hasSearch ? highlightSearch(p.name || '—') : (p.name || '—');
         const numberDisplay = p.number || '';
+        const dateDisplay = p.dateReg ? getFieldValue(p, 'dateReg') : '—';
+        const addressShort = p.address ? (p.address.length > 40 ? p.address.substring(0, 40) + '...' : p.address) : '—';
+        const addressDisplay = hasSearch ? highlightSearch(addressShort) : addressShort;
+
+        // Payment badges for header
+        const payStatusClass = p.payStatus === 'Оплачено' ? 'paid' : (p.payStatus === 'Неоплачено' ? 'unpaid' : 'neutral');
+        const payStatusBadge = p.payStatus ? `<span class="card-pay-badge ${payStatusClass}">${p.payStatus}</span>` : '';
+        const paymentBadge = p.payment ? `<span class="card-pay-badge neutral">${p.payment}</span>` : '';
 
         // Vehicle badge
         const vehicleBadge = veh
             ? `<span class="card-vehicle-badge">${veh.name}</span>`
             : `<span class="card-vehicle-badge empty">—</span>`;
-
-        // Order number for route view
         const orderNum = isRouteView ? `<span class="order-num">${idx + 1}</span>` : '';
-
-        // Клас для не геокодованих карток
         const notGeocodedClass = p._notGeocoded ? 'not-geocoded-card' : '';
 
-        // === INLINE EDIT DETAILS ===
-        const escVal = (v) => (v || '').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        const vehicleOptions = vehicles.map(v => `<option value="${escVal(v.name)}" ${(p.vehicle === v.id || p.vehicle === v.name) ? 'selected' : ''}>${v.name}</option>`).join('');
+        // === ALL INLINE EDITABLE FIELDS ===
+        const vehOpts = vehicles.map(v => `<option value="${esc(v.name)}" ${(p.vehicle===v.id||p.vehicle===v.name)?'selected':''}>${v.name}</option>`).join('');
 
-        // Courier call value (stored in number field for EU→UA or separate)
-        const courierCallVal = isUaEu ? '' : (p.number || '');
+        const selOpt = (field, val, options) => options.map(o => `<option value="${esc(o)}" ${val===o?'selected':''}>${o}</option>`).join('');
+        const payStatuses = ['Оплачено','Неоплачено','Відправник','Отримувач'];
+        const payments = ['При отр гот','При отр на карту','Відпр на карту','Картка','Готівка'];
+        const parcelStatuses = ['Невідомий','Зареєстровано','Оформлено','Кордон','Доставка'];
+        const voOptions = ['Д','Ш','Б'];
 
-        let inlineHtml = '';
+        const mkInput = (label, field, val, ph, type) => `<div class="inline-edit-field"><span class="inline-edit-label">${label}</span><input class="inline-edit-input" type="${type||'text'}" value="${esc(val)}" placeholder="${ph||'—'}" onchange="inlineSave('${uk}','${field}',this.value)" onclick="event.stopPropagation()"></div>`;
+        const mkSelect = (label, field, val, opts) => `<div class="inline-edit-field select-field"><span class="inline-edit-label">${label}</span><select class="inline-edit-select" onchange="inlineSave('${uk}','${field}',this.value)" onclick="event.stopPropagation()"><option value="">—</option>${selOpt(field,val,opts)}</select></div>`;
+        const mkSelectVeh = () => `<div class="inline-edit-field select-field"><span class="inline-edit-label">Авто</span><select class="inline-edit-select" onchange="inlineSave('${uk}','vehicle',this.value)" onclick="event.stopPropagation()"><option value="">—</option>${vehOpts}</select></div>`;
+
+        let inlineHtml = `<div class="inline-edit-grid">`;
+
         if (isUaEu) {
-            // *** УКРАЇНА → ЄВРОПА: менеджер заповнює ***
-            inlineHtml = `
-            <div class="inline-edit-grid">
-                <div class="inline-section-title">Менеджер заповнює</div>
-                <div class="inline-edit-field">
-                    <span class="inline-edit-label">Внутр. номер</span>
-                    <input class="inline-edit-input" type="text" value="${escVal(p.number)}" placeholder="—"
-                        onchange="inlineSave('${uniqueKey}','number',this.value)" onclick="event.stopPropagation()">
-                </div>
-                <div class="inline-edit-field">
-                    <span class="inline-edit-label">Вага (кг)</span>
-                    <input class="inline-edit-input" type="text" value="${escVal(p.weight)}" placeholder="0"
-                        onchange="inlineSave('${uniqueKey}','weight',this.value)" onclick="event.stopPropagation()">
-                </div>
-                <div class="inline-edit-field">
-                    <span class="inline-edit-label">Сума до оплати €</span>
-                    <input class="inline-edit-input" type="text" value="${escVal(p.amount)}" placeholder="0"
-                        onchange="inlineSave('${uniqueKey}','amount',this.value)" onclick="event.stopPropagation()">
-                </div>
-                <div class="inline-edit-field select-field">
-                    <span class="inline-edit-label">Авто</span>
-                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','vehicle',this.value)" onclick="event.stopPropagation()">
-                        <option value="">—</option>
-                        ${vehicleOptions}
-                    </select>
-                </div>
-                <div class="inline-edit-field select-field">
-                    <span class="inline-edit-label">Статус оплати</span>
-                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','payStatus',this.value)" onclick="event.stopPropagation()">
-                        <option value="">—</option>
-                        <option value="Оплачено" ${p.payStatus==='Оплачено'?'selected':''}>Оплачено</option>
-                        <option value="Неоплачено" ${p.payStatus==='Неоплачено'?'selected':''}>Неоплачено</option>
-                        <option value="Відправник" ${p.payStatus==='Відправник'?'selected':''}>Відправник</option>
-                        <option value="Отримувач" ${p.payStatus==='Отримувач'?'selected':''}>Отримувач</option>
-                    </select>
-                </div>
-                <div class="inline-edit-field select-field">
-                    <span class="inline-edit-label">Оплата</span>
-                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','payment',this.value)" onclick="event.stopPropagation()">
-                        <option value="">—</option>
-                        <option value="При отр гот" ${p.payment==='При отр гот'?'selected':''}>При отр гот</option>
-                        <option value="При отр на карту" ${p.payment==='При отр на карту'?'selected':''}>При отр на карту</option>
-                        <option value="Відпр на карту" ${p.payment==='Відпр на карту'?'selected':''}>Відпр на карту</option>
-                        <option value="Картка" ${p.payment==='Картка'?'selected':''}>Картка</option>
-                        <option value="Готівка" ${p.payment==='Готівка'?'selected':''}>Готівка</option>
-                    </select>
-                </div>
-                <div class="inline-edit-field select-field">
-                    <span class="inline-edit-label">Статус посилки</span>
-                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','parcelStatus',this.value)" onclick="event.stopPropagation()">
-                        <option value="">—</option>
-                        <option value="Невідомий" ${p.parcelStatus==='Невідомий'?'selected':''}>Невідомий</option>
-                        <option value="Зареєстровано" ${p.parcelStatus==='Зареєстровано'?'selected':''}>Зареєстровано</option>
-                        <option value="Оформлено" ${p.parcelStatus==='Оформлено'?'selected':''}>Оформлено</option>
-                        <option value="Кордон" ${p.parcelStatus==='Кордон'?'selected':''}>Кордон</option>
-                        <option value="Доставка" ${p.parcelStatus==='Доставка'?'selected':''}>Доставка</option>
-                    </select>
-                </div>
-                <div class="inline-edit-field">
-                    <span class="inline-edit-label">Примітка</span>
-                    <input class="inline-edit-input" type="text" value="${escVal(p.note)}" placeholder="—"
-                        onchange="inlineSave('${uniqueKey}','note',this.value)" onclick="event.stopPropagation()">
-                </div>
-            </div>`;
+            inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
+            inlineHtml += mkInput('Внутр. номер','number',p.number,'—');
+            inlineHtml += mkInput('Вага (кг)','weight',p.weight,'0');
+            inlineHtml += mkInput('Сума €','amount',p.amount,'0');
+            inlineHtml += mkSelectVeh();
+            inlineHtml += mkSelect('Статус оплати','payStatus',p.payStatus,payStatuses);
+            inlineHtml += mkSelect('Оплата','payment',p.payment,payments);
+            inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
+            inlineHtml += mkSelect('ВО','vo',p.vo,voOptions);
+            inlineHtml += mkInput('Примітка','note',p.note,'—');
+            inlineHtml += mkInput('Примітка СМС','smsNote',p.smsNote,'—');
+            inlineHtml += mkInput('Таймінг','timing',p.timing,'—');
+            inlineHtml += mkInput('Дата отримання','dateReceive',p.dateReceive,'','date');
+            inlineHtml += mkInput('Фото (URL)','photo',p.photo,'https://...');
         } else {
-            // *** ЄВРОПА → УКРАЇНА: менеджер заповнює ***
-            inlineHtml = `
-            <div class="inline-edit-grid">
-                <div class="inline-section-title">Менеджер заповнює</div>
-                <div class="inline-edit-field">
-                    <span class="inline-edit-label">Таймінг</span>
-                    <input class="inline-edit-input" type="text" value="${escVal(p.timing)}" placeholder="—"
-                        onchange="inlineSave('${uniqueKey}','timing',this.value)" onclick="event.stopPropagation()">
-                </div>
-                <div class="inline-edit-field">
-                    <span class="inline-edit-label">Примітка</span>
-                    <input class="inline-edit-input" type="text" value="${escVal(p.note)}" placeholder="—"
-                        onchange="inlineSave('${uniqueKey}','note',this.value)" onclick="event.stopPropagation()">
-                </div>
-                <div class="inline-edit-field">
-                    <span class="inline-edit-label">Дата отримання</span>
-                    <input class="inline-edit-input" type="date" value="${escVal(p.dateReceive)}"
-                        onchange="inlineSave('${uniqueKey}','dateReceive',this.value)" onclick="event.stopPropagation()">
-                </div>
-                <div class="inline-edit-field">
-                    <span class="inline-edit-label">Виклик кур'єра</span>
-                    <div class="courier-call-btns" onclick="event.stopPropagation()">
-                        <button class="courier-call-btn ${courierCallVal==='1'?'active':''}" onclick="inlineSaveCourier('${uniqueKey}','1',this)">1</button>
-                        <button class="courier-call-btn ${courierCallVal==='2'?'active':''}" onclick="inlineSaveCourier('${uniqueKey}','2',this)">2</button>
-                        <button class="courier-call-btn ${courierCallVal==='3'?'active':''}" onclick="inlineSaveCourier('${uniqueKey}','3',this)">3</button>
-                        <button class="courier-call-btn ${courierCallVal==='4'?'active':''}" onclick="inlineSaveCourier('${uniqueKey}','4',this)">4</button>
-                    </div>
-                </div>
-                <div class="inline-edit-field select-field">
-                    <span class="inline-edit-label">Авто</span>
-                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','vehicle',this.value)" onclick="event.stopPropagation()">
-                        <option value="">—</option>
-                        ${vehicleOptions}
-                    </select>
-                </div>
-                <div class="inline-edit-field select-field">
-                    <span class="inline-edit-label">Статус посилки</span>
-                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','parcelStatus',this.value)" onclick="event.stopPropagation()">
-                        <option value="">—</option>
-                        <option value="Невідомий" ${p.parcelStatus==='Невідомий'?'selected':''}>Невідомий</option>
-                        <option value="Зареєстровано" ${p.parcelStatus==='Зареєстровано'?'selected':''}>Зареєстровано</option>
-                        <option value="Оформлено" ${p.parcelStatus==='Оформлено'?'selected':''}>Оформлено</option>
-                        <option value="Кордон" ${p.parcelStatus==='Кордон'?'selected':''}>Кордон</option>
-                        <option value="Доставка" ${p.parcelStatus==='Доставка'?'selected':''}>Доставка</option>
-                    </select>
-                </div>
-            </div>`;
+            inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
+            inlineHtml += mkInput('Таймінг','timing',p.timing,'—');
+            inlineHtml += mkInput('Примітка','note',p.note,'—');
+            inlineHtml += mkInput('Дата отримання','dateReceive',p.dateReceive,'','date');
+            inlineHtml += mkInput('Виклик кур\'єра','number',p.number,'Введіть...');
+            inlineHtml += mkInput('Примітка СМС','smsNote',p.smsNote,'—');
+            inlineHtml += mkSelectVeh();
+            inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
+            inlineHtml += mkSelect('Статус оплати','payStatus',p.payStatus,payStatuses);
+            inlineHtml += mkSelect('Оплата','payment',p.payment,payments);
+            inlineHtml += mkSelect('ВО','vo',p.vo,voOptions);
+            inlineHtml += mkInput('Вага (кг)','weight',p.weight,'0');
+            inlineHtml += mkInput('Сума €','amount',p.amount,'0');
+            inlineHtml += mkInput('Фото (URL)','photo',p.photo,'https://...');
         }
+        inlineHtml += `</div>`;
 
-        // Додаткова інфо (read-only)
-        const readOnlyCols = detailCols.filter(k => {
-            if (isUaEu) return !['number','weight','amount','vehicle','payStatus','payment','parcelStatus','note'].includes(k);
-            return !['timing','note','dateReceive','number','vehicle','parcelStatus'].includes(k);
-        });
-        const readOnlyHtml = readOnlyCols.map(k => {
-            let val = getFieldValue(p, k);
-            if (hasSearch && val) val = highlightSearch(val);
-            return `<div class="detail-block">
-                <div class="detail-block-label">${ALL_COLUMNS[k]?.label || k}</div>
-                <div class="detail-block-value ${!getFieldValue(p,k) ? 'empty' : ''}">${val || '—'}</div>
-            </div>`;
-        }).join('');
-
-        return `<div class="lead-card status-${p.status} ${sel ? 'selected' : ''} ${notGeocodedClass}" data-uid="${uniqueKey}" data-id="${p.id}" draggable="true" ondragstart="handleDragStart(event,'${uniqueKey}')" ondragend="handleDragEnd(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'${uniqueKey}')">
+        return `<div class="lead-card status-${p.status} ${sel?'selected':''} ${notGeocodedClass}" data-uid="${uk}" data-id="${p.id}" draggable="true" ondragstart="handleDragStart(event,'${uk}')" ondragend="handleDragEnd(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'${uk}')">
             <div class="card-header">
                 <div class="drag-handle"><span></span><span></span><span></span></div>
                 <div class="card-checkbox-wrap">
-                    <input type="checkbox" class="card-checkbox" ${sel ? 'checked' : ''} onclick="event.stopPropagation();toggleSelect('${uniqueKey}')">
+                    <input type="checkbox" class="card-checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleSelect('${uk}')">
                 </div>
-                <div class="card-body" onclick="toggleDetails('${uniqueKey}')">
+                <div class="card-body" onclick="toggleDetails('${uk}')">
                     <div class="card-top-row">
                         ${orderNum}
-                        <span class="card-direction" title="${isUaEu ? 'Україна → Європа' : 'Європа → Україна'}">${dirEmoji}</span>
-                        ${numberDisplay ? `<span style="background:var(--purple);color:white;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0;">№${numberDisplay}</span>` : ''}
-                        ${ttnDisplay ? `<span style="background:var(--info);color:white;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;flex-shrink:0;">ТТН:${ttnDisplay}</span>` : ''}
-                        <span class="card-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}</span>
-                        ${weightDisplay ? `<span class="card-seats">📦 ${weightDisplay}</span>` : ''}
+                        <span class="card-direction${dirClass}">${dirLabel}</span>
+                        ${numberDisplay ? `<span style="background:var(--purple);color:white;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;flex-shrink:0;">№${numberDisplay}</span>` : ''}
+                        ${ttnRaw ? `<span style="background:var(--info);color:white;padding:2px 6px;border-radius:5px;font-size:10px;font-weight:600;flex-shrink:0;display:inline-flex;align-items:center;gap:3px;">ТТН:${ttnDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(ttnRaw)}',this)" title="Копіювати ТТН">📋</button></span>` : ''}
+                        <span class="card-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(phoneRaw)}',this)" title="Копіювати тел.">📋</button></span>
+                        ${weightDisplay ? `<span class="card-seats">${weightDisplay}</span>` : ''}
                         <span class="card-price">${priceDisplay}</span>
+                        ${payStatusBadge}
+                        ${paymentBadge}
                     </div>
                     <div class="card-row2-wrap">
                         <div class="card-route-row">
                             <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}</span>
                         </div>
                         <div class="card-info-row">
-                            <span class="card-id" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${idDisplay}</span>
+                            <span class="card-id" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${idDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(idRaw)}',this)" title="Копіювати ІД">📋</button></span>
                             <span class="card-name" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${nameDisplay}</span>
                             <span class="card-date">${dateDisplay}</span>
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
@@ -2665,23 +2602,20 @@ function render() {
                     </div>
                 </div>
                 <div class="card-right-section">
-                    <div class="card-vehicle">
-                        ${vehicleBadge}
-                    </div>
-                    <button class="card-actions-toggle ${aOpen ? 'open' : ''}" onclick="event.stopPropagation();toggleActions('${uniqueKey}')">▼</button>
+                    <div class="card-vehicle">${vehicleBadge}</div>
+                    <button class="card-actions-toggle ${aOpen?'open':''}" onclick="event.stopPropagation();toggleActions('${uk}')">▼</button>
                 </div>
             </div>
-            <div class="card-details ${dOpen ? 'show' : ''}">
+            <div class="card-details ${dOpen?'show':''}">
                 ${inlineHtml}
-                ${readOnlyHtml ? `<div class="details-grid" style="margin-top:8px;">${readOnlyHtml}</div>` : ''}
-                <span class="inline-save-indicator" id="saveInd_${uniqueKey.replace(/[^a-zA-Z0-9]/g,'_')}">✓ Збережено</span>
+                <span class="inline-save-indicator" id="saveInd_${uk.replace(/[^a-zA-Z0-9]/g,'_')}">✓ Збережено</span>
             </div>
-            <div class="card-actions ${aOpen ? 'show' : ''}">
+            <div class="card-actions ${aOpen?'show':''}">
                 <button class="btn-card-action btn-call" onclick="event.stopPropagation();location.href='tel:${p.phone}'">📞 Дзвонити</button>
                 <button class="btn-card-action btn-msg" onclick="event.stopPropagation();showToast('💬 Скоро!')">💬 Писати</button>
-                <button class="btn-card-action btn-map" onclick="event.stopPropagation();openMapModal('${uniqueKey}')">🗺️ Карта</button>
-                <button class="btn-card-action btn-edit" onclick="event.stopPropagation();editPackage('${uniqueKey}')">✏️ Редагувати</button>
-                <button class="btn-card-action btn-delete" onclick="event.stopPropagation();deletePackage('${uniqueKey}')">🗑️ Видалити</button>
+                <button class="btn-card-action btn-map" onclick="event.stopPropagation();openMapModal('${uk}')">🗺️ Карта</button>
+                <button class="btn-card-action btn-edit" onclick="event.stopPropagation();editPackage('${uk}')">✏️ Все</button>
+                <button class="btn-card-action btn-delete" onclick="event.stopPropagation();deletePackage('${uk}')">🗑️ Видалити</button>
             </div>
         </div>`;
     }).join('');
@@ -5045,47 +4979,20 @@ function inlineSave(uid, field, value) {
     updateAllCounts();
 }
 
-function inlineSaveCourier(uid, callNum, btnEl) {
-    const p = findPackageByUid(uid);
-    if (!p) return;
-
-    // Toggle: якщо вже active — скидаємо
-    const newVal = p.number === callNum ? '' : callNum;
-    p.number = newVal;
-
-    // Оновлюємо кнопки
-    const btnsContainer = btnEl.closest('.courier-call-btns');
-    if (btnsContainer) {
-        btnsContainer.querySelectorAll('.courier-call-btn').forEach(b => b.classList.remove('active'));
-        if (newVal) btnEl.classList.add('active');
-    }
-
-    saveSettings();
-
-    // Зберігаємо на сервері
-    if (p._sheet && p._rowNum) {
-        fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({
-                action: 'updateField',
-                sheet: p._sheet,
-                rowNum: p._rowNum,
-                field: 'number',
-                value: newVal
-            })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) console.warn('Courier save error:', data.error);
-        })
-        .catch(err => console.error('Courier save error:', err));
-    }
-
-    // Показуємо індикатор
-    const indId = 'saveInd_' + uid.replace(/[^a-zA-Z0-9]/g, '_');
-    const ind = document.getElementById(indId);
-    if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 1500); }
+// Копіювання в буфер обміну
+function copyToClip(text, btn) {
+    if (!text || text === '—') return;
+    navigator.clipboard.writeText(text).then(() => {
+        if (btn) { btn.classList.add('copied'); btn.textContent = '✓'; setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋'; }, 1200); }
+        showToast('📋 Скопійовано: ' + text);
+    }).catch(() => {
+        // Fallback
+        const ta = document.createElement('textarea');
+        ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+        if (btn) { btn.classList.add('copied'); btn.textContent = '✓'; setTimeout(() => { btn.classList.remove('copied'); btn.textContent = '📋'; }, 1200); }
+        showToast('📋 Скопійовано: ' + text);
+    });
 }
 
 // Оновлення заголовка картки без повного ре-рендеру
@@ -5095,7 +5002,7 @@ function updateCardHeader(uid, p) {
     const priceEl = card.querySelector('.card-price');
     if (priceEl) priceEl.textContent = p.amount ? '€' + p.amount : '';
     const seatsEl = card.querySelector('.card-seats');
-    if (seatsEl && p.weight) seatsEl.textContent = '📦 ' + p.weight + ' кг';
+    if (seatsEl) seatsEl.textContent = p.weight ? p.weight + ' кг' : '';
 }
 
 // === МАСОВЕ ПРИЗНАЧЕННЯ СТАТУСУ ПОСИЛКИ ===
@@ -5180,6 +5087,115 @@ function applyBulkParcelStatus(status) {
     render();
     updateAllCounts();
     showToast(`📦 Статус "${status}" → ${selectedIds.size || items.length} посилок`);
+}
+
+// === МАСОВЕ ПРИЗНАЧЕННЯ ПРИМІТКИ СМС ===
+function bulkSetSmsNote() {
+    if (selectedIds.size === 0) return showToast('⚠️ Оберіть заявки');
+    document.getElementById('bulkSmsNoteModal')?.remove();
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay show';
+    modal.id = 'bulkSmsNoteModal';
+    modal.onclick = function(e) { if (e.target === this) this.remove(); };
+    modal.innerHTML = `
+        <div class="modal" style="max-width:420px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#7c3aed,var(--primary));">
+                <span class="modal-title" style="color:white;">💬 Примітка СМС (${selectedIds.size})</span>
+                <button class="modal-close" onclick="document.getElementById('bulkSmsNoteModal').remove()" style="color:white;">✕</button>
+            </div>
+            <div class="modal-body" style="padding:16px;">
+                <div class="form-group"><label style="font-weight:600;font-size:12px;">Текст примітки СМС</label>
+                <textarea id="bulkSmsNoteText" rows="3" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:inherit;font-size:13px;resize:vertical;" placeholder="Введіть текст примітки СМС..."></textarea></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="document.getElementById('bulkSmsNoteModal').remove()">Скасувати</button>
+                <button class="btn-save" onclick="applyBulkSmsNote()">💬 Застосувати</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    setTimeout(() => document.getElementById('bulkSmsNoteText')?.focus(), 100);
+}
+
+function applyBulkSmsNote() {
+    const text = document.getElementById('bulkSmsNoteText')?.value || '';
+    document.getElementById('bulkSmsNoteModal')?.remove();
+    const items = [];
+    selectedIds.forEach(uid => {
+        const p = findPackageByUid(uid);
+        if (p) {
+            p.smsNote = text;
+            if (p._sheet && p._rowNum) items.push({ sheet: p._sheet, rowNum: p._rowNum });
+        }
+    });
+    saveSettings();
+    if (items.length > 0) {
+        showLoader('Оновлюю...', '');
+        let done = 0;
+        items.forEach(item => {
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'updateField', sheet: item.sheet, rowNum: item.rowNum, field: 'smsNote', value: text })
+            }).then(r => r.json()).then(() => { done++; if (done >= items.length) hideLoader(); }).catch(() => { done++; if (done >= items.length) hideLoader(); });
+        });
+    }
+    const cnt = selectedIds.size;
+    clearSelection(); render(); updateAllCounts();
+    showToast(`💬 Примітка СМС → ${cnt} посилок`);
+}
+
+// === МАСОВЕ ПРИЗНАЧЕННЯ ДАТИ ОТРИМАННЯ ===
+function bulkSetDateReceive() {
+    if (selectedIds.size === 0) return showToast('⚠️ Оберіть заявки');
+    document.getElementById('bulkDateReceiveModal')?.remove();
+    const today = new Date().toISOString().split('T')[0];
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay show';
+    modal.id = 'bulkDateReceiveModal';
+    modal.onclick = function(e) { if (e.target === this) this.remove(); };
+    modal.innerHTML = `
+        <div class="modal" style="max-width:380px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,var(--success),var(--primary));">
+                <span class="modal-title" style="color:white;">📅 Дата отримання (${selectedIds.size})</span>
+                <button class="modal-close" onclick="document.getElementById('bulkDateReceiveModal').remove()" style="color:white;">✕</button>
+            </div>
+            <div class="modal-body" style="padding:16px;">
+                <div class="form-group"><label style="font-weight:600;font-size:12px;">Дата отримання</label>
+                <input type="date" id="bulkDateReceiveVal" value="${today}" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px;font-family:inherit;font-size:14px;font-weight:600;"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="document.getElementById('bulkDateReceiveModal').remove()">Скасувати</button>
+                <button class="btn-save" onclick="applyBulkDateReceive()">📅 Застосувати</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function applyBulkDateReceive() {
+    const dateVal = document.getElementById('bulkDateReceiveVal')?.value || '';
+    document.getElementById('bulkDateReceiveModal')?.remove();
+    if (!dateVal) return showToast('⚠️ Оберіть дату');
+    const items = [];
+    selectedIds.forEach(uid => {
+        const p = findPackageByUid(uid);
+        if (p) {
+            p.dateReceive = dateVal;
+            if (p._sheet && p._rowNum) items.push({ sheet: p._sheet, rowNum: p._rowNum });
+        }
+    });
+    saveSettings();
+    if (items.length > 0) {
+        showLoader('Оновлюю...', '');
+        let done = 0;
+        items.forEach(item => {
+            fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'updateField', sheet: item.sheet, rowNum: item.rowNum, field: 'dateReceive', value: dateVal })
+            }).then(r => r.json()).then(() => { done++; if (done >= items.length) hideLoader(); }).catch(() => { done++; if (done >= items.length) hideLoader(); });
+        });
+    }
+    const cnt = selectedIds.size;
+    clearSelection(); render(); updateAllCounts(); renderCalendars();
+    showToast(`📅 Дата отримання → ${cnt} посилок`);
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
