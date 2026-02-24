@@ -667,6 +667,32 @@
         .detail-block-label { font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 2px; }
         .detail-block-value { font-size: 12px; font-weight: 600; color: var(--text-primary); word-break: break-word; }
         .detail-block-value.empty { color: var(--text-secondary); opacity: 0.5; }
+
+        /* INLINE EDIT FIELDS */
+        .inline-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+        .inline-edit-field { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
+        .inline-edit-field:focus-within { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,58,94,0.1); }
+        .inline-edit-label { font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 3px; display: block; }
+        .inline-edit-input { width: 100%; border: none; outline: none; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text-primary); background: transparent; padding: 2px 0; }
+        .inline-edit-input::placeholder { color: #cbd5e1; font-weight: 400; }
+        .inline-edit-select { width: 100%; border: none; outline: none; font-size: 11px; font-weight: 600; font-family: inherit; color: var(--text-primary); background: transparent; padding: 1px 0; cursor: pointer; -webkit-appearance: none; appearance: none; }
+        .inline-edit-field.select-field { position: relative; }
+        .inline-edit-field.select-field::after { content: '\25BC'; position: absolute; right: 8px; bottom: 8px; font-size: 8px; color: var(--text-secondary); pointer-events: none; }
+        .inline-edit-field.saved { animation: fieldSaved 0.5s ease; }
+        @keyframes fieldSaved { 0% { background: #d1fae5; } 100% { background: white; } }
+
+        /* Courier call buttons */
+        .courier-call-btns { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+        .courier-call-btn { width: 32px; height: 28px; border: 1px solid var(--border); border-radius: 6px; background: white; font-size: 11px; font-weight: 700; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+        .courier-call-btn:hover { border-color: var(--primary); background: #f0f4f8; }
+        .courier-call-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* Quick save indicator */
+        .inline-save-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--success); font-weight: 600; opacity: 0; transition: opacity 0.3s; }
+        .inline-save-indicator.show { opacity: 1; }
+
+        /* Section title in inline edit */
+        .inline-section-title { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin: 8px 0 4px; padding-bottom: 3px; border-bottom: 1px dashed var(--border); grid-column: 1 / -1; }
         
         /* Actions panel - 2x2 grid */
         .card-actions { display: none; padding: 10px 12px; background: white; border-top: 1px solid var(--border); }
@@ -1454,6 +1480,9 @@
         <button class="bulk-sidebar-btn" onclick="bulkMoveToRoute()">
             <span class="btn-icon">🚀</span> В маршрут
         </button>
+        <button class="bulk-sidebar-btn" onclick="bulkSetParcelStatus()">
+            <span class="btn-icon">📋</span> Статус посилки
+        </button>
         <button class="bulk-sidebar-btn" id="btnSidebarNotify" onclick="bulkMarkNotified()" style="display:none;">
             <span class="btn-icon">🔔</span> Сповіщено
         </button>
@@ -1494,6 +1523,7 @@
             <button class="bulk-btn vehicle" onclick="openBulkVehicleModal()">🚐 Авто</button>
             <button class="bulk-btn optimize" onclick="bulkOptimize()">⚡</button>
             <button class="bulk-btn route" onclick="bulkMoveToRoute()">🚀</button>
+            <button class="bulk-btn" onclick="bulkSetParcelStatus()" style="background:var(--info);">📋</button>
             <button class="bulk-btn notify" id="btnBulkNotify" onclick="bulkMarkNotified()" style="display:none;background:#f97316;">🔔</button>
             <button class="bulk-btn archive" id="btnBulkArchive" onclick="bulkArchive()">📦</button>
             <button class="bulk-btn restore" id="btnBulkRestore" onclick="bulkRestore()" style="display:none;background:var(--success);">↩️</button>
@@ -2435,33 +2465,169 @@ function render() {
     c.innerHTML = data.map((p, idx) => {
         // Унікальний ключ для картки (sheet + rowNum)
         const uniqueKey = (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : `local_${idx}`;
-        
+
         const sel = selectedIds.has(uniqueKey);
         const dOpen = openDetailsId === uniqueKey;
         const aOpen = openActionsId === uniqueKey;
         const veh = vehicles.find(v => v.id === p.vehicle || v.name === p.vehicle);
         const isArchived = p.status === 'archived';
-        
+        const isUaEu = p.direction === 'ua-eu';
+
         // Direction emoji
-        const dirEmoji = p.direction === 'ua-eu' ? '🇺🇦→🇪🇺' : '🇪🇺→🇺🇦';
-        
+        const dirEmoji = isUaEu ? '🇺🇦→🇪🇺' : '🇪🇺→🇺🇦';
+
         // Format values з підсвічуванням
         const phoneDisplay = hasSearch ? highlightSearch(p.phone || '—') : (p.phone || '—');
         const weightDisplay = p.weight ? p.weight + ' кг' : '';
         const dateDisplay = p.dateReg ? getFieldValue(p, 'dateReg') : '—';
         const priceDisplay = p.amount ? '€' + p.amount : '';
-        const addressDisplay = hasSearch ? highlightSearch(p.address || '—') : (p.address || '—');
+        const addressShort = p.address ? (p.address.length > 35 ? p.address.substring(0, 35) + '...' : p.address) : '—';
+        const addressDisplay = hasSearch ? highlightSearch(addressShort) : addressShort;
         const ttnDisplay = hasSearch ? highlightSearch(p.ttn || '') : (p.ttn || '');
         const idDisplay = hasSearch ? highlightSearch(p.id || '—') : (p.id || '—');
         const nameDisplay = hasSearch ? highlightSearch(p.name || '—') : (p.name || '—');
-        
-        // Vehicle badge - просто відображення, без кліку
-        const vehicleBadge = veh 
-            ? `<span class="card-vehicle-badge">${veh.name}</span>` 
+        const numberDisplay = p.number || '';
+
+        // Vehicle badge
+        const vehicleBadge = veh
+            ? `<span class="card-vehicle-badge">${veh.name}</span>`
             : `<span class="card-vehicle-badge empty">—</span>`;
-        
-        // Details blocks з підсвічуванням
-        const detailsHtml = detailCols.map(k => {
+
+        // Order number for route view
+        const orderNum = isRouteView ? `<span class="order-num">${idx + 1}</span>` : '';
+
+        // Клас для не геокодованих карток
+        const notGeocodedClass = p._notGeocoded ? 'not-geocoded-card' : '';
+
+        // === INLINE EDIT DETAILS ===
+        const escVal = (v) => (v || '').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        const vehicleOptions = vehicles.map(v => `<option value="${escVal(v.name)}" ${(p.vehicle === v.id || p.vehicle === v.name) ? 'selected' : ''}>${v.name}</option>`).join('');
+
+        // Courier call value (stored in number field for EU→UA or separate)
+        const courierCallVal = isUaEu ? '' : (p.number || '');
+
+        let inlineHtml = '';
+        if (isUaEu) {
+            // *** УКРАЇНА → ЄВРОПА: менеджер заповнює ***
+            inlineHtml = `
+            <div class="inline-edit-grid">
+                <div class="inline-section-title">Менеджер заповнює</div>
+                <div class="inline-edit-field">
+                    <span class="inline-edit-label">Внутр. номер</span>
+                    <input class="inline-edit-input" type="text" value="${escVal(p.number)}" placeholder="—"
+                        onchange="inlineSave('${uniqueKey}','number',this.value)" onclick="event.stopPropagation()">
+                </div>
+                <div class="inline-edit-field">
+                    <span class="inline-edit-label">Вага (кг)</span>
+                    <input class="inline-edit-input" type="text" value="${escVal(p.weight)}" placeholder="0"
+                        onchange="inlineSave('${uniqueKey}','weight',this.value)" onclick="event.stopPropagation()">
+                </div>
+                <div class="inline-edit-field">
+                    <span class="inline-edit-label">Сума до оплати €</span>
+                    <input class="inline-edit-input" type="text" value="${escVal(p.amount)}" placeholder="0"
+                        onchange="inlineSave('${uniqueKey}','amount',this.value)" onclick="event.stopPropagation()">
+                </div>
+                <div class="inline-edit-field select-field">
+                    <span class="inline-edit-label">Авто</span>
+                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','vehicle',this.value)" onclick="event.stopPropagation()">
+                        <option value="">—</option>
+                        ${vehicleOptions}
+                    </select>
+                </div>
+                <div class="inline-edit-field select-field">
+                    <span class="inline-edit-label">Статус оплати</span>
+                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','payStatus',this.value)" onclick="event.stopPropagation()">
+                        <option value="">—</option>
+                        <option value="Оплачено" ${p.payStatus==='Оплачено'?'selected':''}>Оплачено</option>
+                        <option value="Неоплачено" ${p.payStatus==='Неоплачено'?'selected':''}>Неоплачено</option>
+                        <option value="Відправник" ${p.payStatus==='Відправник'?'selected':''}>Відправник</option>
+                        <option value="Отримувач" ${p.payStatus==='Отримувач'?'selected':''}>Отримувач</option>
+                    </select>
+                </div>
+                <div class="inline-edit-field select-field">
+                    <span class="inline-edit-label">Оплата</span>
+                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','payment',this.value)" onclick="event.stopPropagation()">
+                        <option value="">—</option>
+                        <option value="При отр гот" ${p.payment==='При отр гот'?'selected':''}>При отр гот</option>
+                        <option value="При отр на карту" ${p.payment==='При отр на карту'?'selected':''}>При отр на карту</option>
+                        <option value="Відпр на карту" ${p.payment==='Відпр на карту'?'selected':''}>Відпр на карту</option>
+                        <option value="Картка" ${p.payment==='Картка'?'selected':''}>Картка</option>
+                        <option value="Готівка" ${p.payment==='Готівка'?'selected':''}>Готівка</option>
+                    </select>
+                </div>
+                <div class="inline-edit-field select-field">
+                    <span class="inline-edit-label">Статус посилки</span>
+                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','parcelStatus',this.value)" onclick="event.stopPropagation()">
+                        <option value="">—</option>
+                        <option value="Невідомий" ${p.parcelStatus==='Невідомий'?'selected':''}>Невідомий</option>
+                        <option value="Зареєстровано" ${p.parcelStatus==='Зареєстровано'?'selected':''}>Зареєстровано</option>
+                        <option value="Оформлено" ${p.parcelStatus==='Оформлено'?'selected':''}>Оформлено</option>
+                        <option value="Кордон" ${p.parcelStatus==='Кордон'?'selected':''}>Кордон</option>
+                        <option value="Доставка" ${p.parcelStatus==='Доставка'?'selected':''}>Доставка</option>
+                    </select>
+                </div>
+                <div class="inline-edit-field">
+                    <span class="inline-edit-label">Примітка</span>
+                    <input class="inline-edit-input" type="text" value="${escVal(p.note)}" placeholder="—"
+                        onchange="inlineSave('${uniqueKey}','note',this.value)" onclick="event.stopPropagation()">
+                </div>
+            </div>`;
+        } else {
+            // *** ЄВРОПА → УКРАЇНА: менеджер заповнює ***
+            inlineHtml = `
+            <div class="inline-edit-grid">
+                <div class="inline-section-title">Менеджер заповнює</div>
+                <div class="inline-edit-field">
+                    <span class="inline-edit-label">Таймінг</span>
+                    <input class="inline-edit-input" type="text" value="${escVal(p.timing)}" placeholder="—"
+                        onchange="inlineSave('${uniqueKey}','timing',this.value)" onclick="event.stopPropagation()">
+                </div>
+                <div class="inline-edit-field">
+                    <span class="inline-edit-label">Примітка</span>
+                    <input class="inline-edit-input" type="text" value="${escVal(p.note)}" placeholder="—"
+                        onchange="inlineSave('${uniqueKey}','note',this.value)" onclick="event.stopPropagation()">
+                </div>
+                <div class="inline-edit-field">
+                    <span class="inline-edit-label">Дата отримання</span>
+                    <input class="inline-edit-input" type="date" value="${escVal(p.dateReceive)}"
+                        onchange="inlineSave('${uniqueKey}','dateReceive',this.value)" onclick="event.stopPropagation()">
+                </div>
+                <div class="inline-edit-field">
+                    <span class="inline-edit-label">Виклик кур'єра</span>
+                    <div class="courier-call-btns" onclick="event.stopPropagation()">
+                        <button class="courier-call-btn ${courierCallVal==='1'?'active':''}" onclick="inlineSaveCourier('${uniqueKey}','1',this)">1</button>
+                        <button class="courier-call-btn ${courierCallVal==='2'?'active':''}" onclick="inlineSaveCourier('${uniqueKey}','2',this)">2</button>
+                        <button class="courier-call-btn ${courierCallVal==='3'?'active':''}" onclick="inlineSaveCourier('${uniqueKey}','3',this)">3</button>
+                        <button class="courier-call-btn ${courierCallVal==='4'?'active':''}" onclick="inlineSaveCourier('${uniqueKey}','4',this)">4</button>
+                    </div>
+                </div>
+                <div class="inline-edit-field select-field">
+                    <span class="inline-edit-label">Авто</span>
+                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','vehicle',this.value)" onclick="event.stopPropagation()">
+                        <option value="">—</option>
+                        ${vehicleOptions}
+                    </select>
+                </div>
+                <div class="inline-edit-field select-field">
+                    <span class="inline-edit-label">Статус посилки</span>
+                    <select class="inline-edit-select" onchange="inlineSave('${uniqueKey}','parcelStatus',this.value)" onclick="event.stopPropagation()">
+                        <option value="">—</option>
+                        <option value="Невідомий" ${p.parcelStatus==='Невідомий'?'selected':''}>Невідомий</option>
+                        <option value="Зареєстровано" ${p.parcelStatus==='Зареєстровано'?'selected':''}>Зареєстровано</option>
+                        <option value="Оформлено" ${p.parcelStatus==='Оформлено'?'selected':''}>Оформлено</option>
+                        <option value="Кордон" ${p.parcelStatus==='Кордон'?'selected':''}>Кордон</option>
+                        <option value="Доставка" ${p.parcelStatus==='Доставка'?'selected':''}>Доставка</option>
+                    </select>
+                </div>
+            </div>`;
+        }
+
+        // Додаткова інфо (read-only)
+        const readOnlyCols = detailCols.filter(k => {
+            if (isUaEu) return !['number','weight','amount','vehicle','payStatus','payment','parcelStatus','note'].includes(k);
+            return !['timing','note','dateReceive','number','vehicle','parcelStatus'].includes(k);
+        });
+        const readOnlyHtml = readOnlyCols.map(k => {
             let val = getFieldValue(p, k);
             if (hasSearch && val) val = highlightSearch(val);
             return `<div class="detail-block">
@@ -2469,14 +2635,7 @@ function render() {
                 <div class="detail-block-value ${!getFieldValue(p,k) ? 'empty' : ''}">${val || '—'}</div>
             </div>`;
         }).join('');
-        
-        // Order number for route view
-        const orderNum = isRouteView ? `<span class="order-num">${idx + 1}</span>` : '';
-        
-        
-        // Клас для не геокодованих карток
-        const notGeocodedClass = p._notGeocoded ? 'not-geocoded-card' : '';
-        
+
         return `<div class="lead-card status-${p.status} ${sel ? 'selected' : ''} ${notGeocodedClass}" data-uid="${uniqueKey}" data-id="${p.id}" draggable="true" ondragstart="handleDragStart(event,'${uniqueKey}')" ondragend="handleDragEnd(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'${uniqueKey}')">
             <div class="card-header">
                 <div class="drag-handle"><span></span><span></span><span></span></div>
@@ -2486,19 +2645,21 @@ function render() {
                 <div class="card-body" onclick="toggleDetails('${uniqueKey}')">
                     <div class="card-top-row">
                         ${orderNum}
-                        <span class="card-direction" title="${p.direction === 'ua-eu' ? 'Україна → Європа' : 'Європа → Україна'}">${dirEmoji}</span>
+                        <span class="card-direction" title="${isUaEu ? 'Україна → Європа' : 'Європа → Україна'}">${dirEmoji}</span>
+                        ${numberDisplay ? `<span style="background:var(--purple);color:white;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;flex-shrink:0;">№${numberDisplay}</span>` : ''}
+                        ${ttnDisplay ? `<span style="background:var(--info);color:white;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;flex-shrink:0;">ТТН:${ttnDisplay}</span>` : ''}
                         <span class="card-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}</span>
                         ${weightDisplay ? `<span class="card-seats">📦 ${weightDisplay}</span>` : ''}
-                        <span class="card-date">${dateDisplay}</span>
                         <span class="card-price">${priceDisplay}</span>
                     </div>
                     <div class="card-row2-wrap">
                         <div class="card-route-row">
-                            <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${ttnDisplay ? ` <span style="color:var(--info);font-size:10px;">ТТН: ${ttnDisplay}</span>` : ''}</span>
+                            <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}</span>
                         </div>
                         <div class="card-info-row">
                             <span class="card-id" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${idDisplay}</span>
                             <span class="card-name" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${nameDisplay}</span>
+                            <span class="card-date">${dateDisplay}</span>
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
                         </div>
                     </div>
@@ -2511,7 +2672,9 @@ function render() {
                 </div>
             </div>
             <div class="card-details ${dOpen ? 'show' : ''}">
-                <div class="details-grid">${detailsHtml || '<div style="text-align:center;color:var(--text-secondary);font-size:11px;">Немає додаткової інформації</div>'}</div>
+                ${inlineHtml}
+                ${readOnlyHtml ? `<div class="details-grid" style="margin-top:8px;">${readOnlyHtml}</div>` : ''}
+                <span class="inline-save-indicator" id="saveInd_${uniqueKey.replace(/[^a-zA-Z0-9]/g,'_')}">✓ Збережено</span>
             </div>
             <div class="card-actions ${aOpen ? 'show' : ''}">
                 <button class="btn-card-action btn-call" onclick="event.stopPropagation();location.href='tel:${p.phone}'">📞 Дзвонити</button>
@@ -2532,17 +2695,28 @@ function handleDrop(e, targetId) {
     e.preventDefault();
     if (!draggedId || draggedId === targetId) return;
     const data = getFilteredData();
-    const dragIdx = data.findIndex(p => p.id === draggedId);
-    const targetIdx = data.findIndex(p => p.id === targetId);
+    // Шукаємо по uid (sheet_rowNum), а не по id
+    const getUid = (p, i) => (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : `local_${i}`;
+    const dragIdx = data.findIndex((p, i) => getUid(p, i) === draggedId);
+    const targetIdx = data.findIndex((p, i) => getUid(p, i) === targetId);
     if (dragIdx === -1 || targetIdx === -1) return;
-    // Reorder
-    data.forEach((p, i) => { const orig = packages.find(x => x.id === p.id); if(orig) orig.order = i * 10; });
-    const draggedP = packages.find(p => p.id === draggedId);
-    const targetP = packages.find(p => p.id === targetId);
-    if (draggedP && targetP) {
-        const newOrder = dragIdx < targetIdx ? targetP.order + 1 : targetP.order - 1;
-        draggedP.order = newOrder;
+
+    // Копіюємо всі дані при переміщенні (зберігаємо повний об'єкт)
+    const draggedP = data[dragIdx];
+    const targetP = data[targetIdx];
+
+    // Призначаємо нові order значення
+    data.forEach((p, i) => {
+        const orig = packages.find(x => x._sheet === p._sheet && x._rowNum === p._rowNum);
+        if (orig) orig.order = i * 10;
+    });
+
+    const origDragged = packages.find(x => x._sheet === draggedP._sheet && x._rowNum === draggedP._rowNum);
+    const origTarget = packages.find(x => x._sheet === targetP._sheet && x._rowNum === targetP._rowNum);
+    if (origDragged && origTarget) {
+        origDragged.order = dragIdx < targetIdx ? origTarget.order + 1 : origTarget.order - 1;
     }
+
     saveSettings();
     render();
     showToast('↕️ Порядок змінено');
@@ -4817,6 +4991,195 @@ function saveColumnsSettings() {
     closeModal('columnsModal'); 
     render(); 
     showToast('✅ Колонки збережено'); 
+}
+
+// === INLINE SAVE — швидке редагування полів прямо на картці ===
+function inlineSave(uid, field, value) {
+    const p = findPackageByUid(uid);
+    if (!p) return;
+
+    // Оновлюємо локально
+    p[field] = value;
+    saveSettings();
+
+    // Показуємо індикатор збереження
+    const indId = 'saveInd_' + uid.replace(/[^a-zA-Z0-9]/g, '_');
+    const ind = document.getElementById(indId);
+    if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 1500); }
+
+    // Анімація поля
+    const card = document.querySelector(`[data-uid="${uid}"]`);
+    if (card) {
+        const activeEl = document.activeElement;
+        if (activeEl && activeEl.closest && activeEl.closest('.inline-edit-field')) {
+            activeEl.closest('.inline-edit-field').classList.add('saved');
+            setTimeout(() => activeEl.closest('.inline-edit-field')?.classList.remove('saved'), 600);
+        }
+    }
+
+    // Зберігаємо на сервері
+    if (p._sheet && p._rowNum) {
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                action: 'updateField',
+                sheet: p._sheet,
+                rowNum: p._rowNum,
+                field: field,
+                value: value
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) console.warn('Inline save error:', data.error);
+        })
+        .catch(err => console.error('Inline save error:', err));
+    }
+
+    // Оновлюємо заголовок картки без повного ре-рендеру (для key fields)
+    if (['weight','amount','number','vehicle'].includes(field)) {
+        updateCardHeader(uid, p);
+    }
+
+    updateAllCounts();
+}
+
+function inlineSaveCourier(uid, callNum, btnEl) {
+    const p = findPackageByUid(uid);
+    if (!p) return;
+
+    // Toggle: якщо вже active — скидаємо
+    const newVal = p.number === callNum ? '' : callNum;
+    p.number = newVal;
+
+    // Оновлюємо кнопки
+    const btnsContainer = btnEl.closest('.courier-call-btns');
+    if (btnsContainer) {
+        btnsContainer.querySelectorAll('.courier-call-btn').forEach(b => b.classList.remove('active'));
+        if (newVal) btnEl.classList.add('active');
+    }
+
+    saveSettings();
+
+    // Зберігаємо на сервері
+    if (p._sheet && p._rowNum) {
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({
+                action: 'updateField',
+                sheet: p._sheet,
+                rowNum: p._rowNum,
+                field: 'number',
+                value: newVal
+            })
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) console.warn('Courier save error:', data.error);
+        })
+        .catch(err => console.error('Courier save error:', err));
+    }
+
+    // Показуємо індикатор
+    const indId = 'saveInd_' + uid.replace(/[^a-zA-Z0-9]/g, '_');
+    const ind = document.getElementById(indId);
+    if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 1500); }
+}
+
+// Оновлення заголовка картки без повного ре-рендеру
+function updateCardHeader(uid, p) {
+    const card = document.querySelector(`[data-uid="${uid}"]`);
+    if (!card) return;
+    const priceEl = card.querySelector('.card-price');
+    if (priceEl) priceEl.textContent = p.amount ? '€' + p.amount : '';
+    const seatsEl = card.querySelector('.card-seats');
+    if (seatsEl && p.weight) seatsEl.textContent = '📦 ' + p.weight + ' кг';
+}
+
+// === МАСОВЕ ПРИЗНАЧЕННЯ СТАТУСУ ПОСИЛКИ ===
+function bulkSetParcelStatus() {
+    if (selectedIds.size === 0) return showToast('⚠️ Оберіть заявки');
+    showBulkParcelStatusModal();
+}
+
+function showBulkParcelStatusModal() {
+    document.getElementById('bulkParcelStatusModal')?.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay show';
+    modal.id = 'bulkParcelStatusModal';
+    modal.onclick = function(e) { if (e.target === this) this.remove(); };
+    modal.innerHTML = `
+        <div class="modal" style="max-width:400px;">
+            <div class="modal-header" style="background:linear-gradient(135deg,var(--info),var(--primary));">
+                <span class="modal-title" style="color:white;">📦 Статус посилки (${selectedIds.size})</span>
+                <button class="modal-close" onclick="document.getElementById('bulkParcelStatusModal').remove()" style="color:white;">✕</button>
+            </div>
+            <div class="modal-body" style="padding:16px;">
+                <div style="display:flex;flex-direction:column;gap:8px;">
+                    <button class="btn-save" style="background:#6b7280;" onclick="applyBulkParcelStatus('Невідомий')">Невідомий</button>
+                    <button class="btn-save" style="background:var(--info);" onclick="applyBulkParcelStatus('Зареєстровано')">Зареєстровано</button>
+                    <button class="btn-save" style="background:var(--warning);" onclick="applyBulkParcelStatus('Оформлено')">Оформлено</button>
+                    <button class="btn-save" style="background:var(--purple);" onclick="applyBulkParcelStatus('Кордон')">Кордон</button>
+                    <button class="btn-save" style="background:var(--success);" onclick="applyBulkParcelStatus('Доставка')">Доставка</button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function applyBulkParcelStatus(status) {
+    document.getElementById('bulkParcelStatusModal')?.remove();
+
+    const items = [];
+    selectedIds.forEach(uid => {
+        const p = findPackageByUid(uid);
+        if (p) {
+            p.parcelStatus = status;
+            if (p._sheet && p._rowNum) {
+                items.push({ sheet: p._sheet, rowNum: p._rowNum });
+            }
+        }
+    });
+
+    saveSettings();
+
+    // Зберігаємо на сервері масово
+    if (items.length > 0) {
+        showLoader('Оновлюю статус...', '');
+        // Update each item individually since API doesn't have bulk field update
+        let completed = 0;
+        items.forEach(item => {
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'updateField',
+                    sheet: item.sheet,
+                    rowNum: item.rowNum,
+                    field: 'parcelStatus',
+                    value: status
+                })
+            })
+            .then(r => r.json())
+            .then(() => {
+                completed++;
+                if (completed >= items.length) hideLoader();
+            })
+            .catch(() => {
+                completed++;
+                if (completed >= items.length) hideLoader();
+            });
+        });
+    }
+
+    clearSelection();
+    render();
+    updateAllCounts();
+    showToast(`📦 Статус "${status}" → ${selectedIds.size || items.length} посилок`);
 }
 
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
