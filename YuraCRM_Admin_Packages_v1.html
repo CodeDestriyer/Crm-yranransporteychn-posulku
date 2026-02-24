@@ -1188,7 +1188,7 @@
         <!-- Дата -->
         <div class="pc-sidebar-section">
             <div class="pc-sidebar-header collapsed" onclick="togglePcSection('date')">
-                <span class="pc-sidebar-title"><span>📅</span> Дата оформлення</span>
+                <span class="pc-sidebar-title"><span>📅</span> Дата відправки</span>
                 <span class="pc-sidebar-toggle" id="pcToggleDate">▼</span>
             </div>
             <div class="pc-sidebar-content collapsed" id="pcSectionDate">
@@ -1278,7 +1278,7 @@
                             </div>
                             <div class="dashboard-stat">
                                 <div class="dashboard-stat-value" id="dashTotalSeats">0</div>
-                                <div class="dashboard-stat-label">Посилок</div>
+                                <div class="dashboard-stat-label">Всього кг</div>
                             </div>
                             <div class="dashboard-stat">
                                 <div class="dashboard-stat-value success" id="dashTotalSum">€0</div>
@@ -1311,8 +1311,8 @@
                             <thead>
                                 <tr>
                                     <th>Авто</th>
-                                    <th class="text-center">Заявок</th>
-                                    <th class="text-center">Місць</th>
+                                    <th class="text-center">Посилок</th>
+                                    <th class="text-center">Вага (кг)</th>
                                     <th class="text-right">Сума</th>
                                 </tr>
                             </thead>
@@ -1322,12 +1322,13 @@
                     
                     <!-- Постійні клієнти -->
                     <div class="dashboard-card">
-                        <div class="dashboard-card-title">👥 Постійні клієнти (топ-10)</div>
+                        <div class="dashboard-card-title">👥 Топ-10 клієнтів</div>
                         <table class="dashboard-table">
                             <thead>
                                 <tr>
                                     <th>Клієнт</th>
-                                    <th class="text-center">Поїздок</th>
+                                    <th class="text-center">Посилок</th>
+                                    <th class="text-center">Вага (кг)</th>
                                     <th class="text-right">Сума</th>
                                 </tr>
                             </thead>
@@ -1554,13 +1555,23 @@
 
 
 <div class="modal-overlay" id="bulkVehicleModal" onclick="if(event.target===this)closeModal('bulkVehicleModal')">
-    <div class="modal" style="max-width:320px">
-        <div class="modal-header"><span class="modal-title">🚐 Призначити авто</span><button class="modal-close" onclick="closeModal('bulkVehicleModal')">×</button></div>
-        <div class="modal-body">
-            <p style="font-size:11px;color:var(--text-secondary);margin-bottom:12px;">Виберіть авто для <strong id="bulkVehicleCount">0</strong> посилок:</p>
-            <div class="vehicle-select-list" id="bulkVehicleList"></div>
+    <div class="modal" style="max-width:400px">
+        <div class="modal-header" style="background:linear-gradient(135deg,#1a3a5e,#0d1f3c);">
+            <span class="modal-title" style="color:white;">🚐 Призначити авто</span>
+            <button class="modal-close" style="color:white;" onclick="closeModal('bulkVehicleModal')">×</button>
         </div>
-        <div class="modal-footer"><button class="btn-cancel" onclick="closeModal('bulkVehicleModal')">Скасувати</button></div>
+        <div class="modal-body">
+            <div style="display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#e3f2fd,#bbdefb);padding:12px 16px;border-radius:10px;margin-bottom:16px;">
+                <span style="font-size:24px;">📦</span>
+                <span style="font-size:14px;color:#0d47a1;">Вибрано посилок: <strong id="bulkVehicleCount">0</strong></span>
+            </div>
+            <label style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;display:block;">Оберіть авто:</label>
+            <div class="vehicle-select-list" id="bulkVehicleList" style="max-height:300px;overflow-y:auto;"></div>
+        </div>
+        <div class="modal-footer" style="display:flex;gap:8px;">
+            <button class="btn-cancel" onclick="closeModal('bulkVehicleModal')">Скасувати</button>
+            <button class="btn-save" id="bulkVehicleConfirmBtn" onclick="confirmBulkVehicle()" disabled style="opacity:0.5;">🚐 Призначити</button>
+        </div>
     </div>
 </div>
 
@@ -1658,15 +1669,15 @@
                     <label class="optimize-radio selected" id="optFrom" onclick="selectOptimizeBy('from')">
                         <span class="optimize-radio-icon">📍</span>
                         <span class="optimize-radio-text">
-                            <strong>Адреса ВІДПРАВКИ</strong>
-                            <small>де забирати пасажирів</small>
+                            <strong>Адреса ВІДПРАВНИКА</strong>
+                            <small>де забирати посилки</small>
                         </span>
                     </label>
                     <label class="optimize-radio" id="optTo" onclick="selectOptimizeBy('to')">
                         <span class="optimize-radio-icon">🏁</span>
                         <span class="optimize-radio-text">
-                            <strong>Адреса ПРИБУТТЯ</strong>
-                            <small>де висаджувати пасажирів</small>
+                            <strong>Адреса ОТРИМУВАЧА</strong>
+                            <small>де доставляти посилки</small>
                         </span>
                     </label>
                 </div>
@@ -1886,8 +1897,8 @@ function playNotificationSound() {
     }
 }
 
-function loadSettings() { try { const s = JSON.parse(localStorage.getItem('yuraCrmPackagesV1')||'{}'); if(s.colSettings)colSettings=s.colSettings; if(s.packages)packages=s.packages; } catch(e){} }
-function saveSettings() { localStorage.setItem('yuraCrmPackagesV1', JSON.stringify({colSettings,packages,vehicles})); }
+function loadSettings() { try { const s = JSON.parse(localStorage.getItem('yuraCrmPackagesV1')||'{}'); if(s.colSettings)colSettings=s.colSettings; if(s.packages)packages=s.packages; if(s.columnLabels){Object.keys(s.columnLabels).forEach(k=>{if(ALL_COLUMNS[k])ALL_COLUMNS[k].label=s.columnLabels[k];});} } catch(e){} }
+function saveSettings() { const columnLabels={}; Object.keys(ALL_COLUMNS).forEach(k=>{columnLabels[k]=ALL_COLUMNS[k].label;}); localStorage.setItem('yuraCrmPackagesV1', JSON.stringify({colSettings,packages,vehicles,columnLabels})); }
 
 // SIDE MENU
 function openSideMenu() { document.getElementById('sideMenu').classList.add('open'); document.getElementById('sideMenuOverlay').classList.add('show'); renderMobileCalendar(); updateMobileVehicles(); }
@@ -1950,15 +1961,16 @@ function updateDashboard() {
     // 1. Загальна статистика
     const totalOrders = active.length;
     const completed = active.filter(p => p.status === 'route' || p.status === 'done').length;
-    const totalSeats = active.reduce((sum, p) => sum + (parseFloat(p.weight) || 1), 0);
+    const totalSeats = active.reduce((sum, p) => sum + (parseFloat(p.weight) || 0), 0);
     const totalSum = active.reduce((sum, p) => {
+        const amount = parseFloat(String(p.amount || '0').replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
         const payment = parseFloat(String(p.payment || '0').replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-        return sum + payment;
+        return sum + (amount || payment);
     }, 0);
     
     document.getElementById('dashTotalOrders').textContent = totalOrders;
     document.getElementById('dashCompleted').textContent = completed;
-    document.getElementById('dashTotalSeats').textContent = totalSeats;
+    document.getElementById('dashTotalSeats').textContent = totalSeats.toFixed(1) + ' кг';
     document.getElementById('dashTotalSum').textContent = '€' + totalSum.toFixed(0);
     
     // 2. Потребують уваги
@@ -1993,53 +2005,55 @@ function updateDashboard() {
             <tr>
                 <td class="font-bold">🚐 ${v.name}</td>
                 <td class="text-center">${v.orders}</td>
-                <td class="text-center">${v.maxPoints}</td>
+                <td class="text-center">${v.seats.toFixed(1)} кг</td>
                 <td class="text-right font-bold">€${v.sum.toFixed(0)}</td>
             </tr>
         `).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);">Немає даних</td></tr>';
     
     document.getElementById('dashVehicleStats').innerHTML = vehicleStatsHtml;
     
-    // 4. Постійні клієнти (групування по телефону)
+    // 4. Топ клієнти (групування по телефону)
     const clientsMap = {};
     active.forEach(p => {
         const phone = (p.phone || '').replace(/\D/g, '');
         if (!phone) return;
-        
+
         if (!clientsMap[phone]) {
-            clientsMap[phone] = { 
-                phone: p.phone, 
-                name: p.name || 'Невідомий', 
-                trips: 0, 
-                sum: 0 
+            clientsMap[phone] = {
+                phone: p.phone,
+                name: p.name || 'Невідомий',
+                parcels: 0,
+                weight: 0,
+                sum: 0
             };
         }
-        clientsMap[phone].trips++;
+        clientsMap[phone].parcels++;
+        clientsMap[phone].weight += parseFloat(p.weight) || 0;
+        const amount = parseFloat(String(p.amount || '0').replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
         const payment = parseFloat(String(p.payment || '0').replace(/[^0-9.,]/g, '').replace(',', '.')) || 0;
-        clientsMap[phone].sum += payment;
-        // Оновлюємо ім'я якщо є
+        clientsMap[phone].sum += (amount || payment);
         if (p.name && p.name.length > clientsMap[phone].name.length) {
             clientsMap[phone].name = p.name;
         }
     });
-    
+
     const topClients = Object.values(clientsMap)
-        .filter(c => c.trips >= 2) // Мінімум 2 поїздки
-        .sort((a, b) => b.trips - a.trips || b.sum - a.sum)
+        .sort((a, b) => b.parcels - a.parcels || b.weight - a.weight || b.sum - a.sum)
         .slice(0, 10);
-    
-    const clientsHtml = topClients.length > 0 
+
+    const clientsHtml = topClients.length > 0
         ? topClients.map(c => `
             <tr>
                 <td>
                     <div class="font-bold">${c.name}</div>
                     <div style="font-size:10px;color:var(--text-secondary);">${c.phone}</div>
                 </td>
-                <td class="text-center font-bold">${c.trips}</td>
+                <td class="text-center font-bold">${c.parcels}</td>
+                <td class="text-center font-bold">${c.weight.toFixed(1)} кг</td>
                 <td class="text-right font-bold">€${c.sum.toFixed(0)}</td>
             </tr>
         `).join('')
-        : '<tr><td colspan="3" style="text-align:center;color:var(--text-secondary);">Немає постійних клієнтів</td></tr>';
+        : '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);">Немає клієнтів</td></tr>';
     
     document.getElementById('dashTopClients').innerHTML = clientsHtml;
 }
@@ -2055,13 +2069,14 @@ function renderCalendarTo(containerId) {
     const months = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
     const today = new Date().toISOString().split('T')[0];
     
-    // Рахуємо кількість МІСЦЬ (не лідів) на кожну дату
+    // Рахуємо кількість посилок на кожну дату ВІДПРАВКИ (dateReceive)
     const seatCounts = {};
     const leadCounts = {};
     packages.filter(p => p.status !== 'archived').forEach(p => {
-        if(p.dateReg) {
-            leadCounts[p.dateReg] = (leadCounts[p.dateReg]||0) + 1;
-            seatCounts[p.dateReg] = (seatCounts[p.dateReg]||0) + (parseFloat(p.weight) || 1);
+        const shipDate = p.dateReceive || p.dateReg;
+        if(shipDate) {
+            leadCounts[shipDate] = (leadCounts[shipDate]||0) + 1;
+            seatCounts[shipDate] = (seatCounts[shipDate]||0) + (parseFloat(p.weight) || 1);
         }
     });
     
@@ -2287,6 +2302,13 @@ function getFieldValue(p, key) {
     if (key === 'payment') return val ? '€' + val : '';
     if (key === 'vehicle') return v ? v.name : '';
     if (key === 'weight') return val ? val + ' кг' : '';
+    if (key === 'photo') {
+        const str = String(val).trim();
+        if (str.match(/^https?:\/\//i)) {
+            return `<a href="${str}" target="_blank" rel="noopener" onclick="event.stopPropagation();" style="color:var(--info);text-decoration:underline;word-break:break-all;">📷 Переглянути фото</a>`;
+        }
+        return str;
+    }
     return val;
 }
 
@@ -2346,7 +2368,7 @@ function getFilteredData() {
             return searchStr.includes(s);
         }); 
     }
-    if (!filters.showNewOnly && filters.date) data = data.filter(p => p.dateReg === filters.date);
+    if (!filters.showNewOnly && filters.date) data = data.filter(p => (p.dateReceive || p.dateReg) === filters.date);
     if (filters.vehicle === 'none') {
         data = data.filter(p => !p.vehicle);
     } else if (filters.vehicle && !filters.routeVehicle) {
@@ -3480,23 +3502,65 @@ function bulkMarkNotified() {
 }
 
 // BULK ACTIONS
+let selectedBulkVehicleId = null;
+
 function openBulkVehicleModal() {
+    selectedBulkVehicleId = null;
     document.getElementById('bulkVehicleCount').textContent = selectedIds.size;
-    document.getElementById('bulkVehicleList').innerHTML = vehicles.map(v => 
-        `<div class="vehicle-select-item" onclick="bulkAssignVehicle('${v.id}')"><span class="vehicle-select-name">🚐 ${v.name}</span><span class="vehicle-select-info">${v.maxPoints} місць</span></div>`
-    ).join('');
+    document.getElementById('bulkVehicleList').innerHTML = vehicles.map(v => {
+        const assigned = packages.filter(p => (p.vehicle === v.id || p.vehicle === v.name) && p.status !== 'archived').length;
+        const weightUsed = packages.filter(p => (p.vehicle === v.id || p.vehicle === v.name) && p.status !== 'archived').reduce((s, p) => s + (parseFloat(p.weight) || 0), 0);
+        return `<div class="vehicle-select-item" id="vsi_${v.id}" onclick="selectBulkVehicle('${v.id}')" style="transition:all 0.2s;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:40px;height:40px;background:linear-gradient(135deg,#1a3a5e,#2563eb);border-radius:10px;display:flex;align-items:center;justify-content:center;color:white;font-size:18px;flex-shrink:0;">🚐</div>
+                <div>
+                    <div style="font-weight:700;font-size:14px;color:var(--text-primary);">${v.name}</div>
+                    <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">📦 ${assigned} посилок · ⚖️ ${weightUsed.toFixed(0)}/${v.maxWeight || 2000} кг</div>
+                </div>
+            </div>
+            <div style="width:22px;height:22px;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;" id="vsi_check_${v.id}"></div>
+        </div>`;
+    }).join('');
+    const btn = document.getElementById('bulkVehicleConfirmBtn');
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
     document.getElementById('bulkVehicleModal').classList.add('show');
 }
 
-function bulkAssignVehicle(vehicleId) {
+function selectBulkVehicle(vehicleId) {
+    selectedBulkVehicleId = vehicleId;
+    // Update UI
+    vehicles.forEach(v => {
+        const item = document.getElementById('vsi_' + v.id);
+        const check = document.getElementById('vsi_check_' + v.id);
+        if (v.id === vehicleId) {
+            item.style.borderColor = 'var(--primary)';
+            item.style.background = '#f0f7ff';
+            check.innerHTML = '<span style="color:var(--primary);font-size:14px;">✓</span>';
+            check.style.borderColor = 'var(--primary)';
+            check.style.background = '#e0edff';
+        } else {
+            item.style.borderColor = 'var(--border)';
+            item.style.background = '';
+            check.innerHTML = '';
+            check.style.borderColor = 'var(--border)';
+            check.style.background = '';
+        }
+    });
+    const btn = document.getElementById('bulkVehicleConfirmBtn');
+    btn.disabled = false;
+    btn.style.opacity = '1';
+}
+
+function confirmBulkVehicle() {
+    if (!selectedBulkVehicleId) return;
     saveForUndo('vehicle');
     let count = 0;
     selectedIds.forEach(uid => {
         const p = findPackageByUid(uid);
         if (p && p.status !== 'archived') {
-            p.vehicle = vehicleId;
+            p.vehicle = selectedBulkVehicleId;
             if (p.status === 'new') p.status = 'work';
-            // Оновлюємо на сервері
             updatePackageOnServer(p);
             count++;
         }
@@ -3507,6 +3571,12 @@ function bulkAssignVehicle(vehicleId) {
     render();
     updateAllCounts();
     showToast(`🚐 Авто призначено: ${count}`);
+}
+
+// Keep old function for backward compat
+function bulkAssignVehicle(vehicleId) {
+    selectedBulkVehicleId = vehicleId;
+    confirmBulkVehicle();
 }
 
 function bulkMoveToRoute() {
@@ -3712,11 +3782,12 @@ function showRefuseModal() {
     document.getElementById('refuseModal')?.remove();
     
     const reasons = [
-        'Ціна завелика',
-        'Дата не підходить',
-        'Знайшов інший варіант',
-        'Передумав їхати',
-        'Немає місць',
+        'Ціна доставки завелика',
+        'Дата відправки не підходить',
+        'Знайшов іншу доставку',
+        'Передумав відправляти',
+        'Посилка не готова',
+        'Габарити не підходять',
         'Інше'
     ];
     
@@ -3781,38 +3852,59 @@ function bulkTransfer() {
 
 function showTransferModal() {
     document.getElementById('transferModal')?.remove();
-    
+
+    // Default to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const defaultDate = tomorrow.toISOString().split('T')[0];
+
     const modal = document.createElement('div');
     modal.className = 'modal-overlay show';
     modal.id = 'transferModal';
     modal.innerHTML = `
-        <div class="modal" style="max-width:400px;">
+        <div class="modal" style="max-width:420px;">
             <div class="modal-header" style="background:#ccfbf1;">
-                <span class="modal-title" style="color:#0d9488;">📆 Перенос</span>
+                <span class="modal-title" style="color:#0d9488;">📆 Перенос дати відправки</span>
                 <button class="modal-close" onclick="document.getElementById('transferModal').remove()">✕</button>
             </div>
             <div class="modal-body">
-                <div style="margin-bottom:12px;font-size:13px;color:var(--text-secondary);">Вибрано: <strong>${selectedIds.size}</strong> заявок</div>
-                <label style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;display:block;">Кому пересадили?</label>
-                <input type="text" id="transferToText" placeholder="Назва перевізника, авто..." style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;">
-                <div style="margin-top:8px;font-size:11px;color:var(--text-secondary);">Наприклад: Укрбус, Авто Петра</div>
+                <div style="margin-bottom:16px;font-size:13px;color:var(--text-secondary);">Вибрано: <strong>${selectedIds.size}</strong> посилок</div>
+
+                <label style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:8px;display:block;">📅 Нова дата відправки:</label>
+                <input type="date" id="transferNewDate" value="${defaultDate}" style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:16px;">
+
+                <label style="font-size:13px;font-weight:600;color:var(--text-primary);margin-bottom:8px;display:block;">💬 Коментар (необов'язково):</label>
+                <input type="text" id="transferComment" placeholder="Причина переносу..." style="width:100%;padding:12px;border:2px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;">
+                <div style="margin-top:6px;font-size:11px;color:var(--text-secondary);">Наприклад: Клієнт попросив, Посилка не готова</div>
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" onclick="document.getElementById('transferModal').remove()">Скасувати</button>
-                <button class="btn-save" style="background:#14b8a6;" onclick="confirmTransfer()">📆 Перенести</button>
+                <button class="btn-save" style="background:#14b8a6;" onclick="confirmTransfer()">📆 Перенести дату</button>
             </div>
         </div>
     `;
     document.body.appendChild(modal);
-    document.getElementById('transferToText')?.focus();
+    document.getElementById('transferNewDate')?.focus();
 }
 
 function confirmTransfer() {
-    const transferTo = document.getElementById('transferToText')?.value?.trim();
-    if (!transferTo) return showToast('⚠️ Вкажіть кому пересадили');
-    
+    const newDate = document.getElementById('transferNewDate')?.value;
+    if (!newDate) return showToast('⚠️ Оберіть нову дату відправки');
+
+    const comment = document.getElementById('transferComment')?.value?.trim();
+    const formattedDate = new Date(newDate).toLocaleDateString('uk-UA');
+    const reason = comment ? `Перенос на ${formattedDate}: ${comment}` : `Перенос на ${formattedDate}`;
+
+    // Update dateReceive for selected packages
+    selectedIds.forEach(uid => {
+        const p = findPackageByUid(uid);
+        if (p) {
+            p.dateReceive = newDate;
+        }
+    });
+
     document.getElementById('transferModal').remove();
-    applyStatusToSelected('transferred', `Перенос: ${transferTo}`);
+    applyStatusToSelected('transferred', reason);
 }
 
 // ВИДАЛЕННЯ - з причиною
@@ -4024,56 +4116,184 @@ function selectOptimizeBy(by) {
     document.getElementById('optTo').classList.toggle('selected', by === 'to');
 }
 
-function startOptimization() {
+// Google Maps API key (same as Apps Script)
+const GMAPS_API_KEY = 'AIzaSyCthPzhD6zDM9zR-re0R2ceohyhCRdawNc';
+const DEFAULT_START = { lat: 48.6209, lng: 22.2879, name: 'Ужгород' };
+const MAX_POINTS_PER_MAP = 25;
+
+async function geocodeAddressClient(address) {
+    try {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${GMAPS_API_KEY}&language=uk`;
+        const resp = await fetch(url);
+        const json = await resp.json();
+        if (json.status === 'OK' && json.results && json.results.length > 0) {
+            const loc = json.results[0].geometry.location;
+            return { lat: loc.lat, lng: loc.lng };
+        }
+        return null;
+    } catch(e) { return null; }
+}
+
+function haversineDistance(c1, c2) {
+    const R = 6371;
+    const dLat = (c2.lat - c1.lat) * Math.PI / 180;
+    const dLng = (c2.lng - c1.lng) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(c1.lat*Math.PI/180)*Math.cos(c2.lat*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function nearestNeighborOrder(items, startCoords) {
+    const n = items.length;
+    if (n <= 1) return items.map((_, i) => i);
+
+    const visited = new Array(n).fill(false);
+    let currentIdx = 0;
+    let minDist = Infinity;
+    for (let i = 0; i < n; i++) {
+        const d = haversineDistance(startCoords, items[i].coords);
+        if (d < minDist) { minDist = d; currentIdx = i; }
+    }
+
+    const tour = [currentIdx];
+    visited[currentIdx] = true;
+
+    for (let step = 1; step < n; step++) {
+        let nearest = -1, nearestDist = Infinity;
+        for (let j = 0; j < n; j++) {
+            if (!visited[j]) {
+                const d = haversineDistance(items[currentIdx].coords, items[j].coords);
+                if (d < nearestDist) { nearestDist = d; nearest = j; }
+            }
+        }
+        if (nearest === -1) break;
+        tour.push(nearest);
+        visited[nearest] = true;
+        currentIdx = nearest;
+    }
+    return tour;
+}
+
+function generateMapLinksClient(orderedItems, startCoords, endCoords) {
+    const links = [];
+    const total = orderedItems.length;
+    if (!total) return links;
+
+    const ppChunk = MAX_POINTS_PER_MAP - 1;
+    let chunkStart = 0;
+
+    while (chunkStart < total) {
+        const chunkEnd = Math.min(chunkStart + ppChunk, total);
+        const chunk = orderedItems.slice(chunkStart, chunkEnd);
+
+        const origin = chunkStart === 0 ? startCoords.name : orderedItems[chunkStart - 1].address;
+        let destination, waypointItems;
+
+        if (chunkEnd >= total && endCoords) {
+            destination = endCoords.name;
+            waypointItems = chunk;
+        } else {
+            destination = chunk[chunk.length - 1].address;
+            waypointItems = chunk.slice(0, -1);
+        }
+
+        let url = 'https://www.google.com/maps/dir/' + encodeURIComponent(origin);
+        waypointItems.forEach(item => { url += '/' + encodeURIComponent(item.address); });
+        url += '/' + encodeURIComponent(destination);
+
+        links.push({ url, from: chunkStart + 1, to: chunkEnd, total });
+        chunkStart = chunkEnd;
+    }
+    return links;
+}
+
+async function startOptimization() {
     if (!optimizePackagesList.length) return;
-    
-    // Показуємо завантаження
+
     document.getElementById('optimizeFormBody').style.display = 'none';
     document.getElementById('optimizeLoadingBody').style.display = 'block';
     document.getElementById('optimizeFormFooter').style.display = 'none';
-    
+
     const startAddress = document.getElementById('optimizeStart').value.trim();
     const endAddress = document.getElementById('optimizeEnd').value.trim();
-    
-    // Додаємо uid до кожного пасажира
-    const packagesWithUid = optimizePackagesList.map(p => ({
-        ...p,
-        _uid: (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : null
-    }));
 
-    const payload = {
-        action: 'optimize',
-        payload: {
-            packages: packagesWithUid,
-            optimizeBy: optimizeBy,
-            startAddress: startAddress,
-            endAddress: endAddress
+    try {
+        // Resolve start coords
+        let startCoords = { ...DEFAULT_START };
+        if (startAddress) {
+            const sc = await geocodeAddressClient(startAddress);
+            if (sc) startCoords = { lat: sc.lat, lng: sc.lng, name: startAddress };
         }
-    };
-    
-    fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify(payload)
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            showOptimizationResult(data);
-        } else {
+
+        // Resolve end coords
+        let endCoords = null;
+        if (endAddress) {
+            const ec = await geocodeAddressClient(endAddress);
+            if (ec) endCoords = { lat: ec.lat, lng: ec.lng, name: endAddress };
+        }
+
+        // Geocode all packages
+        const items = [];
+        const notGeocoded = [];
+
+        for (const p of optimizePackagesList) {
+            const addr = optimizeBy === 'to' ? (p.address || '') : (p.address || '');
+            if (!addr.trim()) {
+                notGeocoded.push({ id: p.id, name: p.name, address: '(порожня адреса)', uid: (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : null });
+                continue;
+            }
+            const coords = await geocodeAddressClient(addr);
+            if (coords) {
+                items.push({ ...p, coords, address: addr, _uid: (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : null });
+            } else {
+                notGeocoded.push({ id: p.id, name: p.name, address: addr, uid: (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : null });
+            }
+            await new Promise(r => setTimeout(r, 100)); // Delay for API rate
+        }
+
+        if (!items.length) {
             document.getElementById('optimizeFormBody').style.display = 'block';
             document.getElementById('optimizeLoadingBody').style.display = 'none';
             document.getElementById('optimizeFormFooter').style.display = 'flex';
-            showToast('❌ ' + data.error);
+            return showToast('❌ Жодну адресу не вдалось знайти');
         }
-    })
-    .catch(err => {
+
+        // Nearest Neighbor
+        const order = nearestNeighborOrder(items, startCoords);
+        const orderedItems = order.map(i => items[i]);
+
+        // Generate map links
+        const mapLinks = generateMapLinksClient(orderedItems, startCoords, endCoords);
+
+        // Calculate total distance
+        let totalDist = haversineDistance(startCoords, orderedItems[0].coords);
+        for (let i = 1; i < orderedItems.length; i++) {
+            totalDist += haversineDistance(orderedItems[i-1].coords, orderedItems[i].coords);
+        }
+
+        const result = {
+            success: true,
+            optimizeBy: optimizeBy === 'from' ? 'Адреса відправника' : 'Адреса отримувача',
+            start: startCoords.name,
+            end: endCoords ? endCoords.name : orderedItems[orderedItems.length - 1].address,
+            stats: {
+                total: optimizePackagesList.length,
+                geocoded: items.length,
+                optimized: orderedItems.length
+            },
+            method: `Nearest Neighbor (~${totalDist.toFixed(0)} км)`,
+            mapLinks: mapLinks,
+            notGeocodedList: notGeocoded,
+            orderedPassengers: orderedItems
+        };
+
+        showOptimizationResult(result);
+    } catch(err) {
         console.error('Optimize error:', err);
         document.getElementById('optimizeFormBody').style.display = 'block';
         document.getElementById('optimizeLoadingBody').style.display = 'none';
         document.getElementById('optimizeFormFooter').style.display = 'flex';
-        showToast('❌ Помилка зв\'язку');
-    });
+        showToast('❌ Помилка: ' + err.message);
+    }
 }
 
 function showOptimizationResult(data) {
@@ -4232,21 +4452,21 @@ function updateVehiclesList() {
         
         // Фільтр по даті
         if (filters.date) {
-            filtered = filtered.filter(p => p.dateReg === filters.date);
+            filtered = filtered.filter(p => (p.dateReceive || p.dateReg) === filters.date);
         }
-        
+
         const count = filtered.length;
         return `<div class="dropdown-item" onclick="setVehicleFilter('${v.id}')">${v.name} <span class="badge">${count}</span></div>`;
     }).join('');
     document.getElementById('fVehicle').innerHTML = '<option value="">—</option>' + vehicles.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
-    
+
     // Оновлюємо "Без авто" теж з фільтрами
     let noVehicle = packages.filter(p => !p.vehicle && p.status !== 'archived');
     if (filters.direction && filters.direction !== 'all') {
         noVehicle = noVehicle.filter(p => p.direction === filters.direction);
     }
     if (filters.date) {
-        noVehicle = noVehicle.filter(p => p.dateReg === filters.date);
+        noVehicle = noVehicle.filter(p => (p.dateReceive || p.dateReg) === filters.date);
     }
     document.getElementById('countNoVehicle').textContent = noVehicle.length;
 }
@@ -4542,21 +4762,36 @@ function savePackage() {
 
 // COLUMNS
 function openColumnsModal() { renderColumnsList(); document.getElementById('columnsModal').classList.add('show'); }
-function renderColumnsList() { 
-    const keys = Object.keys(ALL_COLUMNS); 
-    document.getElementById('headerColList').innerHTML = keys.map(k => 
-        `<div class="column-item" onclick="toggleHeaderCol('${k}')">
+function renderColumnsList() {
+    const keys = Object.keys(ALL_COLUMNS);
+    document.getElementById('headerColList').innerHTML = keys.map(k =>
+        `<div class="column-item" style="display:flex;align-items:center;gap:8px;">
             <input type="checkbox" ${colSettings.header.includes(k)?'checked':''} onclick="event.stopPropagation();toggleHeaderCol('${k}')">
-            <label>${ALL_COLUMNS[k].label}</label>
+            <input type="text" value="${ALL_COLUMNS[k].label}"
+                onclick="event.stopPropagation();"
+                onchange="renameColumnLabel('${k}', this.value)"
+                style="flex:1;border:1px solid transparent;border-radius:4px;padding:2px 6px;font-size:12px;font-family:inherit;background:transparent;cursor:text;"
+                onfocus="this.style.borderColor='var(--primary)';this.style.background='white';"
+                onblur="this.style.borderColor='transparent';this.style.background='transparent';">
         </div>`
-    ).join(''); 
-    document.getElementById('detailsColList').innerHTML = keys.map(k => { 
-        const inH = colSettings.header.includes(k); 
-        return `<div class="column-item ${inH?'disabled':''}" onclick="${inH?'':`toggleDetailsCol('${k}')`}">
+    ).join('');
+    document.getElementById('detailsColList').innerHTML = keys.map(k => {
+        const inH = colSettings.header.includes(k);
+        return `<div class="column-item ${inH?'disabled':''}" style="display:flex;align-items:center;gap:8px;">
             <input type="checkbox" ${colSettings.details.includes(k)&&!inH?'checked':''} ${inH?'disabled':''} onclick="event.stopPropagation();${inH?'':`toggleDetailsCol('${k}')`}">
-            <label>${ALL_COLUMNS[k].label}${inH?' (заг)':''}</label>
-        </div>`; 
-    }).join(''); 
+            <input type="text" value="${ALL_COLUMNS[k].label}${inH?' (заг)':''}"
+                onclick="event.stopPropagation();"
+                ${inH ? 'disabled' : `onchange="renameColumnLabel('${k}', this.value)"`}
+                style="flex:1;border:1px solid transparent;border-radius:4px;padding:2px 6px;font-size:12px;font-family:inherit;background:transparent;cursor:text;${inH?'opacity:0.5;cursor:default;':''}">
+        </div>`;
+    }).join('');
+}
+
+function renameColumnLabel(key, newLabel) {
+    if (newLabel && newLabel.trim() && ALL_COLUMNS[key]) {
+        ALL_COLUMNS[key].label = newLabel.trim().replace(' (заг)', '');
+        saveSettings();
+    }
 }
 function toggleHeaderCol(k) { 
     const i = colSettings.header.indexOf(k); 
