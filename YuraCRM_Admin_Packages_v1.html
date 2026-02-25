@@ -1770,12 +1770,11 @@
     <div class="modal" style="max-width:350px">
         <div class="modal-header"><span class="modal-title">⚙️ Колонки</span><button class="modal-close" onclick="closeModal('columnsModal')">×</button></div>
         <div class="modal-body">
-            <div class="columns-hint">Якщо в заголовку — не в деталях</div>
-            <div class="columns-section"><div class="columns-section-title">Заголовок</div><div class="columns-list" id="headerColList"></div></div>
-            <div class="columns-section"><div class="columns-section-title">Деталі</div><div class="columns-list" id="detailsColList"></div></div>
+            <div class="columns-hint" style="font-size:11px;color:var(--text-secondary);margin-bottom:10px;">Натисніть щоб сховати/показати поле на картці</div>
+            <div class="columns-list" id="colVisList"></div>
         </div>
         <div class="modal-footer" style="display:flex;gap:8px;">
-            <button class="btn-secondary" onclick="resetColumnsSettings()" style="flex:1;">🔄 Скинути</button>
+            <button class="btn-secondary" onclick="resetColumnsSettings()" style="flex:1;">🔄 Показати всі</button>
             <button class="btn-save" onclick="saveColumnsSettings()" style="flex:1;">💾 Зберегти</button>
         </div>
     </div>
@@ -5104,59 +5103,33 @@ function savePackage() {
 function openColumnsModal() { renderColumnsList(); document.getElementById('columnsModal').classList.add('show'); }
 function renderColumnsList() {
     const keys = Object.keys(ALL_COLUMNS);
-    document.getElementById('headerColList').innerHTML = keys.map(k =>
-        `<div class="column-item" style="display:flex;align-items:center;gap:8px;">
-            <input type="checkbox" ${colSettings.header.includes(k)?'checked':''} onclick="event.stopPropagation();toggleHeaderCol('${k}')">
-            <input type="text" value="${ALL_COLUMNS[k].label}"
-                onclick="event.stopPropagation();"
-                onchange="renameColumnLabel('${k}', this.value)"
-                style="flex:1;border:1px solid transparent;border-radius:4px;padding:2px 6px;font-size:12px;font-family:inherit;background:transparent;cursor:text;"
-                onfocus="this.style.borderColor='var(--primary)';this.style.background='white';"
-                onblur="this.style.borderColor='transparent';this.style.background='transparent';">
-        </div>`
-    ).join('');
-    document.getElementById('detailsColList').innerHTML = keys.map(k => {
-        const inH = colSettings.header.includes(k);
-        return `<div class="column-item ${inH?'disabled':''}" style="display:flex;align-items:center;gap:8px;">
-            <input type="checkbox" ${colSettings.details.includes(k)&&!inH?'checked':''} ${inH?'disabled':''} onclick="event.stopPropagation();${inH?'':`toggleDetailsCol('${k}')`}">
-            <input type="text" value="${ALL_COLUMNS[k].label}${inH?' (заг)':''}"
-                onclick="event.stopPropagation();"
-                ${inH ? 'disabled' : `onchange="renameColumnLabel('${k}', this.value)"`}
-                style="flex:1;border:1px solid transparent;border-radius:4px;padding:2px 6px;font-size:12px;font-family:inherit;background:transparent;cursor:text;${inH?'opacity:0.5;cursor:default;':''}">
+    document.getElementById('colVisList').innerHTML = keys.map(k => {
+        const isHidden = hiddenCols.has(k);
+        return `<div class="column-item" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:${isHidden?'#f3f4f6':'white'};border:1px solid ${isHidden?'#e5e7eb':'var(--primary)'};border-radius:6px;margin-bottom:4px;cursor:pointer;transition:all 0.15s;" onclick="toggleColVisModal('${k}')">
+            <input type="checkbox" ${isHidden?'':'checked'} style="pointer-events:none;width:16px;height:16px;">
+            <span style="flex:1;font-size:12px;font-weight:600;${isHidden?'color:#9ca3af;text-decoration:line-through;':'color:var(--text-primary);'}">${ALL_COLUMNS[k].label}</span>
+            <span style="font-size:10px;color:${isHidden?'#ef4444':'var(--success)'};">${isHidden?'Сховано':'Видно'}</span>
         </div>`;
     }).join('');
 }
-
-function renameColumnLabel(key, newLabel) {
-    if (newLabel && newLabel.trim() && ALL_COLUMNS[key]) {
-        ALL_COLUMNS[key].label = newLabel.trim().replace(' (заг)', '');
-        saveSettings();
+function toggleColVisModal(k) {
+    if (hiddenCols.has(k)) {
+        hiddenCols.delete(k);
+    } else {
+        hiddenCols.add(k);
     }
-}
-function toggleHeaderCol(k) { 
-    const i = colSettings.header.indexOf(k); 
-    i !== -1 ? colSettings.header.splice(i,1) : colSettings.header.push(k); 
-    renderColumnsList(); 
-}
-function toggleDetailsCol(k) { 
-    if(colSettings.header.includes(k)) return; 
-    const i = colSettings.details.indexOf(k); 
-    i === -1 ? colSettings.details.push(k) : colSettings.details.splice(i,1); 
-    renderColumnsList(); 
+    renderColumnsList();
 }
 function resetColumnsSettings() {
-    colSettings = {
-        header: ['name','phone','seats','from','to','date','payment'],
-        details: ['percent','note','mark','dispatcher','phoneReg','timing','dateReg','weight']
-    };
+    hiddenCols.clear();
     renderColumnsList();
-    showToast('🔄 Скинуто');
+    showToast('🔄 Всі колонки видимі');
 }
-function saveColumnsSettings() { 
-    saveSettings(); 
-    closeModal('columnsModal'); 
-    render(); 
-    showToast('✅ Колонки збережено'); 
+function saveColumnsSettings() {
+    saveSettings();
+    closeModal('columnsModal');
+    render();
+    showToast('✅ Колонки збережено');
 }
 
 // === INLINE SAVE — швидке редагування полів прямо на картці ===
