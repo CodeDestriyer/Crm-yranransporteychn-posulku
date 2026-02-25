@@ -2661,6 +2661,15 @@ function render() {
             </div>`;
         };
 
+        // Address helper: input + Google Maps link
+        const mkAddress = (label, field, val) => {
+            const addr = (val || '').trim();
+            return `<div class="inline-photo-wrap">
+                <div class="inline-edit-field" style="flex:1;margin:0;"><span class="inline-edit-label">${label}</span><input class="inline-edit-input" type="text" value="${esc(val)}" placeholder="Місто, вулиця..." onchange="inlineSave('${uk}','${field}',this.value)" onclick="event.stopPropagation()"></div>
+                ${addr ? `<a class="inline-photo-link" href="https://www.google.com/maps/search/${encodeURIComponent(addr)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="background:var(--success);">🗺️ Карта</a>` : ''}
+            </div>`;
+        };
+
         let inlineHtml = `<div class="inline-edit-grid">`;
 
         // === КОНТАКТ ===
@@ -2668,7 +2677,7 @@ function render() {
         inlineHtml += mkInput('ПІБ','name',p.name,'Прізвище Ім\'я');
         inlineHtml += mkInput('Телефон','phone',p.phone,'+380...');
         inlineHtml += mkInput('Тел. реєстратора','phoneReg',p.phoneReg,'+380...');
-        inlineHtml += mkInput('Адреса','address',p.address,'Місто, вулиця...');
+        inlineHtml += mkAddress('Адреса','address',p.address);
 
         // === ТТН ===
         inlineHtml += ttnEditHtml;
