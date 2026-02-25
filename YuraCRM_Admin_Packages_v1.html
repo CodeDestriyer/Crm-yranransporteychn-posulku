@@ -719,20 +719,11 @@
         .btn-card-action.btn-delete { background: #fee2e2; color: #dc2626; }
         .btn-card-action.btn-delete:hover { background: #dc2626; color: white; }
 
-        /* Column visibility toggle panel */
-        .col-vis-bar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: white; border-radius: 8px; margin-bottom: 8px; box-shadow: var(--shadow); flex-wrap: wrap; }
-        .col-vis-bar .col-vis-title { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
-        .col-vis-btn { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: inherit; background: white; color: var(--text-primary); transition: all 0.15s; }
-        .col-vis-btn:hover { border-color: var(--primary); }
-        .col-vis-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .col-vis-btn.hidden-col { background: #f3f4f6; color: #9ca3af; border-color: #e5e7eb; text-decoration: line-through; }
-
         /* Mobile responsive */
         @media (max-width: 768px) {
             .cg-row { flex-wrap: wrap; }
             .cg-main, .cg-mid, .cg-sm { min-width: 0; flex: 1 1 100%; }
             .cg-cell { border-right: none; border-bottom: 1px solid #f8f9fb; }
-            .col-vis-bar { display: none; }
         }
         
         /* Route stats - адаптивна статистика */
@@ -2633,13 +2624,7 @@ function render() {
     const hasSearch = filters.search && filters.search.trim();
     const hc = hiddenCols; // shortcut
 
-    // Column visibility bar
-    const colVisBar = `<div class="col-vis-bar" id="colVisBar">
-        <span class="col-vis-title">Колонки:</span>
-        ${Object.keys(ALL_COLUMNS).map(k => `<button class="col-vis-btn ${hc.has(k)?'hidden-col':'active'}" onclick="toggleColVis('${k}')" title="${ALL_COLUMNS[k].label}">${ALL_COLUMNS[k].label}</button>`).join('')}
-    </div>`;
-
-    c.innerHTML = colVisBar + data.map((p, idx) => {
+    c.innerHTML = data.map((p, idx) => {
         const uniqueKey = (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : `local_${idx}`;
         const sel = selectedIds.has(uniqueKey);
         const dOpen = openDetailsId === uniqueKey;
@@ -2948,12 +2933,6 @@ function toggleColVis(key) {
     document.querySelectorAll(`[data-col="${key}"]`).forEach(el => {
         el.style.display = hiddenCols.has(key) ? 'none' : '';
     });
-    // Update button state
-    const btn = document.querySelector(`.col-vis-btn[onclick*="'${key}'"]`);
-    if (btn) {
-        btn.classList.toggle('active', !hiddenCols.has(key));
-        btn.classList.toggle('hidden-col', hiddenCols.has(key));
-    }
 }
 
 function toggleSelect(uid) {
