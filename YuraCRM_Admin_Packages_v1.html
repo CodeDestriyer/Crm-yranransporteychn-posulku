@@ -2733,7 +2733,7 @@ function render() {
         inlineHtml += mkInput('Тел. реєстратора','phoneReg',p.phoneReg,'+380...');
         inlineHtml += ttnEditHtml;
         inlineHtml += `<div class="inline-section-title">Менеджер</div>`;
-        inlineHtml += mkInput(isUaEu?'Внутр. номер':'Виклик кур\\'єра','number',p.number,'—');
+        inlineHtml += mkInput(isUaEu?'Внутр. номер':"Виклик кур'єра",'number',p.number,'—');
         inlineHtml += mkSelectVeh();
         inlineHtml += `<div class="inline-section-title">Статуси</div>`;
         inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
