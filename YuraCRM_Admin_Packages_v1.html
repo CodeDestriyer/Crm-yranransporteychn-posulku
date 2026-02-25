@@ -569,9 +569,9 @@
         .opt-btn.map { background: var(--info); color: white; }
         .opt-btn.confirm { background: var(--success); color: white; }
 
-        /* CARDS - NEW DESIGN */
-        .cards-list { display: flex; flex-direction: column; gap: 8px; }
-        .lead-card { background: white; border-radius: 8px; box-shadow: var(--shadow); border-left: 4px solid var(--border); position: relative; }
+        /* CARDS - TABLE GRID DESIGN */
+        .cards-list { display: flex; flex-direction: column; gap: 6px; }
+        .lead-card { background: white; border-radius: 8px; box-shadow: var(--shadow); border-left: 4px solid var(--border); position: relative; overflow: hidden; }
         .lead-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
         .lead-card.status-new { border-left-color: var(--warning); }
         .lead-card.status-work { border-left-color: var(--info); }
@@ -582,13 +582,13 @@
         .lead-card.status-transferred { border-left-color: var(--teal); background: #f0fdfa; }
         .lead-card.status-deleted { border-left-color: #9ca3af; background: #f3f4f6; opacity: 0.6; }
         .lead-card.selected { background: #f0f7ff; }
-        
+
         /* Статуси водія */
         .lead-card.driver-completed { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); border-left-color: #28a745; }
         .lead-card.driver-in-progress { background: linear-gradient(135deg, #cce5ff 0%, #b8daff 100%); border-left-color: #007bff; }
         .lead-card.driver-cancelled { background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%); border-left-color: #dc3545; }
         .lead-card.driver-archived { background: linear-gradient(135deg, #e2e3e5 0%, #d6d8db 100%); border-left-color: #6c757d; opacity: 0.8; }
-        
+
         /* Badge статусу */
         .status-badge { padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; }
         .status-badge.pending { background: #e9ecef; color: #6c757d; }
@@ -596,133 +596,144 @@
         .status-badge.in-progress { background: #007bff; color: white; }
         .status-badge.cancelled { background: #dc3545; color: white; }
         .status-badge.archived { background: #6c757d; color: white; }
-        
+
         /* Номер в маршруті */
         .route-order-num { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; border-radius: 50%; font-size: 11px; font-weight: 700; }
-        
-        .card-header { display: flex; align-items: stretch; padding: 0; cursor: pointer; border-radius: 8px 8px 0 0; overflow: hidden; }
-        .card-checkbox-wrap { display: flex; align-items: center; justify-content: center; padding: 10px 6px; background: var(--bg-main); border-right: 1px solid var(--border); flex-shrink: 0; }
-        .card-checkbox { width: 16px; height: 16px; cursor: pointer; }
-        
-        .card-body { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 4px; min-width: 0; overflow: hidden; }
-        .card-body:hover { background: #fafbfc; }
-        
-        /* Дозволяємо виділення тексту для копіювання */
-        .card-phone, .card-id, .card-name, .card-route { 
-            user-select: text; 
-            cursor: text;
-        }
-        .card-phone:hover, .card-id:hover { 
-            background: rgba(26, 58, 94, 0.1); 
-            border-radius: 4px;
-            padding: 1px 4px;
-            margin: -1px -4px;
-        }
-        
-        /* Row 1: Direction, Phone, Seats, Date, Price */
-        .card-top-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; min-height: 24px; }
-        .card-direction { font-size: 11px; flex-shrink: 0; font-weight: 800; letter-spacing: 0.3px; background: linear-gradient(135deg, #1e40af, #7c3aed); color: white; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
-        .card-direction.eu-ua { background: linear-gradient(135deg, #7c3aed, #1e40af); }
-        .card-phone { font-size: 13px; font-weight: 700; color: var(--primary); letter-spacing: 0.3px; white-space: nowrap; display: inline-flex; align-items: center; gap: 3px; }
-        .card-seats { background: var(--info); color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 700; flex-shrink: 0; min-width: 36px; text-align: center; }
-        .card-date { background: var(--bg-main); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; flex-shrink: 0; white-space: nowrap; }
-        .card-price { font-size: 13px; font-weight: 700; color: var(--success); flex-shrink: 0; }
 
-        /* Copy button mini */
-        .copy-btn-mini { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: none; border-radius: 4px; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 10px; opacity: 0.4; transition: all 0.15s; padding: 0; flex-shrink: 0; }
+        /* === CARD MAIN LAYOUT === */
+        .card-main { display: flex; align-items: stretch; }
+        .card-cb { display: flex; align-items: flex-start; justify-content: center; padding: 10px 6px; background: var(--bg-main); border-right: 1px solid var(--border); flex-shrink: 0; }
+        .card-checkbox { width: 16px; height: 16px; cursor: pointer; margin-top: 2px; }
+
+        /* === DATA GRID === */
+        .card-grid { flex: 1; display: flex; flex-direction: column; cursor: pointer; min-width: 0; }
+        .card-grid:hover { background: #fafbfd; }
+
+        /* Grid row */
+        .cg-row { display: flex; align-items: stretch; border-bottom: 1px solid #f0f2f5; min-height: 30px; }
+        .cg-row:last-child { border-bottom: none; }
+
+        /* Grid cell */
+        .cg-cell { display: flex; align-items: center; gap: 4px; padding: 4px 8px; font-size: 12px; font-weight: 500; color: var(--text-primary); border-right: 1px solid #f0f2f5; min-width: 0; overflow: hidden; white-space: nowrap; }
+        .cg-cell:last-child { border-right: none; }
+        .cg-cell[data-col].col-hidden { display: none; }
+
+        /* Cell sizes */
+        .cg-main { flex: 3; min-width: 160px; }
+        .cg-mid { flex: 2; min-width: 110px; }
+        .cg-sm { flex: 1; min-width: 80px; }
+
+        /* Cell label */
+        .cg-label { font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.3px; margin-right: 4px; flex-shrink: 0; }
+
+        /* Value elements */
+        .cg-val { font-weight: 600; overflow: hidden; text-overflow: ellipsis; user-select: text; }
+        .cg-val-phone { font-size: 13px; font-weight: 700; color: var(--primary); letter-spacing: 0.3px; user-select: text; cursor: text; }
+        .cg-val-price { font-size: 13px; font-weight: 700; color: var(--success); }
+        .cg-val-weight { background: var(--info); color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+        .cg-val-date { background: var(--bg-main); color: var(--text-primary); padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 600; }
+        .cg-val-address { font-size: 12px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; user-select: text; cursor: text; }
+        .cg-val-id { font-size: 10px; color: var(--text-secondary); font-weight: 500; background: var(--bg-main); padding: 1px 4px; border-radius: 3px; }
+        .cg-val-name { font-size: 11px; color: var(--text-secondary); font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
+        .cg-val-ttn { background: var(--info); color: white; padding: 2px 6px; border-radius: 5px; font-size: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 3px; }
+        .cg-val-note { font-size: 11px; color: #92400e; background: #fffbeb; padding: 2px 6px; border-radius: 4px; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
+        .cg-val-dir { font-size: 11px; font-weight: 800; letter-spacing: 0.3px; background: linear-gradient(135deg, #1e40af, #7c3aed); color: white; padding: 3px 8px; border-radius: 6px; }
+        .cg-val-dir.eu-ua { background: linear-gradient(135deg, #7c3aed, #1e40af); }
+        .cg-val-number { background: var(--purple); color: white; padding: 2px 7px; border-radius: 5px; font-size: 10px; font-weight: 700; }
+        .cg-val-status { font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; }
+        .cg-val-status.paid { background: #d1fae5; color: #065f46; }
+        .cg-val-status.unpaid { background: #fee2e2; color: #991b1b; }
+        .new-tag { background: var(--accent); color: white; padding: 2px 5px; border-radius: 4px; font-size: 8px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
+        .order-num { background: var(--purple); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
+
+        /* Copy & Edit buttons */
+        .copy-btn-mini { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border: none; border-radius: 4px; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 10px; opacity: 0.3; transition: all 0.15s; padding: 0; flex-shrink: 0; }
         .copy-btn-mini:hover { opacity: 1; background: var(--primary); color: white; }
         .copy-btn-mini.copied { opacity: 1; background: var(--success); color: white; }
+        .header-edit-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border: none; border-radius: 3px; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 9px; opacity: 0; transition: all 0.15s; padding: 0; flex-shrink: 0; }
+        .cg-cell:hover .header-edit-btn { opacity: 0.5; }
+        .header-edit-btn:hover { opacity: 1 !important; background: var(--primary); color: white; }
+        .header-inline-input { border: 1px solid var(--primary); border-radius: 4px; padding: 2px 5px; font-size: inherit; font-weight: inherit; font-family: inherit; color: inherit; background: white; outline: none; box-shadow: 0 0 0 2px rgba(26,58,94,0.15); }
 
-        /* Payment badges in header */
+        /* Google Maps nav arrow */
+        .cg-map-link { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; background: #4285F4; color: white; border-radius: 50%; font-size: 12px; text-decoration: none; flex-shrink: 0; }
+        .cg-map-link:hover { background: #1a73e8; }
+
+        /* Right panel - vehicle + actions */
+        .card-right-panel { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 65px; }
+        .card-vehicle-badge { background: var(--info); color: white; padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: 600; white-space: nowrap; text-align: center; cursor: default; }
+        .card-vehicle-badge.empty { background: var(--bg-main); color: var(--text-secondary); border: 1px dashed var(--text-secondary); }
+        .card-actions-toggle { width: 28px; height: 28px; border: none; border-radius: 6px; background: var(--bg-main); cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; margin-top: auto; }
+        .card-actions-toggle:hover { background: var(--primary); color: white; }
+        .card-actions-toggle.open { background: var(--primary); color: white; transform: rotate(180deg); }
+
+        /* Collapse toggle for extra fields */
+        .cg-toggle { display: flex; align-items: center; justify-content: center; padding: 3px; background: #f8f9fb; cursor: pointer; font-size: 10px; color: var(--text-secondary); font-weight: 600; border-top: 1px solid #f0f2f5; gap: 4px; user-select: none; }
+        .cg-toggle:hover { background: #eef1f5; color: var(--primary); }
+        .cg-toggle-icon { transition: transform 0.2s; font-size: 8px; }
+        .cg-toggle-icon.open { transform: rotate(180deg); }
+
+        /* Collapsible extra section */
+        .cg-extra { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; opacity: 0; }
+        .cg-extra.open { max-height: 300px; opacity: 1; }
+
+        /* Payment badges */
         .card-pay-badge { font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
         .card-pay-badge.paid { background: #d1fae5; color: #065f46; }
         .card-pay-badge.unpaid { background: #fee2e2; color: #991b1b; }
         .card-pay-badge.neutral { background: #f1f5f9; color: #475569; }
-        
-        /* Row 2 wrapper */
-        .card-row2-wrap { display: flex; flex-direction: column; gap: 3px; }
-        
-        /* Route row */
-        .card-route-row { display: flex; align-items: center; min-height: 18px; }
-        .card-route { font-size: 12px; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-        .card-route-arrow { color: var(--success); font-weight: 700; margin: 0 4px; }
-        
-        /* Info row: ID + Name */
-        .card-info-row { display: flex; align-items: center; gap: 6px; min-height: 18px; }
-        .card-id { font-size: 10px; color: var(--text-secondary); font-weight: 500; background: var(--bg-main); padding: 1px 4px; border-radius: 3px; flex-shrink: 0; }
-        .card-name { font-size: 11px; color: var(--text-secondary); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; }
-        .new-tag { background: var(--accent); color: white; padding: 2px 5px; border-radius: 4px; font-size: 8px; font-weight: 700; text-transform: uppercase; flex-shrink: 0; }
-        .order-num { background: var(--purple); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
-        
-        /* Right section - Авто вгорі, кнопка внизу */
-        .card-right-section { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6px 6px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 60px; overflow: visible; position: relative; }
-        .card-vehicle-badge { background: var(--info); color: white; padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: 600; cursor: pointer; white-space: nowrap; text-align: center; }
-        .card-vehicle-badge:hover { background: var(--primary); }
-        .card-vehicle-badge.empty { background: var(--bg-main); color: var(--text-secondary); border: 1px dashed var(--text-secondary); }
-        .card-vehicle-badge.empty:hover { background: var(--info); color: white; border-style: solid; }
-        .card-actions-toggle { width: 28px; height: 28px; border: none; border-radius: 6px; background: var(--bg-main); cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; margin-top: auto; }
-        .card-actions-toggle:hover { background: var(--primary); color: white; }
-        .card-actions-toggle.open { background: var(--primary); color: white; transform: rotate(180deg); }
-        
-        /* Details panel */
-        .card-details { display: none; padding: 12px; background: #f8fafc; border-top: 1px solid var(--border); }
-        .card-details.show { display: block; }
-        .details-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
-        .detail-item { background: white; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border); }
-        .detail-label { display: block; font-size: 10px; color: var(--text-secondary); margin-bottom: 2px; }
-        .detail-value { font-size: 12px; font-weight: 600; color: var(--text); word-break: break-word; }
-        .detail-note { background: #fffbeb; padding: 10px; border-radius: 6px; margin-top: 10px; border: 1px solid #fef3c7; }
-        .detail-note .detail-label { margin-bottom: 4px; }
-        .card-expand-icon { font-size: 10px; color: var(--text-secondary); transition: transform 0.2s; }
-        .lead-card.expanded .card-expand-icon { transform: rotate(180deg); }
-        .detail-block { background: white; border: 1px solid var(--border); border-left: 3px solid var(--primary); border-radius: 6px; padding: 8px 10px; }
-        .detail-block-label { font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 2px; }
-        .detail-block-value { font-size: 12px; font-weight: 600; color: var(--text-primary); word-break: break-word; }
-        .detail-block-value.empty { color: var(--text-secondary); opacity: 0.5; }
 
-        /* INLINE EDIT FIELDS */
+        /* Inline edit fields (in expanded details) */
         .inline-edit-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 6px; }
         .inline-edit-field { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; transition: all 0.2s; }
         .inline-edit-field:focus-within { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(26,58,94,0.08); }
         .inline-edit-label { font-size: 9px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 3px; display: block; letter-spacing: 0.3px; }
         .inline-edit-input { width: 100%; border: none; outline: none; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text-primary); background: transparent; padding: 2px 0; }
         .inline-edit-input::placeholder { color: #cbd5e1; font-weight: 400; }
-
-        /* MODERN SELECT DROPDOWN */
         .inline-edit-select { width: 100%; border: none; outline: none; font-size: 12px; font-weight: 600; font-family: inherit; color: var(--text-primary); background: transparent; padding: 2px 20px 2px 0; cursor: pointer; -webkit-appearance: none; -moz-appearance: none; appearance: none; }
         .inline-edit-select option { font-family: 'Montserrat', sans-serif; font-size: 13px; padding: 10px; font-weight: 500; }
         .inline-edit-field.select-field { position: relative; cursor: pointer; }
         .inline-edit-field.select-field::after { content: ''; position: absolute; right: 10px; bottom: 12px; width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--primary); pointer-events: none; opacity: 0.6; }
         .inline-edit-field.select-field:hover { background: #f8fafc; }
         .inline-edit-field.select-field:hover::after { opacity: 1; }
-
         .inline-edit-field.saved { animation: fieldSaved 0.6s ease; }
         @keyframes fieldSaved { 0% { background: #d1fae5; border-color: var(--success); } 100% { background: white; border-color: var(--border); } }
-
-        /* Quick save indicator */
         .inline-save-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--success); font-weight: 600; opacity: 0; transition: opacity 0.3s; margin-top: 6px; }
         .inline-save-indicator.show { opacity: 1; }
-
-        /* CARD DETAILS CLOSE BUTTON */
-        .card-details .details-close-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; position: absolute; top: 8px; right: 8px; background: white; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-secondary); z-index: 2; transition: all 0.15s; }
-        .card-details .details-close-btn:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
-        .card-details.show { position: relative; }
-
-        /* Section title in inline edit */
         .inline-section-title { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 2px; padding-bottom: 3px; border-bottom: 1px dashed var(--border); grid-column: 1 / -1; }
-
-        /* Photo field with link */
         .inline-photo-wrap { display: flex; align-items: center; gap: 6px; grid-column: 1 / -1; }
         .inline-photo-wrap .inline-edit-field { flex: 1; margin: 0; }
         .inline-photo-link { display: inline-flex; align-items: center; gap: 3px; padding: 6px 10px; background: var(--info); color: white; border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none; white-space: nowrap; flex-shrink: 0; transition: opacity 0.2s; }
         .inline-photo-link:hover { opacity: 0.85; }
-        
-        /* Actions panel - 2x2 grid */
+
+        /* Details panel (full edit on expand) */
+        .card-details { display: none; padding: 12px; background: #f8fafc; border-top: 1px solid var(--border); }
+        .card-details.show { display: block; position: relative; }
+        .card-details .details-close-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; position: absolute; top: 8px; right: 8px; background: white; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-secondary); z-index: 2; transition: all 0.15s; }
+        .card-details .details-close-btn:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
+
+        /* Actions panel */
         .card-actions { display: none; padding: 10px 12px; background: white; border-top: 1px solid var(--border); }
         .card-actions.show { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
         .btn-card-action { padding: 10px 6px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 4px; }
         .btn-card-action.btn-delete { background: #fee2e2; color: #dc2626; }
         .btn-card-action.btn-delete:hover { background: #dc2626; color: white; }
+
+        /* Column visibility toggle panel */
+        .col-vis-bar { display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: white; border-radius: 8px; margin-bottom: 8px; box-shadow: var(--shadow); flex-wrap: wrap; }
+        .col-vis-bar .col-vis-title { font-size: 10px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .col-vis-btn { padding: 4px 8px; border: 1px solid var(--border); border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; font-family: inherit; background: white; color: var(--text-primary); transition: all 0.15s; }
+        .col-vis-btn:hover { border-color: var(--primary); }
+        .col-vis-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .col-vis-btn.hidden-col { background: #f3f4f6; color: #9ca3af; border-color: #e5e7eb; text-decoration: line-through; }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .cg-row { flex-wrap: wrap; }
+            .cg-main, .cg-mid, .cg-sm { min-width: 0; flex: 1 1 100%; }
+            .cg-cell { border-right: none; border-bottom: 1px solid #f8f9fb; }
+            .col-vis-bar { display: none; }
+        }
         
         /* Route stats - адаптивна статистика */
         .route-stats-box { background: white; border-radius: 8px; padding: 12px; margin-bottom: 12px; box-shadow: var(--shadow); }
@@ -737,24 +748,19 @@
         .route-stat-item.active.not-notified { background: #f97316; }
         .route-stat-num { font-size: 18px; font-weight: 700; }
         .route-stat-label { font-size: 9px; white-space: nowrap; }
-        
+
         @media (max-width: 500px) {
             .route-stats-grid { grid-template-columns: repeat(3, 1fr); gap: 6px; }
             .route-stat-item { padding: 10px 6px; }
             .route-stat-num { font-size: 20px; }
             .route-stat-label { font-size: 10px; }
-            /* Картки на мобільному - звужуємо бокові елементи */
-            .card-top-row { flex-wrap: wrap; }
-            .card-phone { min-width: auto; }
-            .card-direction { width: auto; }
             .drag-handle { padding: 8px 4px; }
             .drag-handle span { width: 10px; }
-            .card-checkbox-wrap { padding: 8px 4px; }
+            .card-cb { padding: 8px 4px; }
             .card-checkbox { width: 14px; height: 14px; }
-            .card-right-section { min-width: 48px; padding: 4px 4px; }
+            .card-right-panel { min-width: 48px; padding: 4px 4px; }
             .card-vehicle-badge { font-size: 8px; padding: 3px 5px; }
             .card-actions-toggle { width: 24px; height: 24px; font-size: 9px; }
-            .card-body { padding: 8px 6px; }
             .header-edit-btn { opacity: 0.4; }
         }
         .btn-call { background: var(--primary); color: white; }
@@ -775,11 +781,7 @@
         .lead-card.dragging { opacity: 0.5; transform: scale(1.02); }
         .lead-card.drag-over { border-top: 3px solid var(--success); margin-top: -3px; }
 
-        /* INLINE HEADER EDIT */
-        .header-edit-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border: none; border-radius: 3px; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 9px; opacity: 0; transition: all 0.15s; padding: 0; flex-shrink: 0; margin-left: 2px; vertical-align: middle; }
-        .card-top-row:hover .header-edit-btn, .card-route-row:hover .header-edit-btn, .card-info-row:hover .header-edit-btn { opacity: 0.5; }
-        .header-edit-btn:hover { opacity: 1 !important; background: var(--primary); color: white; }
-        .header-inline-input { border: 1px solid var(--primary); border-radius: 4px; padding: 2px 5px; font-size: inherit; font-weight: inherit; font-family: inherit; color: inherit; background: white; outline: none; box-shadow: 0 0 0 2px rgba(26,58,94,0.15); }
+        /* INLINE HEADER EDIT - kept for route passengers view */
         .header-inline-input:focus { border-color: var(--primary); }
 
         /* BULK ACTIONS SIDEBAR - виїзна панель (червоно-бордова) */
@@ -1965,6 +1967,8 @@ let vehicles = [
 ];
 let filters = {date:'',vehicle:'',search:'',showArchive:false,statusFilter:'',routeVehicle:'',direction:'all',specialStatus:'',statusDateFrom:'',statusDateTo:'',showNewOnly:true};
 let selectedIds = new Set();
+let expandedExtras = new Set(); // Cards with expanded extra section
+let hiddenCols = new Set(); // Hidden column keys
 let editingId = null;
 let openDetailsId = null;
 let openActionsId = null;
@@ -2095,8 +2099,8 @@ function playNotificationSound() {
     }
 }
 
-function loadSettings() { try { const s = JSON.parse(localStorage.getItem('yuraCrmPackagesV1')||'{}'); if(s.colSettings)colSettings=s.colSettings; if(s.packages)packages=s.packages; if(s.columnLabels){Object.keys(s.columnLabels).forEach(k=>{if(ALL_COLUMNS[k])ALL_COLUMNS[k].label=s.columnLabels[k];});} } catch(e){} }
-function saveSettings() { const columnLabels={}; Object.keys(ALL_COLUMNS).forEach(k=>{columnLabels[k]=ALL_COLUMNS[k].label;}); localStorage.setItem('yuraCrmPackagesV1', JSON.stringify({colSettings,packages,vehicles,columnLabels})); }
+function loadSettings() { try { const s = JSON.parse(localStorage.getItem('yuraCrmPackagesV1')||'{}'); if(s.colSettings)colSettings=s.colSettings; if(s.packages)packages=s.packages; if(s.hiddenCols)hiddenCols=new Set(s.hiddenCols); if(s.columnLabels){Object.keys(s.columnLabels).forEach(k=>{if(ALL_COLUMNS[k])ALL_COLUMNS[k].label=s.columnLabels[k];});} } catch(e){} }
+function saveSettings() { const columnLabels={}; Object.keys(ALL_COLUMNS).forEach(k=>{columnLabels[k]=ALL_COLUMNS[k].label;}); localStorage.setItem('yuraCrmPackagesV1', JSON.stringify({colSettings,packages,vehicles,columnLabels,hiddenCols:[...hiddenCols]})); }
 
 // SIDE MENU
 function openSideMenu() { document.getElementById('sideMenu').classList.add('open'); document.getElementById('sideMenuOverlay').classList.add('show'); renderMobileCalendar(); updateMobileVehicles(); }
@@ -2625,26 +2629,32 @@ function render() {
     
     if (!data.length) { c.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔍</div><div>Не знайдено</div></div>'; return; }
     
-    const detailCols = colSettings.details;
     const isRouteView = filters.statusFilter === 'route';
-    const canDrag = true; // Завжди дозволяємо перетягування
     const hasSearch = filters.search && filters.search.trim();
-    
-    c.innerHTML = data.map((p, idx) => {
+    const hc = hiddenCols; // shortcut
+
+    // Column visibility bar
+    const colVisBar = `<div class="col-vis-bar" id="colVisBar">
+        <span class="col-vis-title">Колонки:</span>
+        ${Object.keys(ALL_COLUMNS).map(k => `<button class="col-vis-btn ${hc.has(k)?'hidden-col':'active'}" onclick="toggleColVis('${k}')" title="${ALL_COLUMNS[k].label}">${ALL_COLUMNS[k].label}</button>`).join('')}
+    </div>`;
+
+    c.innerHTML = colVisBar + data.map((p, idx) => {
         const uniqueKey = (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : `local_${idx}`;
         const sel = selectedIds.has(uniqueKey);
         const dOpen = openDetailsId === uniqueKey;
         const aOpen = openActionsId === uniqueKey;
+        const extOpen = expandedExtras.has(uniqueKey);
         const veh = vehicles.find(v => v.id === p.vehicle || v.name === p.vehicle);
         const isUaEu = p.direction === 'ua-eu';
         const uk = uniqueKey;
         const esc = (v) => (v || '').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-        // Direction label (bold text, no emoji)
+        // Direction label
         const dirLabel = isUaEu ? 'UA→EU' : 'EU→UA';
         const dirClass = isUaEu ? '' : ' eu-ua';
 
-        // Header values
+        // Values
         const phoneRaw = p.phone || '—';
         const phoneDisplay = hasSearch ? highlightSearch(phoneRaw) : phoneRaw;
         const weightDisplay = p.weight ? p.weight + ' кг' : '';
@@ -2656,24 +2666,33 @@ function render() {
         const nameDisplay = hasSearch ? highlightSearch(p.name || '—') : (p.name || '—');
         const numberDisplay = p.number || '';
         const dateDisplay = p.dateReg ? getFieldValue(p, 'dateReg') : '—';
-        const addressShort = p.address ? (p.address.length > 40 ? p.address.substring(0, 40) + '...' : p.address) : '—';
+        const dateRecvDisplay = p.dateReceive ? getFieldValue(p, 'dateReceive') : '';
+        const addressShort = p.address ? (p.address.length > 45 ? p.address.substring(0, 45) + '...' : p.address) : '—';
         const addressDisplay = hasSearch ? highlightSearch(addressShort) : addressShort;
+        const noteShort = p.note ? (p.note.length > 30 ? p.note.substring(0, 30) + '...' : p.note) : '';
 
-        // Payment badges for header
-        const payStatusClass = p.payStatus === 'Оплачено' ? 'paid' : (p.payStatus === 'Неоплачено' ? 'unpaid' : 'neutral');
-        const payStatusBadge = p.payStatus ? `<span class="card-pay-badge ${payStatusClass}">${p.payStatus}</span>` : '';
+        // Payment
+        const payStatusClass = p.payStatus === 'Оплачено' ? 'paid' : (p.payStatus === 'Неоплачено' ? 'unpaid' : '');
+        const payStatusBadge = p.payStatus ? `<span class="card-pay-badge ${payStatusClass?payStatusClass:'neutral'}">${p.payStatus}</span>` : '';
         const paymentBadge = p.payment ? `<span class="card-pay-badge neutral">${p.payment}</span>` : '';
 
-        // Vehicle badge
+        // Vehicle
         const vehicleBadge = veh
             ? `<span class="card-vehicle-badge">${veh.name}</span>`
             : `<span class="card-vehicle-badge empty">—</span>`;
         const orderNum = isRouteView ? `<span class="order-num">${idx + 1}</span>` : '';
         const notGeocodedClass = p._notGeocoded ? 'not-geocoded-card' : '';
 
-        // === ALL INLINE EDITABLE FIELDS ===
-        const vehOpts = vehicles.map(v => `<option value="${esc(v.name)}" ${(p.vehicle===v.id||p.vehicle===v.name)?'selected':''}>${v.name}</option>`).join('');
+        // Helper: cell with col visibility
+        const cc = (col, cls, content) => `<div class="cg-cell ${cls}" data-col="${col}" ${hc.has(col)?'style="display:none"':''}>${content}</div>`;
 
+        // Helper: copy btn
+        const cpBtn = (val) => `<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(val)}',this)" title="Копіювати">📋</button>`;
+        // Helper: edit btn
+        const edBtn = (field) => `<button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','${field}',this)" title="Редагувати">✎</button>`;
+
+        // === INLINE EDITABLE FIELDS (for details panel) ===
+        const vehOpts = vehicles.map(v => `<option value="${esc(v.name)}" ${(p.vehicle===v.id||p.vehicle===v.name)?'selected':''}>${v.name}</option>`).join('');
         const selOpt = (field, val, options) => options.map(o => `<option value="${esc(o)}" ${val===o?'selected':''}>${o}</option>`).join('');
         const payStatuses = ['Оплачено','Неоплачено','Відправник','Отримувач'];
         const payments = ['При отр гот','При отр на карту','Відпр на карту','Картка','Готівка'];
@@ -2684,7 +2703,7 @@ function render() {
         const mkSelect = (label, field, val, opts) => `<div class="inline-edit-field select-field"><span class="inline-edit-label">${label}</span><select class="inline-edit-select" onchange="inlineSave('${uk}','${field}',this.value)" onclick="event.stopPropagation()"><option value="">—</option>${selOpt(field,val,opts)}</select></div>`;
         const mkSelectVeh = () => `<div class="inline-edit-field select-field"><span class="inline-edit-label">Авто</span><select class="inline-edit-select" onchange="inlineSave('${uk}','vehicle',this.value)" onclick="event.stopPropagation()"><option value="">—</option>${vehOpts}</select></div>`;
 
-        // TTN multi-value support: parse comma-separated TTNs
+        // TTN multi-value
         const ttnArr = (p.ttn || '').split(',').map(t => t.trim()).filter(Boolean);
         const ttnEditHtml = `<div class="inline-edit-field" style="grid-column:1/-1;">
             <span class="inline-edit-label">НОМЕРИ ТТН</span>
@@ -2700,7 +2719,6 @@ function render() {
             <button onclick="event.stopPropagation();addTtnItem('${uk}')" style="margin-top:4px;border:1px dashed var(--border);background:var(--bg-main);border-radius:4px;padding:4px 8px;font-size:10px;font-weight:600;color:var(--info);cursor:pointer;font-family:inherit;">+ Додати ТТН</button>
         </div>`;
 
-        // Photo helper: input + clickable link
         const mkPhoto = (label, field, val) => {
             const hasUrl = val && String(val).trim().match(/^https?:\/\//i);
             return `<div class="inline-photo-wrap">
@@ -2709,97 +2727,88 @@ function render() {
             </div>`;
         };
 
-        // Address helper: input + Google Maps link
-        const mkAddress = (label, field, val) => {
-            const addr = (val || '').trim();
-            return `<div class="inline-photo-wrap">
-                <div class="inline-edit-field" style="flex:1;margin:0;"><span class="inline-edit-label">${label}</span><input class="inline-edit-input" type="text" value="${esc(val)}" placeholder="Місто, вулиця..." onchange="inlineSave('${uk}','${field}',this.value)" onclick="event.stopPropagation()"></div>
-                ${addr ? `<a class="inline-photo-link" href="https://www.google.com/maps/search/${encodeURIComponent(addr)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="background:var(--success);">🗺️ Карта</a>` : ''}
-            </div>`;
-        };
-
-        // Поля що вже відображаються в заголовку (редагуються через ✎)
-        // name, phone, weight, amount, address — НЕ дублюємо
+        // Inline edit HTML (for full details panel)
         let inlineHtml = `<div class="inline-edit-grid">`;
-
-        // === КОНТАКТ (тільки те, чого немає в заголовку) ===
         inlineHtml += `<div class="inline-section-title">Контакт</div>`;
         inlineHtml += mkInput('Тел. реєстратора','phoneReg',p.phoneReg,'+380...');
-
-        // === ТТН ===
         inlineHtml += ttnEditHtml;
-
-        if (isUaEu) {
-            // === МЕНЕДЖЕР (UA→EU) ===
-            inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
-            inlineHtml += mkInput('Внутр. номер','number',p.number,'—');
-            inlineHtml += mkSelectVeh();
-            // === СТАТУСИ ===
-            inlineHtml += `<div class="inline-section-title">Статуси</div>`;
-            inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
-            inlineHtml += mkSelect('Статус оплати','payStatus',p.payStatus,payStatuses);
-            inlineHtml += mkSelect('Оплата','payment',p.payment,payments);
-            inlineHtml += mkSelect('ВО','vo',p.vo,voOptions);
-            // === ІНШЕ ===
-            inlineHtml += `<div class="inline-section-title">Інше</div>`;
-            inlineHtml += mkInput('Примітка','note',p.note,'—');
-            inlineHtml += mkInput('Примітка СМС','smsNote',p.smsNote,'—');
-            inlineHtml += mkInput('Таймінг','timing',p.timing,'—');
-            inlineHtml += mkInput('Дата отримання','dateReceive',p.dateReceive,'','date');
-            inlineHtml += mkPhoto('Фото (URL)','photo',p.photo);
-        } else {
-            // === МЕНЕДЖЕР (EU→UA) ===
-            inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
-            inlineHtml += mkInput('Виклик кур\'єра','number',p.number,'Введіть...');
-            inlineHtml += mkSelectVeh();
-            // === СТАТУСИ ===
-            inlineHtml += `<div class="inline-section-title">Статуси</div>`;
-            inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
-            inlineHtml += mkSelect('Статус оплати','payStatus',p.payStatus,payStatuses);
-            inlineHtml += mkSelect('Оплата','payment',p.payment,payments);
-            inlineHtml += mkSelect('ВО','vo',p.vo,voOptions);
-            // === ІНШЕ ===
-            inlineHtml += `<div class="inline-section-title">Інше</div>`;
-            inlineHtml += mkInput('Таймінг','timing',p.timing,'—');
-            inlineHtml += mkInput('Примітка','note',p.note,'—');
-            inlineHtml += mkInput('Примітка СМС','smsNote',p.smsNote,'—');
-            inlineHtml += mkInput('Дата отримання','dateReceive',p.dateReceive,'','date');
-            inlineHtml += mkPhoto('Фото (URL)','photo',p.photo);
-        }
+        inlineHtml += `<div class="inline-section-title">Менеджер</div>`;
+        inlineHtml += mkInput(isUaEu?'Внутр. номер':'Виклик кур\\'єра','number',p.number,'—');
+        inlineHtml += mkSelectVeh();
+        inlineHtml += `<div class="inline-section-title">Статуси</div>`;
+        inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
+        inlineHtml += mkSelect('Статус оплати','payStatus',p.payStatus,payStatuses);
+        inlineHtml += mkSelect('Оплата','payment',p.payment,payments);
+        inlineHtml += mkSelect('ВО','vo',p.vo,voOptions);
+        inlineHtml += `<div class="inline-section-title">Інше</div>`;
+        inlineHtml += mkInput('Примітка','note',p.note,'—');
+        inlineHtml += mkInput('Примітка СМС','smsNote',p.smsNote,'—');
+        inlineHtml += mkInput('Таймінг','timing',p.timing,'—');
+        inlineHtml += mkInput('Дата отримання','dateReceive',p.dateReceive,'','date');
+        inlineHtml += mkPhoto('Фото (URL)','photo',p.photo);
         inlineHtml += `</div>`;
 
+        // === BUILD CARD HTML - TABLE GRID LAYOUT ===
         return `<div class="lead-card status-${p.status} ${sel?'selected':''} ${notGeocodedClass}" data-uid="${uk}" data-id="${p.id}" draggable="true" ondragstart="handleDragStart(event,'${uk}')" ondragend="handleDragEnd(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'${uk}')">
-            <div class="card-header">
+            <div class="card-main">
                 <div class="drag-handle"><span></span><span></span><span></span></div>
-                <div class="card-checkbox-wrap">
+                <div class="card-cb">
                     <input type="checkbox" class="card-checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleSelect('${uk}')">
                 </div>
-                <div class="card-header-display card-body" onclick="toggleDetails('${uk}')">
-                    <div class="card-top-row">
-                        ${orderNum}
-                        <span class="card-direction${dirClass}">${dirLabel}</span>
-                        ${numberDisplay ? `<span style="background:var(--purple);color:white;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;flex-shrink:0;">№${numberDisplay}</span>` : ''}
-                        ${ttnRaw ? `<span style="background:var(--info);color:white;padding:2px 6px;border-radius:5px;font-size:10px;font-weight:600;flex-shrink:0;display:inline-flex;align-items:center;gap:3px;">ТТН:${ttnDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(ttnRaw)}',this)" title="Копіювати ТТН">📋</button></span>` : ''}
-                        <span class="card-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(phoneRaw)}',this)" title="Копіювати тел.">📋</button><button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','phone',this)" title="Редагувати">✎</button></span>
-                        ${weightDisplay ? `<span class="card-seats">${weightDisplay}<button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','weight',this)" title="Редагувати" style="margin-left:2px;">✎</button></span>` : ''}
-                        <span class="card-price">${priceDisplay}<button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','amount',this)" title="Редагувати">✎</button></span>
-                        ${payStatusBadge}
-                        ${paymentBadge}
-                    </div>
-                    <div class="card-row2-wrap">
-                        <div class="card-route-row">
-                            <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(p.address || '')}',this)" title="Копіювати адресу">📋</button>${(p.address||'').trim() ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;justify-content:center;margin-left:3px;width:20px;height:20px;background:#4285F4;color:white;border-radius:50%;font-size:12px;text-decoration:none;flex-shrink:0;" title="Навігація Google Maps">➤</a>` : ''}<button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','address',this)" title="Редагувати">✎</button></span>
-                        </div>
-                        <div class="card-info-row">
-                            <span class="card-id" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${idDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(idRaw)}',this)" title="Копіювати ІД">📋</button></span>
-                            <span class="card-name" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${nameDisplay}<button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','name',this)" title="Редагувати">✎</button></span>
-                            <span class="card-date">${dateDisplay}</span>
+                <div class="card-grid" onclick="toggleDetails('${uk}')">
+                    <!-- ROW 1: Direction + TTN | Weight | Date -->
+                    <div class="cg-row">
+                        <div class="cg-cell cg-main" data-col="ttn" ${hc.has('ttn')?'style="display:none"':''}>
+                            ${orderNum}
+                            <span class="cg-val-dir${dirClass}">${dirLabel}</span>
+                            ${ttnRaw ? `<span class="cg-val-ttn">ТТН:${ttnDisplay}${cpBtn(ttnRaw)}</span>` : ''}
+                            ${numberDisplay ? `<span class="cg-val-number">№${numberDisplay}</span>` : ''}
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
+                        </div>
+                        ${cc('weight','cg-sm',`<span class="cg-label">Вага</span>${weightDisplay ? `<span class="cg-val-weight">${weightDisplay}</span>${edBtn('weight')}` : `<span style="opacity:0.3">—</span>${edBtn('weight')}`}`)}
+                        ${cc('dateReg','cg-sm',`<span class="cg-label">Дата</span><span class="cg-val-date">${dateDisplay}</span>`)}
+                    </div>
+                    <!-- ROW 2: Phone | Name | Price | Payment -->
+                    <div class="cg-row">
+                        ${cc('phone','cg-main',`<span class="cg-val-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}${cpBtn(phoneRaw)}${edBtn('phone')}</span>`)}
+                        ${cc('name','cg-mid',`<span class="cg-label">Отримувач</span><span class="cg-val-name">${nameDisplay}</span>${edBtn('name')}${cpBtn(p.name||'')}`)}
+                        ${cc('amount','cg-sm',`<span class="cg-val-price">${priceDisplay||'—'}</span>${edBtn('amount')}${payStatusBadge}`)}
+                        ${cc('dateReceive','cg-sm',`<span class="cg-label">Отр.</span><span class="cg-val-date">${dateRecvDisplay||'—'}</span>`)}
+                    </div>
+                    <!-- ROW 3: ID + Seats | Pay | Note -->
+                    <div class="cg-row">
+                        ${cc('id','cg-main',`<span class="cg-val-id" onclick="event.stopPropagation()">${idDisplay}${cpBtn(idRaw)}</span>${paymentBadge}`)}
+                        ${cc('note','cg-mid' + ' ' + 'cg-sm',`<span class="cg-label">Прим.</span>${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : '<span style="opacity:0.3">—</span>'}`)}
+                    </div>
+                    <!-- ROW 4: Address | Internal number -->
+                    <div class="cg-row">
+                        ${cc('address','cg-main',`<span class="cg-val-address" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${cpBtn(p.address||'')}${(p.address||'').trim() ? `<a class="cg-map-link" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Навігація">➤</a>` : ''}${edBtn('address')}</span>`)}
+                        ${cc('number','cg-sm',`<span class="cg-label">Внутр.№</span><span class="cg-val">${numberDisplay||'—'}</span>`)}
+                        ${cc('vehicle','cg-sm',`${vehicleBadge}`)}
+                    </div>
+                    <!-- COLLAPSE TOGGLE -->
+                    <div class="cg-toggle" onclick="event.stopPropagation();toggleCardExtra('${uk}')">
+                        <span class="cg-toggle-icon ${extOpen?'open':''}">▼</span>
+                        <span>${extOpen?'Згорнути':'Більше'}</span>
+                    </div>
+                    <!-- EXTRA ROWS (collapsible) -->
+                    <div class="cg-extra ${extOpen?'open':''}">
+                        <!-- ROW 5 -->
+                        <div class="cg-row">
+                            ${cc('phoneReg','cg-main',`<span class="cg-label">Тел.реєстр.</span><span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}`)}
+                            ${cc('parcelStatus','cg-mid',`<span class="cg-label">Стат.пос.</span><span class="cg-val">${p.parcelStatus||'—'}</span>`)}
+                            ${cc('payStatus','cg-sm',`<span class="cg-label">Оплата</span>${payStatusBadge||'<span style="opacity:0.3">—</span>'}`)}
+                        </div>
+                        <!-- ROW 6 -->
+                        <div class="cg-row">
+                            ${cc('vo','cg-main',`<span class="cg-label">ВО</span><span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>`)}
+                            ${cc('smsNote','cg-mid',`<span class="cg-label">Прим.СМС</span><span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>`)}
+                            ${cc('timing','cg-sm',`<span class="cg-label">Таймінг</span><span class="cg-val">${p.timing||'—'}</span>`)}
                         </div>
                     </div>
                 </div>
-                <div class="card-right-section">
-                    <div class="card-vehicle">${vehicleBadge}</div>
+                <div class="card-right-panel">
+                    <div>${vehicleBadge}</div>
                     <button class="card-actions-toggle ${aOpen?'open':''}" onclick="event.stopPropagation();toggleActions('${uk}')">▼</button>
                 </div>
             </div>
@@ -2909,9 +2918,47 @@ function toggleActions(uid) {
     document.querySelector(`[data-uid="${uid}"] .card-actions-toggle`)?.classList.toggle('open', openActionsId === uid);
 }
 
-function toggleSelect(uid) { 
-    selectedIds.has(uid) ? selectedIds.delete(uid) : selectedIds.add(uid); 
-    document.querySelector(`[data-uid="${uid}"]`)?.classList.toggle('selected', selectedIds.has(uid)); 
+// Toggle extra fields section per card
+function toggleCardExtra(uid) {
+    if (expandedExtras.has(uid)) {
+        expandedExtras.delete(uid);
+    } else {
+        expandedExtras.add(uid);
+    }
+    const card = document.querySelector(`[data-uid="${uid}"]`);
+    if (card) {
+        const extra = card.querySelector('.cg-extra');
+        const icon = card.querySelector('.cg-toggle-icon');
+        const label = card.querySelector('.cg-toggle span:last-child');
+        if (extra) extra.classList.toggle('open', expandedExtras.has(uid));
+        if (icon) icon.classList.toggle('open', expandedExtras.has(uid));
+        if (label) label.textContent = expandedExtras.has(uid) ? 'Згорнути' : 'Більше';
+    }
+}
+
+// Toggle column visibility
+function toggleColVis(key) {
+    if (hiddenCols.has(key)) {
+        hiddenCols.delete(key);
+    } else {
+        hiddenCols.add(key);
+    }
+    saveSettings();
+    // Update visibility without full re-render
+    document.querySelectorAll(`[data-col="${key}"]`).forEach(el => {
+        el.style.display = hiddenCols.has(key) ? 'none' : '';
+    });
+    // Update button state
+    const btn = document.querySelector(`.col-vis-btn[onclick*="'${key}'"]`);
+    if (btn) {
+        btn.classList.toggle('active', !hiddenCols.has(key));
+        btn.classList.toggle('hidden-col', hiddenCols.has(key));
+    }
+}
+
+function toggleSelect(uid) {
+    selectedIds.has(uid) ? selectedIds.delete(uid) : selectedIds.add(uid);
+    document.querySelector(`[data-uid="${uid}"]`)?.classList.toggle('selected', selectedIds.has(uid));
     updateBulkBar();
 }
 
@@ -5138,7 +5185,7 @@ function saveColumnsSettings() {
 function headerEdit(uid, field, btn) {
     const p = findPackageByUid(uid);
     if (!p) return;
-    const parent = btn.closest('span');
+    const parent = btn.closest('span') || btn.closest('.cg-cell');
     if (!parent) return;
 
     // Determine current value and field config
@@ -5242,14 +5289,13 @@ function inlineSave(uid, field, value) {
     // Оновлюємо заголовок картки без повного ре-рендеру
     const headerFields = ['weight','amount','number','vehicle','name','phone','address','ttn'];
     if (headerFields.includes(field) && card) {
-        const display = card.querySelector('.card-header-display');
-        if (display) {
-            // Оновити відображення в заголовку
-            if (field === 'phone') { const el = display.querySelector('.card-phone'); if (el) el.innerHTML = `${value || '—'}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${(value||'').replace(/'/g,"\\'")}',this)" title="Копіювати тел.">📋</button>`; }
-            if (field === 'name') { const el = display.querySelector('.card-name'); if (el) el.textContent = value || '—'; }
-            if (field === 'weight') { const el = display.querySelector('.card-seats'); if (el) el.textContent = value ? value + ' кг' : ''; }
-            if (field === 'amount') { const el = display.querySelector('.card-price'); if (el) el.textContent = value ? '€' + value : ''; }
-            if (field === 'address') { const el = display.querySelector('.card-route a'); if (el) el.textContent = '📍 ' + (value ? (value.length > 40 ? value.substring(0,40) + '...' : value) : '—'); }
+        const grid = card.querySelector('.card-grid');
+        if (grid) {
+            if (field === 'phone') { const el = grid.querySelector('.cg-val-phone'); if (el) el.innerHTML = `${value || '—'}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${(value||'').replace(/'/g,"\\'")}',this)" title="Копіювати тел.">📋</button>`; }
+            if (field === 'name') { const el = grid.querySelector('.cg-val-name'); if (el) el.textContent = value || '—'; }
+            if (field === 'weight') { const el = grid.querySelector('.cg-val-weight'); if (el) el.textContent = value ? value + ' кг' : ''; }
+            if (field === 'amount') { const el = grid.querySelector('.cg-val-price'); if (el) el.textContent = value ? '€' + value : ''; }
+            if (field === 'address') { const el = grid.querySelector('.cg-val-address'); if (el) el.textContent = '📍 ' + (value ? (value.length > 45 ? value.substring(0,45) + '...' : value) : '—'); }
         }
     }
 
