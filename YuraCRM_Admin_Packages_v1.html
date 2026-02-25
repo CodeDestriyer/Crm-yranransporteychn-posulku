@@ -703,21 +703,19 @@
         .inline-save-indicator { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: var(--success); font-weight: 600; opacity: 0; transition: opacity 0.3s; margin-top: 6px; }
         .inline-save-indicator.show { opacity: 1; }
 
-        /* EDITABLE HEADER MODE */
-        .lead-card .card-header-edit { display: none; }
-        .lead-card.details-open .card-header-display { display: none; }
-        .lead-card.details-open .card-header-edit { display: flex; flex-direction: column; gap: 4px; flex: 1; padding: 8px 10px; min-width: 0; position: relative; }
-        .card-header-edit .collapse-btn { position: absolute; top: 4px; right: 4px; background: none; border: 1px solid var(--border); border-radius: 5px; cursor: pointer; font-size: 14px; color: var(--text-secondary); padding: 2px 7px; line-height: 1; z-index: 2; }
-        .card-header-edit .collapse-btn:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
-        .lead-card.details-open .card-header-edit .edit-row { display: flex; align-items: center; gap: 5px; flex-wrap: wrap; }
-        .lead-card.details-open .card-header-edit .edit-field { border: 1px solid var(--border); border-radius: 5px; padding: 4px 8px; font-size: 12px; font-weight: 600; font-family: inherit; outline: none; background: white; min-width: 80px; }
-        .lead-card.details-open .card-header-edit .edit-field:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,58,94,0.1); }
-        .lead-card.details-open .card-header-edit .edit-field.saved { animation: fieldSaved 0.6s ease; }
-        .lead-card.details-open .card-header-edit .edit-field-wide { flex: 1; min-width: 150px; }
-        .lead-card.details-open .card-body { pointer-events: none; }
+        /* CARD DETAILS CLOSE BUTTON */
+        .card-details .details-close-btn { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; position: absolute; top: 8px; right: 8px; background: white; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; font-size: 14px; color: var(--text-secondary); z-index: 2; transition: all 0.15s; }
+        .card-details .details-close-btn:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
+        .card-details.show { position: relative; }
 
         /* Section title in inline edit */
         .inline-section-title { font-size: 10px; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: 0.5px; margin: 6px 0 2px; padding-bottom: 3px; border-bottom: 1px dashed var(--border); grid-column: 1 / -1; }
+
+        /* Photo field with link */
+        .inline-photo-wrap { display: flex; align-items: center; gap: 6px; grid-column: 1 / -1; }
+        .inline-photo-wrap .inline-edit-field { flex: 1; margin: 0; }
+        .inline-photo-link { display: inline-flex; align-items: center; gap: 3px; padding: 6px 10px; background: var(--info); color: white; border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none; white-space: nowrap; flex-shrink: 0; transition: opacity 0.2s; }
+        .inline-photo-link:hover { opacity: 0.85; }
         
         /* Actions panel - 2x2 grid */
         .card-actions { display: none; padding: 10px 12px; background: white; border-top: 1px solid var(--border); }
@@ -1129,6 +1127,13 @@
         <button class="side-menu-close" onclick="closeSideMenu()">×</button>
     </div>
     <div class="side-menu-content">
+        <!-- Нові — завжди зверху -->
+        <div style="padding:8px 12px;">
+            <div class="side-menu-item" id="mobileNewLeads" onclick="showNewLeads(); closeSideMenu();" style="background:linear-gradient(135deg,#dbeafe,#ede9fe);border:1px solid #93c5fd;border-radius:8px;font-weight:700;">
+                <span class="side-menu-item-left">🆕 Нові (24 год)</span>
+                <span class="side-menu-item-count" id="mobileCountNew" style="background:var(--primary);color:white;">0</span>
+            </div>
+        </div>
         <!-- Напрямок -->
         <div class="side-menu-section">
             <div class="side-menu-section-header" onclick="toggleMobileSection('direction')">
@@ -1139,10 +1144,6 @@
                 <div class="side-menu-item" id="mobileDirectionAll" onclick="setDirection('all'); closeSideMenu();">
                     <span class="side-menu-item-left">📊 Всі напрямки</span>
                     <span class="side-menu-item-count" id="mobileCountAll">0</span>
-                </div>
-                <div class="side-menu-item" id="mobileNewLeads" onclick="showNewLeads(); closeSideMenu();" style="background:rgba(249,115,22,0.15);">
-                    <span class="side-menu-item-left">🆕 Нові (24 год)</span>
-                    <span class="side-menu-item-count" id="mobileCountNew" style="background:var(--accent);color:white;">0</span>
                 </div>
                 <div class="side-menu-item" id="mobileDirectionUaEu" onclick="setDirection('ua-eu'); closeSideMenu();">
                     <span class="side-menu-item-left">🇺🇦→🇪🇺 Україна → Європа</span>
@@ -1247,6 +1248,13 @@
 <div class="main-layout">
     <!-- PC SIDEBAR -->
     <aside class="pc-sidebar" id="pcSidebar">
+        <!-- Нові — завжди зверху -->
+        <div style="padding:8px 10px;">
+            <div class="pc-sidebar-item" id="pcNewLeads" onclick="showNewLeads()" style="background:linear-gradient(135deg,#dbeafe,#ede9fe);border:1px solid #93c5fd;border-radius:8px;padding:10px 12px;font-weight:700;">
+                <span><span class="item-icon">🆕</span>Нові (24 год)</span>
+                <span class="item-count" id="pcCountNew" style="background:var(--primary);color:white;">0</span>
+            </div>
+        </div>
         <!-- Напрямок -->
         <div class="pc-sidebar-section">
             <div class="pc-sidebar-header" onclick="togglePcSection('direction')">
@@ -1257,10 +1265,6 @@
                 <div class="pc-sidebar-item" id="pcDirectionAll" onclick="setDirection('all')">
                     <span><span class="item-icon">📊</span>Всі посилки</span>
                     <span class="item-count" id="pcCountAll">0</span>
-                </div>
-                <div class="pc-sidebar-item" id="pcNewLeads" onclick="showNewLeads()" style="background:rgba(249,115,22,0.1);">
-                    <span><span class="item-icon">🆕</span>Нові (24 год)</span>
-                    <span class="item-count" id="pcCountNew" style="background:var(--accent);color:white;">0</span>
                 </div>
                 <div class="pc-sidebar-item" id="pcDirectionUaEu" onclick="setDirection('ua-eu')">
                     <span><span class="item-icon">🇺🇦→🇪🇺</span>Україна → Європа</span>
@@ -2648,40 +2652,67 @@ function render() {
             <button onclick="event.stopPropagation();addTtnItem('${uk}')" style="margin-top:4px;border:1px dashed var(--border);background:var(--bg-main);border-radius:4px;padding:4px 8px;font-size:10px;font-weight:600;color:var(--info);cursor:pointer;font-family:inherit;">+ Додати ТТН</button>
         </div>`;
 
+        // Photo helper: input + clickable link
+        const mkPhoto = (label, field, val) => {
+            const hasUrl = val && String(val).trim().match(/^https?:\/\//i);
+            return `<div class="inline-photo-wrap">
+                <div class="inline-edit-field" style="flex:1;margin:0;"><span class="inline-edit-label">${label}</span><input class="inline-edit-input" type="text" value="${esc(val)}" placeholder="https://..." onchange="inlineSave('${uk}','${field}',this.value)" onclick="event.stopPropagation()"></div>
+                ${hasUrl ? `<a class="inline-photo-link" href="${esc(String(val).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()">📷 Відкрити</a>` : ''}
+            </div>`;
+        };
+
         let inlineHtml = `<div class="inline-edit-grid">`;
 
+        // === КОНТАКТ ===
+        inlineHtml += `<div class="inline-section-title">Контакт</div>`;
+        inlineHtml += mkInput('ПІБ','name',p.name,'Прізвище Ім\'я');
+        inlineHtml += mkInput('Телефон','phone',p.phone,'+380...');
         inlineHtml += mkInput('Тел. реєстратора','phoneReg',p.phoneReg,'+380...');
+        inlineHtml += mkInput('Адреса','address',p.address,'Місто, вулиця...');
+
+        // === ТТН ===
+        inlineHtml += ttnEditHtml;
 
         if (isUaEu) {
+            // === МЕНЕДЖЕР (UA→EU) ===
             inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
             inlineHtml += mkInput('Внутр. номер','number',p.number,'—');
             inlineHtml += mkInput('Вага (кг)','weight',p.weight,'0');
             inlineHtml += mkInput('Сума €','amount',p.amount,'0');
             inlineHtml += mkSelectVeh();
+            // === СТАТУСИ ===
+            inlineHtml += `<div class="inline-section-title">Статуси</div>`;
+            inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
             inlineHtml += mkSelect('Статус оплати','payStatus',p.payStatus,payStatuses);
             inlineHtml += mkSelect('Оплата','payment',p.payment,payments);
-            inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
             inlineHtml += mkSelect('ВО','vo',p.vo,voOptions);
+            // === ІНШЕ ===
+            inlineHtml += `<div class="inline-section-title">Інше</div>`;
             inlineHtml += mkInput('Примітка','note',p.note,'—');
             inlineHtml += mkInput('Примітка СМС','smsNote',p.smsNote,'—');
             inlineHtml += mkInput('Таймінг','timing',p.timing,'—');
             inlineHtml += mkInput('Дата отримання','dateReceive',p.dateReceive,'','date');
-            inlineHtml += mkInput('Фото (URL)','photo',p.photo,'https://...');
+            inlineHtml += mkPhoto('Фото (URL)','photo',p.photo);
         } else {
+            // === МЕНЕДЖЕР (EU→UA) ===
             inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
-            inlineHtml += mkInput('Таймінг','timing',p.timing,'—');
-            inlineHtml += mkInput('Примітка','note',p.note,'—');
-            inlineHtml += mkInput('Дата отримання','dateReceive',p.dateReceive,'','date');
             inlineHtml += mkInput('Виклик кур\'єра','number',p.number,'Введіть...');
-            inlineHtml += mkInput('Примітка СМС','smsNote',p.smsNote,'—');
-            inlineHtml += mkSelectVeh();
-            inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
-            inlineHtml += mkSelect('Статус оплати','payStatus',p.payStatus,payStatuses);
-            inlineHtml += mkSelect('Оплата','payment',p.payment,payments);
-            inlineHtml += mkSelect('ВО','vo',p.vo,voOptions);
             inlineHtml += mkInput('Вага (кг)','weight',p.weight,'0');
             inlineHtml += mkInput('Сума €','amount',p.amount,'0');
-            inlineHtml += mkInput('Фото (URL)','photo',p.photo,'https://...');
+            inlineHtml += mkSelectVeh();
+            // === СТАТУСИ ===
+            inlineHtml += `<div class="inline-section-title">Статуси</div>`;
+            inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
+            inlineHtml += mkSelect('Статус оплати','payStatus',p.payStatus,payStatuses);
+            inlineHtml += mkSelect('Оплата','payment',p.payment,payments);
+            inlineHtml += mkSelect('ВО','vo',p.vo,voOptions);
+            // === ІНШЕ ===
+            inlineHtml += `<div class="inline-section-title">Інше</div>`;
+            inlineHtml += mkInput('Таймінг','timing',p.timing,'—');
+            inlineHtml += mkInput('Примітка','note',p.note,'—');
+            inlineHtml += mkInput('Примітка СМС','smsNote',p.smsNote,'—');
+            inlineHtml += mkInput('Дата отримання','dateReceive',p.dateReceive,'','date');
+            inlineHtml += mkPhoto('Фото (URL)','photo',p.photo);
         }
         inlineHtml += `</div>`;
 
@@ -2715,29 +2746,13 @@ function render() {
                         </div>
                     </div>
                 </div>
-                <div class="card-header-edit">
-                    <button class="collapse-btn" onclick="event.stopPropagation();toggleDetails('${uk}')" title="Згорнути">✕</button>
-                    <div class="edit-row">
-                        ${orderNum}
-                        <span class="card-direction${dirClass}">${dirLabel}</span>
-                        <input class="edit-field" style="flex:1;min-width:100px;" value="${esc(phoneRaw)}" placeholder="Телефон" onchange="inlineSaveHeader(this,'${uk}','phone',this.value)" onclick="event.stopPropagation()">
-                        <input class="edit-field" style="width:60px;" value="${esc(p.weight||'')}" placeholder="Вага" onchange="inlineSaveHeader(this,'${uk}','weight',this.value)" onclick="event.stopPropagation()">
-                        <input class="edit-field" style="width:60px;" value="${esc(p.amount||'')}" placeholder="€" onchange="inlineSaveHeader(this,'${uk}','amount',this.value)" onclick="event.stopPropagation()">
-                    </div>
-                    <div class="edit-row">
-                        <input class="edit-field edit-field-wide" value="${esc(p.name||'')}" placeholder="ПІБ" onchange="inlineSaveHeader(this,'${uk}','name',this.value)" onclick="event.stopPropagation()">
-                        <input class="edit-field edit-field-wide" value="${esc(p.ttn||'')}" placeholder="ТТН" onchange="inlineSaveHeader(this,'${uk}','ttn',this.value)" onclick="event.stopPropagation()">
-                    </div>
-                    <div class="edit-row">
-                        <input class="edit-field edit-field-wide" value="${esc(p.address||'')}" placeholder="Адреса" onchange="inlineSaveHeader(this,'${uk}','address',this.value)" onclick="event.stopPropagation()">
-                    </div>
-                </div>
                 <div class="card-right-section">
                     <div class="card-vehicle">${vehicleBadge}</div>
                     <button class="card-actions-toggle ${aOpen?'open':''}" onclick="event.stopPropagation();toggleActions('${uk}')">▼</button>
                 </div>
             </div>
             <div class="card-details ${dOpen?'show':''}">
+                <button class="details-close-btn" onclick="event.stopPropagation();toggleDetails('${uk}')" title="Згорнути">✕</button>
                 ${inlineHtml}
                 <span class="inline-save-indicator" id="saveInd_${uk.replace(/[^a-zA-Z0-9]/g,'_')}">✓ Збережено</span>
             </div>
@@ -5110,44 +5125,20 @@ function inlineSave(uid, field, value) {
         .catch(err => console.error('Inline save error:', err));
     }
 
-    // Оновлюємо заголовок картки без повного ре-рендеру (для key fields)
-    if (['weight','amount','number','vehicle','name','phone','address','ttn'].includes(field)) {
-        // re-render for header fields
-        render();
+    // Оновлюємо заголовок картки без повного ре-рендеру
+    const headerFields = ['weight','amount','number','vehicle','name','phone','address','ttn'];
+    if (headerFields.includes(field) && card) {
+        const display = card.querySelector('.card-header-display');
+        if (display) {
+            // Оновити відображення в заголовку
+            if (field === 'phone') { const el = display.querySelector('.card-phone'); if (el) el.innerHTML = `${value || '—'}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${(value||'').replace(/'/g,"\\'")}',this)" title="Копіювати тел.">📋</button>`; }
+            if (field === 'name') { const el = display.querySelector('.card-name'); if (el) el.textContent = value || '—'; }
+            if (field === 'weight') { const el = display.querySelector('.card-seats'); if (el) el.textContent = value ? value + ' кг' : ''; }
+            if (field === 'amount') { const el = display.querySelector('.card-price'); if (el) el.textContent = value ? '€' + value : ''; }
+            if (field === 'address') { const el = display.querySelector('.card-route a'); if (el) el.textContent = '📍 ' + (value ? (value.length > 40 ? value.substring(0,40) + '...' : value) : '—'); }
+        }
     }
 
-    updateAllCounts();
-}
-
-// === INLINE SAVE for header edit fields (with green flash, no re-render) ===
-function inlineSaveHeader(el, uid, field, value) {
-    const p = findPackageByUid(uid);
-    if (!p) return;
-
-    // Оновлюємо локально
-    p[field] = value;
-    saveSettings();
-
-    // Зелена підсвітка на полі
-    el.classList.add('saved');
-    setTimeout(() => el.classList.remove('saved'), 600);
-
-    // Показуємо індикатор збереження
-    const indId = 'saveInd_' + uid.replace(/[^a-zA-Z0-9]/g, '_');
-    const ind = document.getElementById(indId);
-    if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 1500); }
-
-    // Зберігаємо на сервері
-    if (p._sheet && p._rowNum) {
-        fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({ action: 'updateField', sheet: p._sheet, rowNum: p._rowNum, field: field, value: value })
-        })
-        .then(r => r.json())
-        .then(data => { if (!data.success) console.warn('Header save error:', data.error); })
-        .catch(err => console.error('Header save error:', err));
-    }
     updateAllCounts();
 }
 
