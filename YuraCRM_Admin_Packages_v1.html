@@ -601,8 +601,8 @@
         .route-order-num { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: var(--primary); color: white; border-radius: 50%; font-size: 11px; font-weight: 700; }
         
         .card-header { display: flex; align-items: stretch; padding: 0; cursor: pointer; border-radius: 8px 8px 0 0; overflow: hidden; }
-        .card-checkbox-wrap { display: flex; align-items: center; justify-content: center; padding: 10px 8px; background: var(--bg-main); border-right: 1px solid var(--border); flex-shrink: 0; }
-        .card-checkbox { width: 18px; height: 18px; cursor: pointer; }
+        .card-checkbox-wrap { display: flex; align-items: center; justify-content: center; padding: 10px 6px; background: var(--bg-main); border-right: 1px solid var(--border); flex-shrink: 0; }
+        .card-checkbox { width: 16px; height: 16px; cursor: pointer; }
         
         .card-body { flex: 1; padding: 10px; display: flex; flex-direction: column; gap: 4px; min-width: 0; overflow: hidden; }
         .card-body:hover { background: #fafbfc; }
@@ -655,7 +655,7 @@
         .order-num { background: var(--purple); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; flex-shrink: 0; }
         
         /* Right section - Авто вгорі, кнопка внизу */
-        .card-right-section { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6px 10px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 75px; overflow: visible; position: relative; }
+        .card-right-section { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6px 6px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 60px; overflow: visible; position: relative; }
         .card-vehicle-badge { background: var(--info); color: white; padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: 600; cursor: pointer; white-space: nowrap; text-align: center; }
         .card-vehicle-badge:hover { background: var(--primary); }
         .card-vehicle-badge.empty { background: var(--bg-main); color: var(--text-secondary); border: 1px dashed var(--text-secondary); }
@@ -743,10 +743,19 @@
             .route-stat-item { padding: 10px 6px; }
             .route-stat-num { font-size: 20px; }
             .route-stat-label { font-size: 10px; }
-            /* Картки на мобільному */
+            /* Картки на мобільному - звужуємо бокові елементи */
             .card-top-row { flex-wrap: wrap; }
             .card-phone { min-width: auto; }
             .card-direction { width: auto; }
+            .drag-handle { padding: 8px 4px; }
+            .drag-handle span { width: 10px; }
+            .card-checkbox-wrap { padding: 8px 4px; }
+            .card-checkbox { width: 14px; height: 14px; }
+            .card-right-section { min-width: 48px; padding: 4px 4px; }
+            .card-vehicle-badge { font-size: 8px; padding: 3px 5px; }
+            .card-actions-toggle { width: 24px; height: 24px; font-size: 9px; }
+            .card-body { padding: 8px 6px; }
+            .header-edit-btn { opacity: 0.4; }
         }
         .btn-call { background: var(--primary); color: white; }
         .btn-msg { background: #7c3aed; color: white; }
@@ -759,12 +768,19 @@
         .card-vehicle-badge.empty { background: var(--bg-main); color: var(--text-secondary); }
         
         /* DRAG HANDLE */
-        .drag-handle { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: grab; color: var(--text-secondary); opacity: 0.4; padding: 12px 8px; background: var(--bg-main); border-right: 1px solid var(--border); }
+        .drag-handle { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: grab; color: var(--text-secondary); opacity: 0.4; padding: 12px 6px; background: var(--bg-main); border-right: 1px solid var(--border); }
         .drag-handle:hover { opacity: 1; background: #e8eaed; }
-        .drag-handle span { display: block; width: 14px; height: 2px; background: currentColor; border-radius: 1px; }
+        .drag-handle span { display: block; width: 12px; height: 2px; background: currentColor; border-radius: 1px; }
         .drag-handle:active { cursor: grabbing; }
         .lead-card.dragging { opacity: 0.5; transform: scale(1.02); }
         .lead-card.drag-over { border-top: 3px solid var(--success); margin-top: -3px; }
+
+        /* INLINE HEADER EDIT */
+        .header-edit-btn { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border: none; border-radius: 3px; background: transparent; color: var(--text-secondary); cursor: pointer; font-size: 9px; opacity: 0; transition: all 0.15s; padding: 0; flex-shrink: 0; margin-left: 2px; vertical-align: middle; }
+        .card-top-row:hover .header-edit-btn, .card-route-row:hover .header-edit-btn, .card-info-row:hover .header-edit-btn { opacity: 0.5; }
+        .header-edit-btn:hover { opacity: 1 !important; background: var(--primary); color: white; }
+        .header-inline-input { border: 1px solid var(--primary); border-radius: 4px; padding: 2px 5px; font-size: inherit; font-weight: inherit; font-family: inherit; color: inherit; background: white; outline: none; box-shadow: 0 0 0 2px rgba(26,58,94,0.15); }
+        .header-inline-input:focus { border-color: var(--primary); }
 
         /* BULK ACTIONS SIDEBAR - виїзна панель (червоно-бордова) */
         .bulk-actions-sidebar { 
@@ -837,9 +853,9 @@
             transform: scale(0.98);
         }
         /* Всі кнопки однакові - стильно */
-        .bulk-sidebar-btn .btn-icon { 
-            font-size: 18px; 
-            width: 24px; 
+        .bulk-sidebar-btn .btn-icon {
+            font-size: 18px;
+            width: 24px;
             text-align: center;
             filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
         }
@@ -848,6 +864,20 @@
             background: rgba(255,255,255,0.1);
             margin: 8px 0;
         }
+        /* Bulk sidebar collapsible groups */
+        .bulk-group-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 12px; margin: 2px 0;
+            background: rgba(255,255,255,0.08); border-radius: 6px;
+            cursor: pointer; color: rgba(255,255,255,0.7);
+            font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+            transition: all 0.2s;
+        }
+        .bulk-group-header:hover { background: rgba(255,255,255,0.15); color: white; }
+        .bulk-group-toggle { font-size: 9px; transition: transform 0.2s; }
+        .bulk-group-header.collapsed .bulk-group-toggle { transform: rotate(-90deg); }
+        .bulk-group-items { max-height: 500px; overflow: hidden; transition: max-height 0.3s ease; }
+        .bulk-group-items.collapsed { max-height: 0; }
         .bulk-sidebar-close {
             padding: 12px;
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -1536,48 +1566,66 @@
         <button class="bulk-sidebar-btn" onclick="selectAllVisible()">
             <span class="btn-icon">☑️</span> Вибрати всіх
         </button>
-        <div class="bulk-sidebar-divider"></div>
-        <button class="bulk-sidebar-btn" onclick="openBulkVehicleModal()">
-            <span class="btn-icon">🚐</span> Призначити авто
-        </button>
-        <button class="bulk-sidebar-btn" onclick="bulkOptimize()">
-            <span class="btn-icon">⚡</span> Оптимізація
-        </button>
-        <button class="bulk-sidebar-btn" onclick="bulkMoveToRoute()">
-            <span class="btn-icon">🚀</span> В маршрут
-        </button>
-        <button class="bulk-sidebar-btn" onclick="bulkSetParcelStatus()">
-            <span class="btn-icon">📋</span> Статус посилки
-        </button>
-        <button class="bulk-sidebar-btn" onclick="bulkSetSmsNote()">
-            <span class="btn-icon">💬</span> Примітка СМС
-        </button>
-        <button class="bulk-sidebar-btn" onclick="bulkSetDateReceive()">
-            <span class="btn-icon">📅</span> Дата отримання
-        </button>
-        <button class="bulk-sidebar-btn" id="btnSidebarNotify" onclick="bulkMarkNotified()" style="display:none;">
-            <span class="btn-icon">🔔</span> Сповіщено
-        </button>
-        <div class="bulk-sidebar-divider"></div>
-        <button class="bulk-sidebar-btn" onclick="bulkRefuse()">
-            <span class="btn-icon">❌</span> Відмова
-        </button>
-        <button class="bulk-sidebar-btn" onclick="bulkTransfer()">
-            <span class="btn-icon">📆</span> Перенос
-        </button>
-        <button class="bulk-sidebar-btn" onclick="bulkDelete()">
-            <span class="btn-icon">🗑️</span> Видалити
-        </button>
-        <button class="bulk-sidebar-btn" onclick="bulkArchive()">
-            <span class="btn-icon">📦</span> В архів
-        </button>
-        <div class="bulk-sidebar-divider"></div>
-        <button class="bulk-sidebar-btn" id="btnSidebarRestore" onclick="bulkRestore()" style="display:none;">
-            <span class="btn-icon">↩️</span> Відновити
-        </button>
-        <button class="bulk-sidebar-btn" id="btnSidebarDeleteForever" onclick="bulkDeleteForever()" style="display:none;">
-            <span class="btn-icon">💀</span> Видалити назавжди
-        </button>
+
+        <!-- Призначення -->
+        <div class="bulk-group-header" onclick="toggleBulkGroup('assign')">
+            <span>Призначення</span><span class="bulk-group-toggle" id="bulkToggleAssign">▼</span>
+        </div>
+        <div class="bulk-group-items" id="bulkGroupAssign">
+            <button class="bulk-sidebar-btn" onclick="openBulkVehicleModal()">
+                <span class="btn-icon">🚐</span> Призначити авто
+            </button>
+            <button class="bulk-sidebar-btn" onclick="bulkOptimize()">
+                <span class="btn-icon">⚡</span> Оптимізація
+            </button>
+            <button class="bulk-sidebar-btn" onclick="bulkMoveToRoute()">
+                <span class="btn-icon">🚀</span> В маршрут
+            </button>
+        </div>
+
+        <!-- Статуси -->
+        <div class="bulk-group-header" onclick="toggleBulkGroup('status')">
+            <span>Статуси</span><span class="bulk-group-toggle" id="bulkToggleStatus">▼</span>
+        </div>
+        <div class="bulk-group-items" id="bulkGroupStatus">
+            <button class="bulk-sidebar-btn" onclick="bulkSetParcelStatus()">
+                <span class="btn-icon">📋</span> Статус посилки
+            </button>
+            <button class="bulk-sidebar-btn" onclick="bulkSetSmsNote()">
+                <span class="btn-icon">💬</span> Примітка СМС
+            </button>
+            <button class="bulk-sidebar-btn" onclick="bulkSetDateReceive()">
+                <span class="btn-icon">📅</span> Дата отримання
+            </button>
+            <button class="bulk-sidebar-btn" id="btnSidebarNotify" onclick="bulkMarkNotified()" style="display:none;">
+                <span class="btn-icon">🔔</span> Сповіщено
+            </button>
+        </div>
+
+        <!-- Закриття -->
+        <div class="bulk-group-header collapsed" onclick="toggleBulkGroup('close')">
+            <span>Закриття</span><span class="bulk-group-toggle" id="bulkToggleClose">▼</span>
+        </div>
+        <div class="bulk-group-items collapsed" id="bulkGroupClose">
+            <button class="bulk-sidebar-btn" onclick="bulkRefuse()">
+                <span class="btn-icon">❌</span> Відмова
+            </button>
+            <button class="bulk-sidebar-btn" onclick="bulkTransfer()">
+                <span class="btn-icon">📆</span> Перенос
+            </button>
+            <button class="bulk-sidebar-btn" onclick="bulkDelete()">
+                <span class="btn-icon">🗑️</span> Видалити
+            </button>
+            <button class="bulk-sidebar-btn" onclick="bulkArchive()">
+                <span class="btn-icon">📦</span> В архів
+            </button>
+            <button class="bulk-sidebar-btn" id="btnSidebarRestore" onclick="bulkRestore()" style="display:none;">
+                <span class="btn-icon">↩️</span> Відновити
+            </button>
+            <button class="bulk-sidebar-btn" id="btnSidebarDeleteForever" onclick="bulkDeleteForever()" style="display:none;">
+                <span class="btn-icon">💀</span> Видалити назавжди
+            </button>
+        </div>
     </div>
     <div class="bulk-sidebar-close">
         <button class="bulk-sidebar-close-btn" onclick="clearSelection()">
@@ -2670,14 +2718,13 @@ function render() {
             </div>`;
         };
 
+        // Поля що вже відображаються в заголовку (редагуються через ✎)
+        // name, phone, weight, amount, address — НЕ дублюємо
         let inlineHtml = `<div class="inline-edit-grid">`;
 
-        // === КОНТАКТ ===
+        // === КОНТАКТ (тільки те, чого немає в заголовку) ===
         inlineHtml += `<div class="inline-section-title">Контакт</div>`;
-        inlineHtml += mkInput('ПІБ','name',p.name,'Прізвище Ім\'я');
-        inlineHtml += mkInput('Телефон','phone',p.phone,'+380...');
         inlineHtml += mkInput('Тел. реєстратора','phoneReg',p.phoneReg,'+380...');
-        inlineHtml += mkAddress('Адреса','address',p.address);
 
         // === ТТН ===
         inlineHtml += ttnEditHtml;
@@ -2686,8 +2733,6 @@ function render() {
             // === МЕНЕДЖЕР (UA→EU) ===
             inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
             inlineHtml += mkInput('Внутр. номер','number',p.number,'—');
-            inlineHtml += mkInput('Вага (кг)','weight',p.weight,'0');
-            inlineHtml += mkInput('Сума €','amount',p.amount,'0');
             inlineHtml += mkSelectVeh();
             // === СТАТУСИ ===
             inlineHtml += `<div class="inline-section-title">Статуси</div>`;
@@ -2706,8 +2751,6 @@ function render() {
             // === МЕНЕДЖЕР (EU→UA) ===
             inlineHtml += `<div class="inline-section-title">Менеджер заповнює</div>`;
             inlineHtml += mkInput('Виклик кур\'єра','number',p.number,'Введіть...');
-            inlineHtml += mkInput('Вага (кг)','weight',p.weight,'0');
-            inlineHtml += mkInput('Сума €','amount',p.amount,'0');
             inlineHtml += mkSelectVeh();
             // === СТАТУСИ ===
             inlineHtml += `<div class="inline-section-title">Статуси</div>`;
@@ -2737,19 +2780,19 @@ function render() {
                         <span class="card-direction${dirClass}">${dirLabel}</span>
                         ${numberDisplay ? `<span style="background:var(--purple);color:white;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:700;flex-shrink:0;">№${numberDisplay}</span>` : ''}
                         ${ttnRaw ? `<span style="background:var(--info);color:white;padding:2px 6px;border-radius:5px;font-size:10px;font-weight:600;flex-shrink:0;display:inline-flex;align-items:center;gap:3px;">ТТН:${ttnDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(ttnRaw)}',this)" title="Копіювати ТТН">📋</button></span>` : ''}
-                        <span class="card-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(phoneRaw)}',this)" title="Копіювати тел.">📋</button></span>
-                        ${weightDisplay ? `<span class="card-seats">${weightDisplay}</span>` : ''}
-                        <span class="card-price">${priceDisplay}</span>
+                        <span class="card-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(phoneRaw)}',this)" title="Копіювати тел.">📋</button><button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','phone',this)" title="Редагувати">✎</button></span>
+                        ${weightDisplay ? `<span class="card-seats">${weightDisplay}<button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','weight',this)" title="Редагувати" style="margin-left:2px;">✎</button></span>` : ''}
+                        <span class="card-price">${priceDisplay}<button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','amount',this)" title="Редагувати">✎</button></span>
                         ${payStatusBadge}
                         ${paymentBadge}
                     </div>
                     <div class="card-row2-wrap">
                         <div class="card-route-row">
-                            <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(p.address || '')}',this)" title="Копіювати адресу">📋</button>${(p.address||'').trim() ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;justify-content:center;margin-left:3px;width:20px;height:20px;background:#4285F4;color:white;border-radius:50%;font-size:12px;text-decoration:none;flex-shrink:0;" title="Навігація Google Maps">➤</a>` : ''}</span>
+                            <span class="card-route" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(p.address || '')}',this)" title="Копіювати адресу">📋</button>${(p.address||'').trim() ? `<a href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;justify-content:center;margin-left:3px;width:20px;height:20px;background:#4285F4;color:white;border-radius:50%;font-size:12px;text-decoration:none;flex-shrink:0;" title="Навігація Google Maps">➤</a>` : ''}<button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','address',this)" title="Редагувати">✎</button></span>
                         </div>
                         <div class="card-info-row">
                             <span class="card-id" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${idDisplay}<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(idRaw)}',this)" title="Копіювати ІД">📋</button></span>
-                            <span class="card-name" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${nameDisplay}</span>
+                            <span class="card-name" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${nameDisplay}<button class="header-edit-btn" onclick="event.stopPropagation();headerEdit('${uk}','name',this)" title="Редагувати">✎</button></span>
                             <span class="card-date">${dateDisplay}</span>
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
                         </div>
@@ -5091,6 +5134,68 @@ function saveColumnsSettings() {
 }
 
 // === INLINE SAVE — швидке редагування полів прямо на картці ===
+// === HEADER INLINE EDIT ===
+function headerEdit(uid, field, btn) {
+    const p = findPackageByUid(uid);
+    if (!p) return;
+    const parent = btn.closest('span');
+    if (!parent) return;
+
+    // Determine current value and field config
+    const fieldConfig = {
+        phone: { val: p.phone||'', ph: '+380...', w: '140px' },
+        weight: { val: p.weight||'', ph: '0 кг', w: '70px' },
+        amount: { val: p.amount||'', ph: '0', w: '70px' },
+        address: { val: p.address||'', ph: 'Адреса...', w: '200px' },
+        name: { val: p.name||'', ph: "Ім'я", w: '140px' }
+    };
+    const cfg = fieldConfig[field];
+    if (!cfg) return;
+
+    // Save original HTML for restoration
+    const origHtml = parent.innerHTML;
+
+    // Create input
+    const input = document.createElement('input');
+    input.className = 'header-inline-input';
+    input.type = 'text';
+    input.value = cfg.val;
+    input.placeholder = cfg.ph;
+    input.style.width = cfg.w;
+    input.style.fontSize = getComputedStyle(parent).fontSize;
+
+    // Replace content
+    parent.innerHTML = '';
+    parent.appendChild(input);
+    input.focus();
+    input.select();
+
+    const finish = () => {
+        const newVal = input.value.trim();
+        if (newVal !== cfg.val) {
+            inlineSave(uid, field, newVal);
+        }
+        // Re-render to restore header
+        render();
+    };
+
+    input.addEventListener('blur', finish);
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+        if (e.key === 'Escape') { parent.innerHTML = origHtml; }
+    });
+    input.addEventListener('click', (e) => e.stopPropagation());
+}
+
+// === BULK GROUP TOGGLE ===
+function toggleBulkGroup(group) {
+    const header = document.querySelector(`[onclick="toggleBulkGroup('${group}')"]`);
+    const items = document.getElementById('bulkGroup' + group.charAt(0).toUpperCase() + group.slice(1));
+    if (!header || !items) return;
+    header.classList.toggle('collapsed');
+    items.classList.toggle('collapsed');
+}
+
 function inlineSave(uid, field, value) {
     const p = findPackageByUid(uid);
     if (!p) return;
