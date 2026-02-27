@@ -183,7 +183,10 @@
         .pc-sidebar-add:hover { border-color: var(--info); background: #eff6ff; }
         
         /* Main content area */
-        .main-content-area { flex: 1; padding: 12px; overflow-y: auto; }
+        .main-content-area { flex: 1; padding: 12px; overflow-y: auto; transition: margin-left 0.3s ease, margin-right 0.3s ease; }
+        .main-content-area.shifted-by-bulk { margin-left: 300px; }
+        @media (min-width: 1100px) { .pc-sidebar:not(.collapsed-sidebar) ~ .main-content-area.shifted-by-bulk { margin-left: 0; } }
+        @media (max-width: 1099px) { .main-content-area.shifted-by-bulk { margin-left: 0; margin-right: 0; } }
 
         /* DASHBOARD - Owner Only */
         .dashboard-panel {
@@ -787,19 +790,39 @@
             position: fixed; 
             top: 52px; 
             left: 0; 
-            bottom: 56px; 
-            width: 220px; 
-            background: linear-gradient(180deg, #7f1d1d 0%, #450a0a 100%); 
-            z-index: 200; 
-            box-shadow: 4px 0 20px rgba(0,0,0,0.3); 
+            bottom: 56px;
+            width: 300px;
+            background: linear-gradient(180deg, #7f1d1d 0%, #450a0a 100%);
+            z-index: 200;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.3);
             transform: translateX(-100%);
             transition: transform 0.3s ease;
             overflow-y: auto;
         }
-        .bulk-actions-sidebar.show { 
-            display: flex; 
+        .bulk-actions-sidebar.show {
+            display: flex;
             flex-direction: column;
             transform: translateX(0);
+        }
+        /* Кнопка Меню у bulk sidebar */
+        .bulk-sidebar-menu-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 14px;
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 8px;
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.85);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+        .bulk-sidebar-menu-btn:hover {
+            background: rgba(255,255,255,0.18);
+            color: white;
         }
         .bulk-sidebar-header {
             padding: 16px;
@@ -909,36 +932,8 @@
         
         /* Mobile styles */
         @media (max-width: 1099px) {
-            /* Bulk actions sidebar - СПРАВА на мобільному */
-            .bulk-actions-bar { display: none !important; }
-            .bulk-actions-sidebar { 
-                display: none; 
-                position: fixed; 
-                top: 52px; 
-                right: 0; 
-                left: auto;
-                bottom: 56px; 
-                width: 180px; 
-                transform: translateX(100%);
-                box-shadow: -4px 0 20px rgba(0,0,0,0.3);
-            }
-            .bulk-actions-sidebar.show { 
-                display: flex; 
-                transform: translateX(0);
-            }
-            .bulk-sidebar-header { padding: 12px; }
-            .bulk-sidebar-title { font-size: 13px; }
-            .bulk-sidebar-count { font-size: 11px; padding: 3px 8px; }
-            .bulk-sidebar-actions { padding: 6px; gap: 3px; }
-            .bulk-sidebar-btn { 
-                padding: 10px 12px; 
-                font-size: 12px; 
-                border-radius: 6px;
-            }
-            .bulk-sidebar-btn .btn-icon { font-size: 14px; }
-            .bulk-sidebar-divider { margin: 6px 0; }
-            .bulk-sidebar-close { padding: 8px; }
-            .bulk-sidebar-close-btn { padding: 10px; font-size: 12px; }
+            /* Mobile: bulk sidebar ЗАХОВАНО, використовуємо bulk-actions-bar */
+            .bulk-actions-sidebar { display: none !important; }
         }
 
         /* VEHICLE BADGE ON CARD */
@@ -1578,6 +1573,9 @@
         <span class="bulk-sidebar-count"><span id="bulkCountSidebar">0</span> вибрано</span>
     </div>
     <div class="bulk-sidebar-actions">
+        <button class="bulk-sidebar-menu-btn" onclick="switchToMenu()">
+            <span>☰</span> Меню
+        </button>
         <button class="bulk-sidebar-btn" onclick="selectAllVisible()">
             <span class="btn-icon">☑️</span> Вибрати всіх
         </button>
@@ -3017,9 +3015,9 @@ function toggleSelectAll() {
     render();
 }
 
-function clearSelection() { 
-    selectedIds.clear(); 
-    render(); 
+function clearSelection() {
+    selectedIds.clear();
+    render();
     // Ховаємо sidebar тільки тут
     const sidebar = document.getElementById('bulkActionsSidebar');
     if (sidebar) sidebar.classList.remove('show');
@@ -3028,6 +3026,21 @@ function clearSelection() {
     document.getElementById('bulkCount').textContent = 0;
     const sidebarCount = document.getElementById('bulkCountSidebar');
     if (sidebarCount) sidebarCount.textContent = 0;
+    // Повертаємо PC sidebar
+    const pcSidebar = document.getElementById('pcSidebar');
+    if (pcSidebar) { pcSidebar.classList.remove('collapsed-sidebar'); pcSidebar.style.display = ''; }
+    const contentArea = document.querySelector('.main-content-area');
+    if (contentArea) contentArea.classList.remove('shifted-by-bulk');
+}
+
+function switchToMenu() {
+    // Ховаємо bulk sidebar, показуємо PC sidebar
+    const bulk = document.getElementById('bulkActionsSidebar');
+    if (bulk) bulk.classList.remove('show');
+    const pcSidebar = document.getElementById('pcSidebar');
+    if (pcSidebar) { pcSidebar.classList.remove('collapsed-sidebar'); pcSidebar.style.display = ''; }
+    const contentArea = document.querySelector('.main-content-area');
+    if (contentArea) contentArea.classList.remove('shifted-by-bulk');
 }
 
 function updateBulkBar() {
@@ -3044,7 +3057,17 @@ function updateBulkBar() {
     bar.classList.toggle('show', count > 0);
     
     // PC Sidebar - тільки ПОКАЗУЄМО, не ховаємо (ховає clearSelection)
-    if (sidebar && count > 0) sidebar.classList.add('show');
+    if (sidebar && count > 0) {
+        sidebar.classList.add('show');
+        // На PC ховаємо основний сайдбар, зсуваємо контент
+        const pcSidebar = document.getElementById('pcSidebar');
+        const contentArea = document.querySelector('.main-content-area');
+        if (pcSidebar && window.innerWidth >= 1100) {
+            pcSidebar.classList.add('collapsed-sidebar');
+            pcSidebar.style.display = 'none';
+        }
+        if (contentArea) contentArea.classList.add('shifted-by-bulk');
+    }
     
     const isRouteView = filters.statusFilter === 'route' && filters.routeVehicle;
     const isArchiveView = filters.showArchive;
