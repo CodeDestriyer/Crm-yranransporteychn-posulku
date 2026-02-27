@@ -4830,19 +4830,20 @@ function applyOptimizedOrder(orderedPassengers, notGeocodedList) {
 
 // UNDO SYSTEM
 function saveForUndo(action) {
-    // Зберігаємо копію стану вибраних пасажирів
-    const snapshot = [...selectedIds].map(id => {
-        const p = packages.find(x => x.id === id);
+    // Зберігаємо копію стану вибраних пасажирів (шукаємо по uid)
+    const snapshot = [...selectedIds].map(uid => {
+        const p = findPackageByUid(uid);
         return p ? { ...p } : null;
     }).filter(Boolean);
-    
+
     undoHistory.push({ action, snapshot, timestamp: Date.now() });
-    
+
     // Максимум 10 дій в історії
     if (undoHistory.length > 10) undoHistory.shift();
-    
-    // Показуємо кнопку undo
-    document.getElementById('btnUndo').style.display = 'flex';
+
+    // Показуємо кнопку undo (якщо існує)
+    const btn = document.getElementById('btnUndo');
+    if (btn) btn.style.display = 'flex';
 }
 
 function undoLastAction() {
@@ -4865,7 +4866,8 @@ function undoLastAction() {
     
     // Ховаємо кнопку якщо історія пуста
     if (!undoHistory.length) {
-        document.getElementById('btnUndo').style.display = 'none';
+        const btn = document.getElementById('btnUndo');
+        if (btn) btn.style.display = 'none';
     }
     
     showToast(`↩️ Відмінено: ${last.action}`);
