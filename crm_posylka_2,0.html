@@ -728,9 +728,36 @@
 
         /* Mobile responsive */
         @media (max-width: 768px) {
-            .cg-row { flex-wrap: wrap; }
-            .cg-main, .cg-mid, .cg-sm { min-width: 0; flex: 1 1 100%; }
-            .cg-cell { border-right: none; border-bottom: 1px solid #f8f9fb; }
+            /* Compact mobile cards - no full-width stretching */
+            .cg-row { flex-wrap: wrap; min-height: 26px; }
+            .cg-main { flex: 1 1 auto; min-width: 120px; }
+            .cg-mid { flex: 0 1 auto; min-width: 60px; }
+            .cg-sm { flex: 0 1 auto; min-width: 55px; }
+            .cg-cell { padding: 3px 6px; font-size: 11px; border-right: 1px solid #f0f2f5; }
+            .cg-cell:last-child { border-right: none; }
+
+            /* Hide less important rows on mobile to save space */
+            .card-grid .cg-row:nth-child(5),
+            .card-grid .cg-row:nth-child(6) { display: none; }
+
+            /* Compact values */
+            .cg-val-phone { font-size: 12px; }
+            .cg-val-address { font-size: 11px; }
+            .cg-val-dir { font-size: 10px; padding: 2px 6px; }
+            .cg-val-ttn { font-size: 9px; padding: 1px 4px; }
+            .order-num { font-size: 9px; padding: 1px 4px; }
+
+            /* Drag handle smaller */
+            .drag-handle { padding: 8px 4px; }
+            .drag-handle span { width: 10px; }
+
+            /* Right panel compact */
+            .card-right-panel { min-width: 36px; padding: 4px; }
+            .card-actions-toggle { width: 26px; height: 26px; font-size: 10px; }
+
+            /* Actions grid - 3 columns on mobile */
+            .card-actions.show { grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 6px; }
+            .btn-card-action { padding: 6px 4px; font-size: 10px; }
         }
         
         /* Route stats - адаптивна статистика */
@@ -752,16 +779,30 @@
             .route-stat-item { padding: 10px 6px; }
             .route-stat-num { font-size: 20px; }
             .route-stat-label { font-size: 10px; }
-            .drag-handle { padding: 8px 4px; }
-            .drag-handle span { width: 10px; }
-            .card-cb { padding: 8px 4px; }
+
+            /* Super compact for small phones */
+            .cg-row { min-height: 24px; }
+            .cg-cell { padding: 2px 4px; font-size: 10px; }
+            .cg-main { min-width: 100px; }
+            .cg-sm { min-width: 45px; }
+            .cg-val-phone { font-size: 11px; }
+            .cg-val-dir { font-size: 9px; padding: 2px 5px; }
+
+            .drag-handle { padding: 6px 3px; }
+            .drag-handle span { width: 8px; }
+            .card-cb { padding: 6px 3px; }
             .card-checkbox { width: 14px; height: 14px; }
-            .card-right-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 40px; }
-            .card-vehicle-badge { font-size: 8px; padding: 3px 5px; }
-            .card-actions-toggle { width: 24px; height: 24px; font-size: 9px; }
-            .card-actions.show { grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 8px; }
-            .btn-card-action { padding: 8px 4px; font-size: 10px; }
+            .card-right-panel { min-width: 32px; padding: 3px; }
+            .card-actions-toggle { width: 22px; height: 22px; font-size: 8px; }
+            .card-vehicle-badge { font-size: 8px; padding: 2px 4px; }
+
+            /* Actions 2 columns on tiny screens */
+            .card-actions.show { grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 6px; }
+            .btn-card-action { padding: 6px 3px; font-size: 9px; }
             .header-edit-btn { opacity: 0.4; }
+
+            /* Hide copy/edit buttons on mobile to save space */
+            .copy-btn-mini { display: none; }
         }
         .btn-call { background: var(--primary); color: white; }
         .btn-msg { background: #7c3aed; color: white; }
