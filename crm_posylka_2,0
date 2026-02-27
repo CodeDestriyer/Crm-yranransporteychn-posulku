@@ -1986,29 +1986,29 @@
 
 <script>
 const ALL_COLUMNS = {
-    name:{label:'ПіБ',group:'row1'},
-    phone:{label:'Телефон отримувача',group:'row1'},
-    weight:{label:'Вага',group:'row1'},
     ttn:{label:'Номер ТТН',group:'row1'},
-    id:{label:'ІД',group:'row1'},
-    address:{label:'Адреса отримувача',group:'row2'},
+    weight:{label:'Вага',group:'row1'},
+    dateReg:{label:'Дата оформлення',group:'row1'},
+    phone:{label:'Телефон отримувача',group:'row2'},
     vehicle:{label:'Авто',group:'row2'},
-    dateReg:{label:'Дата оформлення',group:'meta'},
-    amount:{label:'Сума €',group:'meta'},
-    payStatus:{label:'Статус оплати',group:'meta'},
-    payment:{label:'Оплата',group:'meta'},
-    vo:{label:'ВО',group:'details'},
-    number:{label:'Номер №',group:'details'},
-    parcelStatus:{label:'Статус посилки',group:'details'},
+    amount:{label:'Сума €',group:'row2'},
+    dateReceive:{label:'Дата отримання',group:'row2'},
+    id:{label:'ІД',group:'row3'},
+    payStatus:{label:'Статус оплати',group:'row3'},
+    payment:{label:'Оплата',group:'row3'},
+    note:{label:'Примітка',group:'row3'},
+    address:{label:'Адреса отримувача',group:'row4'},
+    number:{label:'Номер №',group:'row4'},
     phoneReg:{label:'Тел. реєстратора',group:'details'},
-    timing:{label:'Таймінг',group:'details'},
-    dateReceive:{label:'Дата отримання',group:'details'},
+    parcelStatus:{label:'Статус посилки',group:'details'},
+    name:{label:'ПІБ',group:'details'},
+    vo:{label:'ВО',group:'details'},
     smsNote:{label:'Примітка СМС',group:'details'},
-    note:{label:'Примітка',group:'details'},
-    photo:{label:'Фото',group:'details'}
+    photo:{label:'Фото',group:'details'},
+    timing:{label:'Таймінг',group:'details'}
 };
 
-let colSettings = {header:['name','phone','weight','address','dateReg','amount','payStatus'],details:['ttn','vo','number','parcelStatus','payment','phoneReg','timing','dateReceive','smsNote','note']};
+let colSettings = {header:['ttn','weight','dateReg','phone','vehicle','amount','dateReceive','id','payStatus','payment','note','address','number'],details:['phoneReg','parcelStatus','name','vo','smsNote','photo','timing']};
 let packages = [];
 
 let vehicles = [
@@ -2804,35 +2804,35 @@ function render() {
                     <input type="checkbox" class="card-checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleSelect('${uk}')">
                 </div>
                 <div class="card-grid" onclick="toggleDetails('${uk}')">
-                    <!-- ROW 1: Direction + TTN | Weight | Date -->
+                    <!-- ROW 1: Direction + TTN (К,Р) | Weight | Date -->
                     <div class="cg-row">
                         <div class="cg-cell cg-main" data-col="ttn" ${hc.has('ttn')?'style="display:none"':''}>
                             ${orderNum}
                             <span class="cg-val-dir${dirClass}">${dirLabel}</span>
-                            ${ttnRaw ? `<span class="cg-val-ttn">ТТН:${ttnDisplay}${cpBtn(ttnRaw)}</span>` : ''}
-                            ${numberDisplay ? `<span class="cg-val-number">№${numberDisplay}</span>` : ''}
+                            ${ttnRaw ? `<span class="cg-val-ttn">ТТН:${ttnDisplay}${cpBtn(ttnRaw)}${edBtn('ttn')}</span>` : ''}
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
                         </div>
                         ${cc('weight','cg-sm',`<span class="cg-label">Вага</span>${weightDisplay ? `<span class="cg-val-weight">${weightDisplay}</span>${edBtn('weight')}` : `<span style="opacity:0.3">—</span>${edBtn('weight')}`}`)}
                         ${cc('dateReg','cg-sm',`<span class="cg-label">Дата</span><span class="cg-val-date">${dateDisplay}</span>`)}
                     </div>
-                    <!-- ROW 2: Phone | Name | Price | Payment -->
+                    <!-- ROW 2: Phone (К,Р) | АВТО | Amount (€,Р) | DateReceive (Р) -->
                     <div class="cg-row">
                         ${cc('phone','cg-main',`<span class="cg-val-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}${cpBtn(phoneRaw)}${edBtn('phone')}</span>`)}
-                        ${cc('name','cg-mid',`<span class="cg-label">Отримувач</span><span class="cg-val-name">${nameDisplay}</span>${edBtn('name')}${cpBtn(p.name||'')}`)}
-                        ${cc('amount','cg-sm',`<span class="cg-val-price">${priceDisplay||'—'}</span>${edBtn('amount')}${payStatusBadge}`)}
-                        ${cc('dateReceive','cg-sm',`<span class="cg-label">Отр.</span><span class="cg-val-date">${dateRecvDisplay||'—'}</span>`)}
+                        ${cc('vehicle','cg-sm',`${vehicleBadge}`)}
+                        ${cc('amount','cg-sm',`<span class="cg-val-price">${priceDisplay||'—'}</span>${edBtn('amount')}`)}
+                        ${cc('dateReceive','cg-sm',`<span class="cg-label">Отр.</span><span class="cg-val-date">${dateRecvDisplay||'—'}</span>${edBtn('dateReceive')}`)}
                     </div>
-                    <!-- ROW 3: ID + Seats | Pay | Note -->
+                    <!-- ROW 3: ID (К) | PayStatus (Р) | Payment (Р) | Note (Р) -->
                     <div class="cg-row">
-                        ${cc('id','cg-main',`<span class="cg-val-id" onclick="event.stopPropagation()">${idDisplay}${cpBtn(idRaw)}</span>${paymentBadge}`)}
-                        ${cc('note','cg-mid' + ' ' + 'cg-sm',`<span class="cg-label">Прим.</span>${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : '<span style="opacity:0.3">—</span>'}`)}
+                        ${cc('id','cg-main',`<span class="cg-val-id" onclick="event.stopPropagation()">${idDisplay}${cpBtn(idRaw)}</span>`)}
+                        ${cc('payStatus','cg-sm',`<span class="cg-label">Ст.опл.</span>${payStatusBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payStatus')}`)}
+                        ${cc('payment','cg-sm',`<span class="cg-label">Оплата</span>${paymentBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payment')}`)}
+                        ${cc('note','cg-sm',`<span class="cg-label">Прим.</span>${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : '<span style="opacity:0.3">—</span>'}${edBtn('note')}`)}
                     </div>
-                    <!-- ROW 4: Address | Internal number -->
+                    <!-- ROW 4: Address (К, і-maps) | Internal number (Р) -->
                     <div class="cg-row">
                         ${cc('address','cg-main',`<span class="cg-val-address" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${cpBtn(p.address||'')}${(p.address||'').trim() ? `<a class="cg-map-link" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Навігація">➤</a>` : ''}${edBtn('address')}</span>`)}
-                        ${cc('number','cg-sm',`<span class="cg-label">Внутр.№</span><span class="cg-val">${numberDisplay||'—'}</span>`)}
-                        ${cc('vehicle','cg-sm',`${vehicleBadge}`)}
+                        ${cc('number','cg-sm',`<span class="cg-label">Внутр.№</span><span class="cg-val">${numberDisplay||'—'}</span>${edBtn('number')}`)}
                     </div>
                     <!-- COLLAPSE TOGGLE -->
                     <div class="cg-toggle" onclick="event.stopPropagation();toggleCardExtra('${uk}')">
@@ -2841,17 +2841,19 @@ function render() {
                     </div>
                     <!-- EXTRA ROWS (collapsible) -->
                     <div class="cg-extra ${extOpen?'open':''}">
-                        <!-- ROW 5 -->
+                        <!-- ROW 5: Phone reg (Р) | АВТО (Р) | Parcel Status (Р) -->
                         <div class="cg-row">
-                            ${cc('phoneReg','cg-main',`<span class="cg-label">Тел.реєстр.</span><span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}`)}
-                            ${cc('parcelStatus','cg-mid',`<span class="cg-label">Стат.пос.</span><span class="cg-val">${p.parcelStatus||'—'}</span>`)}
-                            ${cc('payStatus','cg-sm',`<span class="cg-label">Оплата</span>${payStatusBadge||'<span style="opacity:0.3">—</span>'}`)}
+                            ${cc('phoneReg','cg-main',`<span class="cg-label">Тел.реєстр.</span><span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}${edBtn('phoneReg')}`)}
+                            ${cc('vehicle','cg-mid',`<span class="cg-label">АВТО</span>${vehicleBadge}`)}
+                            ${cc('parcelStatus','cg-sm',`<span class="cg-label">Стат.пос.</span><span class="cg-val">${p.parcelStatus||'—'}</span>${edBtn('parcelStatus')}`)}
                         </div>
-                        <!-- ROW 6 -->
+                        <!-- ROW 6: ПІБ (К,Р) | ВО (Р) | SMS Note (Р) | Photo | Timing (Р) -->
                         <div class="cg-row">
-                            ${cc('vo','cg-main',`<span class="cg-label">ВО</span><span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>`)}
-                            ${cc('smsNote','cg-mid',`<span class="cg-label">Прим.СМС</span><span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>`)}
-                            ${cc('timing','cg-sm',`<span class="cg-label">Таймінг</span><span class="cg-val">${p.timing||'—'}</span>`)}
+                            ${cc('name','cg-main',`<span class="cg-label">ПІБ</span><span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name||'')}${edBtn('name')}`)}
+                            ${cc('vo','cg-sm',`<span class="cg-label">ВО</span><span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>${edBtn('vo')}`)}
+                            ${cc('smsNote','cg-sm',`<span class="cg-label">Прим.СМС</span><span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>${edBtn('smsNote')}`)}
+                            ${cc('photo','cg-sm',`<span class="cg-label">Фото</span>${p.photo ? `<a href="${esc(String(p.photo).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--info);font-weight:600;font-size:11px;">📷 Фото</a>` : '<span style="opacity:0.3">—</span>'}`)}
+                            ${cc('timing','cg-sm',`<span class="cg-label">Таймінг</span><span class="cg-val">${p.timing||'—'}</span>${edBtn('timing')}`)}
                         </div>
                     </div>
                 </div>
@@ -5248,31 +5250,67 @@ function headerEdit(uid, field, btn) {
         weight: { val: p.weight||'', ph: '0 кг', w: '70px' },
         amount: { val: p.amount||'', ph: '0', w: '70px' },
         address: { val: p.address||'', ph: 'Адреса...', w: '200px' },
-        name: { val: p.name||'', ph: "Ім'я", w: '140px' }
+        name: { val: p.name||'', ph: "Ім'я", w: '140px' },
+        ttn: { val: p.ttn||'', ph: 'ТТН...', w: '120px' },
+        note: { val: p.note||'', ph: 'Примітка...', w: '140px' },
+        number: { val: p.number||'', ph: '№', w: '80px' },
+        dateReceive: { val: p.dateReceive||'', ph: '', w: '120px', type: 'date' },
+        phoneReg: { val: p.phoneReg||'', ph: '+380...', w: '140px' },
+        timing: { val: p.timing||'', ph: 'Таймінг...', w: '100px' },
+        smsNote: { val: p.smsNote||'', ph: 'СМС...', w: '140px' },
+        vo: { val: p.vo||'', ph: 'ВО', w: '60px' },
+        parcelStatus: { val: p.parcelStatus||'', ph: 'Статус...', w: '120px' },
+        payStatus: { val: p.payStatus||'', ph: 'Статус оплати...', w: '120px' },
+        payment: { val: p.payment||'', ph: 'Оплата...', w: '120px' }
     };
+
+    // Select fields - use dropdown instead of text input
+    const selectOptions = {
+        payStatus: ['','Оплачено','Неоплачено','Відправник','Отримувач'],
+        payment: ['','При отр гот','При отр на карту','Відпр на карту','Картка','Готівка'],
+        parcelStatus: ['','Невідомий','Зареєстровано','Оформлено','Кордон','Доставка'],
+        vo: ['','Д','Ш','Б']
+    };
+
     const cfg = fieldConfig[field];
     if (!cfg) return;
 
     // Save original HTML for restoration
     const origHtml = parent.innerHTML;
 
-    // Create input
-    const input = document.createElement('input');
-    input.className = 'header-inline-input';
-    input.type = 'text';
-    input.value = cfg.val;
-    input.placeholder = cfg.ph;
-    input.style.width = cfg.w;
-    input.style.fontSize = getComputedStyle(parent).fontSize;
+    let el;
+    if (selectOptions[field]) {
+        // Create select for dropdown fields
+        el = document.createElement('select');
+        el.className = 'header-inline-input';
+        el.style.width = cfg.w;
+        el.style.fontSize = getComputedStyle(parent).fontSize;
+        selectOptions[field].forEach(opt => {
+            const option = document.createElement('option');
+            option.value = opt;
+            option.textContent = opt || '—';
+            if (opt === cfg.val) option.selected = true;
+            el.appendChild(option);
+        });
+    } else {
+        // Create input for text fields
+        el = document.createElement('input');
+        el.className = 'header-inline-input';
+        el.type = cfg.type || 'text';
+        el.value = cfg.val;
+        el.placeholder = cfg.ph;
+        el.style.width = cfg.w;
+        el.style.fontSize = getComputedStyle(parent).fontSize;
+    }
 
     // Replace content
     parent.innerHTML = '';
-    parent.appendChild(input);
-    input.focus();
-    input.select();
+    parent.appendChild(el);
+    el.focus();
+    if (el.select) el.select();
 
     const finish = () => {
-        const newVal = input.value.trim();
+        const newVal = el.value.trim();
         if (newVal !== cfg.val) {
             inlineSave(uid, field, newVal);
         }
@@ -5280,12 +5318,15 @@ function headerEdit(uid, field, btn) {
         render();
     };
 
-    input.addEventListener('blur', finish);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); input.blur(); }
+    el.addEventListener('blur', finish);
+    if (selectOptions[field]) {
+        el.addEventListener('change', () => { el.blur(); });
+    }
+    el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
         if (e.key === 'Escape') { parent.innerHTML = origHtml; }
     });
-    input.addEventListener('click', (e) => e.stopPropagation());
+    el.addEventListener('click', (e) => e.stopPropagation());
 }
 
 // === BULK GROUP TOGGLE ===
