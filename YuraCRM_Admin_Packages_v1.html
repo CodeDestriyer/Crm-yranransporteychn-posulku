@@ -899,8 +899,9 @@
         .bulk-group-header:hover { background: rgba(255,255,255,0.15); color: white; }
         .bulk-group-toggle { font-size: 9px; transition: transform 0.2s; }
         .bulk-group-header.collapsed .bulk-group-toggle { transform: rotate(-90deg); }
-        .bulk-group-items { max-height: 500px; overflow: hidden; transition: max-height 0.3s ease; }
+        .bulk-group-items { max-height: 500px; overflow: hidden; transition: max-height 0.3s ease; display: flex; flex-direction: column; gap: 4px; }
         .bulk-group-items.collapsed { max-height: 0; }
+        .bulk-group-items .bulk-sidebar-btn { width: 100%; }
         .bulk-sidebar-close {
             padding: 12px;
             border-top: 1px solid rgba(255,255,255,0.1);
