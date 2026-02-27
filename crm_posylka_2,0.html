@@ -755,8 +755,8 @@
             .card-right-panel { min-width: 36px; padding: 4px; }
             .card-actions-toggle { width: 26px; height: 26px; font-size: 10px; }
 
-            /* Actions grid - 3 columns on mobile */
-            .card-actions.show { grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 6px; }
+            /* Actions grid - 2 columns on mobile */
+            .card-actions.show { grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 8px; }
             .btn-card-action { padding: 6px 4px; font-size: 10px; }
         }
         
@@ -977,6 +977,86 @@
         @media (max-width: 1099px) {
             /* Mobile: bulk sidebar ЗАХОВАНО, використовуємо bulk-actions-bar */
             .bulk-actions-sidebar { display: none !important; }
+
+            /* Mobile bulk action bar — компактна панель внизу */
+            .bulk-actions-bar {
+                position: fixed;
+                bottom: 58px;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #7f1d1d 0%, #5b1010 100%);
+                z-index: 150;
+                display: none;
+                flex-direction: column;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+                border-radius: 16px 16px 0 0;
+                padding: 0;
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+            }
+            .bulk-actions-bar.show {
+                display: flex;
+                transform: translateY(0);
+            }
+            .bulk-actions-content {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+            }
+            /* Верхній рядок: кількість + кнопка закрити */
+            .bulk-bar-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 14px 6px;
+            }
+            .bulk-selected {
+                color: rgba(255,255,255,0.95);
+                font-size: 13px;
+                font-weight: 600;
+            }
+            .bulk-bar-close {
+                background: rgba(255,255,255,0.15);
+                border: none;
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                font-size: 14px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            /* Кнопки дій — горизонтальна прокрутка */
+            .bulk-buttons {
+                display: flex;
+                gap: 6px;
+                padding: 6px 14px 12px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .bulk-buttons::-webkit-scrollbar { display: none; }
+            .bulk-btn {
+                flex-shrink: 0;
+                padding: 8px 12px;
+                border: none;
+                border-radius: 10px;
+                background: rgba(255,255,255,0.15);
+                color: white;
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                white-space: nowrap;
+                transition: background 0.2s;
+                font-family: inherit;
+            }
+            .bulk-btn:hover { background: rgba(255,255,255,0.25); }
+            .bulk-btn:active { background: rgba(255,255,255,0.35); }
         }
 
         /* VEHICLE BADGE ON CARD */
@@ -1696,20 +1776,22 @@
 <!-- BULK ACTIONS BAR - Mobile версія -->
 <div class="bulk-actions-bar" id="bulkActionsBar">
     <div class="bulk-actions-content">
-        <span class="bulk-selected">Вибрано: <span id="bulkCount">0</span></span>
+        <div class="bulk-bar-header">
+            <span class="bulk-selected">Вибрано: <span id="bulkCount">0</span></span>
+            <button class="bulk-bar-close" onclick="clearSelection()">✕</button>
+        </div>
         <div class="bulk-buttons">
             <button class="bulk-btn select-all" onclick="selectAllVisible()">☑️ Всі</button>
             <button class="bulk-btn vehicle" onclick="openBulkVehicleModal()">🚐 Авто</button>
-            <button class="bulk-btn optimize" onclick="bulkOptimize()">⚡</button>
-            <button class="bulk-btn route" onclick="bulkMoveToRoute()">🚀</button>
-            <button class="bulk-btn" onclick="openTagModal()" style="background:rgba(139,92,246,0.4);">🏷️</button>
-            <button class="bulk-btn" onclick="bulkSetParcelStatus()" style="background:var(--info);">📋</button>
-            <button class="bulk-btn" onclick="bulkSetSmsNote()" style="background:#7c3aed;">💬</button>
-            <button class="bulk-btn" onclick="bulkSetDateReceive()" style="background:var(--success);">📅</button>
+            <button class="bulk-btn optimize" onclick="bulkOptimize()">⚡ Опт</button>
+            <button class="bulk-btn route" onclick="bulkMoveToRoute()">🚀 Маршрут</button>
+            <button class="bulk-btn" onclick="openTagModal()" style="background:rgba(139,92,246,0.4);">🏷️ Тег</button>
+            <button class="bulk-btn" onclick="bulkSetParcelStatus()" style="background:var(--info);">📋 Статус</button>
+            <button class="bulk-btn" onclick="bulkSetSmsNote()" style="background:#7c3aed;">💬 СМС</button>
+            <button class="bulk-btn" onclick="bulkSetDateReceive()" style="background:var(--success);">📅 Дата</button>
             <button class="bulk-btn notify" id="btnBulkNotify" onclick="bulkMarkNotified()" style="display:none;background:#f97316;">🔔</button>
-            <button class="bulk-btn archive" id="btnBulkArchive" onclick="bulkArchive()">📦</button>
+            <button class="bulk-btn archive" id="btnBulkArchive" onclick="bulkArchive()">📦 Архів</button>
             <button class="bulk-btn restore" id="btnBulkRestore" onclick="bulkRestore()" style="display:none;background:var(--success);">↩️</button>
-            <button class="bulk-btn cancel" onclick="clearSelection()">✕</button>
         </div>
     </div>
 </div>
