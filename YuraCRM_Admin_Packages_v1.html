@@ -574,8 +574,8 @@
         .opt-btn.confirm { background: var(--success); color: white; }
 
         /* CARDS - TABLE GRID DESIGN */
-        .cards-list { display: flex; flex-direction: column; gap: 6px; }
-        .lead-card { background: white; border-radius: 8px; box-shadow: var(--shadow); border-left: 4px solid var(--border); position: relative; overflow: hidden; }
+        .cards-list { display: flex; flex-direction: column; gap: 8px; }
+        .lead-card { background: white; border-radius: 8px; box-shadow: var(--shadow); border-left: 4px solid var(--border); position: relative; }
         .lead-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
         .lead-card.status-new { border-left-color: var(--warning); }
         .lead-card.status-work { border-left-color: var(--info); }
@@ -1510,6 +1510,13 @@
                     <div class="dropdown-container">
                         <button class="wf-btn" id="btnDate" onclick="toggleDropdown('dateDropdown')">📅 <span id="dateLabel">Дата</span> <span class="count" id="dateCount" style="display:none">0</span> ▼</button>
                         <div class="dropdown-menu" id="dateDropdown">
+                            <div class="cal-direction-bar">
+                                <select class="cal-direction-select" onchange="setDirection(this.value)">
+                                    <option value="all">📊 Всі напрямки</option>
+                                    <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
+                                    <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
+                                </select>
+                            </div>
                             <div id="desktopCalendar"></div>
                         </div>
                     </div>
