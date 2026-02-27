@@ -48,17 +48,19 @@
         .main-layout { display: flex; min-height: calc(100vh - 52px); }
         
         /* PC SIDEBAR - STICKY */
-        .pc-sidebar { 
-            width: 300px; 
-            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); 
-            border-right: none; 
-            flex-shrink: 0; 
-            overflow-y: auto; 
+        .pc-sidebar {
+            width: 300px;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            border-right: none;
+            flex-shrink: 0;
+            overflow-y: auto;
             display: block;
             position: sticky;
             top: 52px;
             height: calc(100vh - 52px);
             box-shadow: 4px 0 20px rgba(0,0,0,0.08);
+            transition: width 0.3s ease, min-width 0.3s ease;
+            min-width: 300px;
         }
         .pc-sidebar-section { margin: 0; border-bottom: 1px solid var(--border); }
         .pc-sidebar-header { 
@@ -461,10 +463,10 @@
         .side-menu .calendar-weekdays { margin-bottom: 4px; }
         .side-menu .calendar-weekday { font-size: 8px; color: rgba(255,255,255,0.5); padding: 3px 0; }
         .side-menu .calendar-days { gap: 2px; }
-        .side-menu .calendar-day { 
-            height: 26px; 
-            font-size: 10px; 
-            background: rgba(255,255,255,0.08); 
+        .side-menu .calendar-day {
+            height: 30px;
+            font-size: 10px;
+            background: rgba(255,255,255,0.08);
             color: rgba(255,255,255,0.7);
             border-radius: 4px;
         }
@@ -474,13 +476,10 @@
         .side-menu .calendar-day.selected { background: #3b82f6; color: white; }
         .side-menu .calendar-day.has-leads { background: rgba(59,130,246,0.3); color: white; }
         .side-menu .calendar-day.overbooked { background: rgba(239,68,68,0.3) !important; border: 1px solid #ef4444 !important; }
-        .side-menu .calendar-day-count { 
-            font-size: 7px; 
-            padding: 0 2px; 
-            min-width: 10px; 
-            top: 1px; 
-            right: 1px;
-            background: #3b82f6;
+        .side-menu .calendar-day-count {
+            font-size: 7px;
+            color: #60a5fa;
+            margin-top: -1px;
         }
         .side-menu .calendar-actions { margin-top: 6px; gap: 4px; }
         .side-menu .calendar-actions button { 
@@ -501,13 +500,16 @@
         .calendar-box { background: white; border-radius: 8px; padding: 12px; }
         .calendar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
         .calendar-title { font-size: 14px; font-weight: 700; color: var(--primary); }
+        .cal-direction-bar { display: flex; gap: 4px; margin-bottom: 8px; }
+        .cal-direction-select { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 11px; font-weight: 600; font-family: inherit; background: var(--bg-main); color: var(--text-primary); cursor: pointer; outline: none; }
+        .cal-direction-select:focus { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(26,58,94,0.1); }
         .calendar-nav { display: flex; gap: 4px; }
         .calendar-nav button { width: 30px; height: 30px; border: 1px solid var(--border); background: white; border-radius: 4px; cursor: pointer; font-size: 12px; }
         .calendar-nav button:hover { background: var(--bg-main); }
         .calendar-weekdays { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; margin-bottom: 4px; }
         .calendar-weekday { font-size: 10px; font-weight: 700; color: var(--text-secondary); padding: 4px 0; }
         .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
-        .calendar-day { position: relative; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; background: var(--bg-main); color: var(--text-secondary); height: 32px; }
+        .calendar-day { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; border-radius: 6px; cursor: pointer; background: var(--bg-main); color: var(--text-secondary); height: 36px; gap: 0; }
         .calendar-day:hover { background: var(--border); }
         .calendar-day.other-month { color: #cbd5e1; background: transparent; cursor: default; }
         .calendar-day.other-month:hover { background: transparent; }
@@ -515,10 +517,10 @@
         .calendar-day.selected { background: var(--primary); color: white; }
         .calendar-day.has-leads { background: #dbeafe; color: var(--info); font-weight: 700; }
         .calendar-day.has-leads.selected { background: var(--primary); color: white; }
-        .calendar-day-count { position: absolute; top: 1px; right: 2px; font-size: 8px; font-weight: 700; color: white; background: var(--accent); padding: 1px 3px; border-radius: 6px; line-height: 1; min-width: 12px; text-align: center; }
-        .calendar-day.selected .calendar-day-count { background: rgba(255,255,255,0.9); color: var(--primary); }
+        .calendar-day-count { font-size: 8px; font-weight: 700; color: var(--accent); line-height: 1; margin-top: -2px; }
+        .calendar-day.selected .calendar-day-count { color: rgba(255,255,255,0.8); }
         .calendar-day.overbooked { background: #fee2e2 !important; border: 2px solid #ef4444 !important; }
-        .calendar-day.overbooked .calendar-day-count { background: #ef4444; }
+        .calendar-day.overbooked .calendar-day-count { color: #dc2626; font-weight: 800; }
         .calendar-day.overbooked.selected { background: #ef4444 !important; color: white; }
         .calendar-actions { display: flex; gap: 8px; margin-top: 10px; }
         .calendar-actions button { flex: 1; padding: 8px; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; }
@@ -715,8 +717,8 @@
         .card-details .details-close-btn:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
 
         /* Actions panel */
-        .card-actions { display: none; padding: 10px 12px; background: white; border-top: 1px solid var(--border); }
-        .card-actions.show { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .card-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 0; overflow: hidden; padding: 0 12px; background: white; transition: max-height 0.25s ease, padding 0.25s ease; }
+        .card-actions.show { max-height: 200px; padding: 10px 12px; border-top: 1px solid var(--border); }
         .btn-card-action { padding: 10px 6px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 4px; }
         .btn-card-action.btn-delete { background: #fee2e2; color: #dc2626; }
         .btn-card-action.btn-delete:hover { background: #dc2626; color: white; }
@@ -754,6 +756,8 @@
             .card-right-panel { min-width: 48px; padding: 4px 4px; }
             .card-vehicle-badge { font-size: 8px; padding: 3px 5px; }
             .card-actions-toggle { width: 24px; height: 24px; font-size: 9px; }
+            .card-actions.show { grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 8px; }
+            .btn-card-action { padding: 8px 4px; font-size: 10px; }
             .header-edit-btn { opacity: 0.4; }
         }
         .btn-call { background: var(--primary); color: white; }
@@ -1137,7 +1141,7 @@
             .card-route { font-size: 12px; }
             .card-price { font-size: 15px; }
             .details-grid { grid-template-columns: repeat(4, 1fr); }
-            .card-actions.show { grid-template-columns: repeat(4, 1fr); }
+            .card-actions.show { grid-template-columns: repeat(5, 1fr); }
             .workflow-bar { display: none; }
         }
     </style>
@@ -1152,13 +1156,6 @@
         <button class="side-menu-close" onclick="closeSideMenu()">×</button>
     </div>
     <div class="side-menu-content">
-        <!-- Нові — завжди зверху -->
-        <div style="padding:8px 12px;">
-            <div class="side-menu-item" id="mobileNewLeads" onclick="showNewLeads(); closeSideMenu();" style="background:linear-gradient(135deg,#dbeafe,#ede9fe);border:1px solid #93c5fd;border-radius:8px;font-weight:700;">
-                <span class="side-menu-item-left">🆕 Нові (24 год)</span>
-                <span class="side-menu-item-count" id="mobileCountNew" style="background:var(--primary);color:white;">0</span>
-            </div>
-        </div>
         <!-- Напрямок -->
         <div class="side-menu-section">
             <div class="side-menu-section-header" onclick="toggleMobileSection('direction')">
@@ -1166,6 +1163,10 @@
                 <span class="section-toggle" id="toggleDirection">▼</span>
             </div>
             <div class="side-menu-collapsible" id="mobileDirectionSection">
+                <div class="side-menu-item" id="mobileNewLeads" onclick="showNewLeads(); closeSideMenu();" style="background:rgba(59,130,246,0.25);">
+                    <span class="side-menu-item-left" style="color:white;font-weight:700;">🆕 Нові (24 год)</span>
+                    <span class="side-menu-item-count" id="mobileCountNew" style="background:var(--accent);color:white;">0</span>
+                </div>
                 <div class="side-menu-item" id="mobileDirectionAll" onclick="setDirection('all'); closeSideMenu();">
                     <span class="side-menu-item-left">📊 Всі напрямки</span>
                     <span class="side-menu-item-count" id="mobileCountAll">0</span>
@@ -1188,6 +1189,13 @@
                 <span class="section-toggle" id="toggleDates">▼</span>
             </div>
             <div class="side-menu-collapsible" id="mobileDatesSection">
+                <div class="cal-direction-bar" style="padding:0 4px;">
+                    <select class="cal-direction-select" onchange="setDirection(this.value);closeSideMenu();">
+                        <option value="all">📊 Всі напрямки</option>
+                        <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
+                        <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
+                    </select>
+                </div>
                 <div class="calendar-box" id="mobileCalendar"></div>
             </div>
         </div>
@@ -1274,13 +1282,6 @@
 <div class="main-layout">
     <!-- PC SIDEBAR -->
     <aside class="pc-sidebar" id="pcSidebar">
-        <!-- Нові — завжди зверху -->
-        <div style="padding:8px 10px;">
-            <div class="pc-sidebar-item" id="pcNewLeads" onclick="showNewLeads()" style="background:linear-gradient(135deg,#dbeafe,#ede9fe);border:1px solid #93c5fd;border-radius:8px;padding:10px 12px;font-weight:700;">
-                <span><span class="item-icon">🆕</span>Нові (24 год)</span>
-                <span class="item-count" id="pcCountNew" style="background:var(--primary);color:white;">0</span>
-            </div>
-        </div>
         <!-- Напрямок -->
         <div class="pc-sidebar-section">
             <div class="pc-sidebar-header" onclick="togglePcSection('direction')">
@@ -1288,6 +1289,10 @@
                 <span class="pc-sidebar-toggle" id="pcToggleDirection">▼</span>
             </div>
             <div class="pc-sidebar-content" id="pcSectionDirection">
+                <div class="pc-sidebar-item" id="pcNewLeads" onclick="showNewLeads()" style="background:rgba(59,130,246,0.08);color:var(--primary);">
+                    <span><span class="item-icon">🆕</span>Нові (24 год)</span>
+                    <span class="item-count" id="pcCountNew" style="background:var(--accent);color:white;">0</span>
+                </div>
                 <div class="pc-sidebar-item" id="pcDirectionAll" onclick="setDirection('all')">
                     <span><span class="item-icon">📊</span>Всі посилки</span>
                     <span class="item-count" id="pcCountAll">0</span>
@@ -1310,6 +1315,13 @@
                 <span class="pc-sidebar-toggle" id="pcToggleDate">▼</span>
             </div>
             <div class="pc-sidebar-content collapsed" id="pcSectionDate">
+                <div class="cal-direction-bar">
+                    <select class="cal-direction-select" onchange="setDirection(this.value)">
+                        <option value="all">📊 Всі напрямки</option>
+                        <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
+                        <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
+                    </select>
+                </div>
                 <div class="pc-sidebar-calendar" id="pcCalendar"></div>
             </div>
         </div>
@@ -2304,10 +2316,12 @@ function renderCalendarTo(containerId) {
     const months = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
     const today = new Date().toISOString().split('T')[0];
     
-    // Рахуємо кількість посилок на кожну дату ВІДПРАВКИ (dateReceive)
+    // Рахуємо кількість посилок на кожну дату ВІДПРАВКИ (dateReceive) з урахуванням напрямку
     const seatCounts = {};
     const leadCounts = {};
-    packages.filter(p => p.status !== 'archived').forEach(p => {
+    const hiddenInCalendar = ['archived', 'refused', 'transferred', 'deleted'];
+    const dir = filters.direction;
+    packages.filter(p => !hiddenInCalendar.includes(p.status)).filter(p => !dir || dir === 'all' || p.direction === dir).forEach(p => {
         const shipDate = p.dateReceive || p.dateReg;
         if(shipDate) {
             leadCounts[shipDate] = (leadCounts[shipDate]||0) + 1;
@@ -2338,10 +2352,10 @@ function renderCalendarTo(containerId) {
         let cls = 'calendar-day';
         if (dateStr === today) cls += ' today';
         if (dateStr === filters.date) cls += ' selected';
-        if (count > 0) cls += ' has-leads';
+        if (seats > 0) cls += ' has-leads';
         if (isOverbooked) cls += ' overbooked';
-        const tooltip = isOverbooked ? `title="⚠️ ${seats}/${totalCapacity} місць"` : '';
-        daysHtml += `<div class="${cls}" onclick="selectDate('${dateStr}')" ${tooltip}>${day}${count ? `<span class="calendar-day-count">${count}</span>` : ''}</div>`;
+        const tooltip = isOverbooked ? `title="⚠️ ${seats}/${totalCapacity}"` : '';
+        daysHtml += `<div class="${cls}" onclick="selectDate('${dateStr}')" ${tooltip}><span>${day}</span>${seats ? `<span class="calendar-day-count">${seats}</span>` : ''}</div>`;
     }
     
     // Дні наступного місяця (блідо)
@@ -6040,12 +6054,16 @@ function setDirection(dir) {
     document.getElementById('pcDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
     document.getElementById('pcNewLeads')?.classList.remove('active');
     
+    // Синхронізуємо dropdown в календарі
+    document.querySelectorAll('.cal-direction-select').forEach(s => s.value = dir);
+
     // Оновлюємо label
-    const labels = {'all': 'Пасажири', 'ua-eu': '🇺🇦→🇪🇺', 'eu-ua': '🇪🇺→🇺🇦'};
+    const labels = {'all': 'Посилки', 'ua-eu': '🇺🇦→🇪🇺', 'eu-ua': '🇪🇺→🇺🇦'};
     const navLabel = document.getElementById('navPackagesLabel');
-    if (navLabel) navLabel.textContent = labels[dir] || 'Пасажири';
-    
+    if (navLabel) navLabel.textContent = labels[dir] || 'Посилки';
+
     render();
+    renderCalendars();
     updateVehiclesList();
     updateAllCounts();
 }
@@ -6072,10 +6090,13 @@ function showNewLeads() {
     document.getElementById('pcDirectionUaEu')?.classList.remove('active');
     document.getElementById('pcDirectionEuUa')?.classList.remove('active');
     document.getElementById('pcNewLeads')?.classList.add('active');
-    
+
+    // Синхронізуємо dropdown в календарі
+    document.querySelectorAll('.cal-direction-select').forEach(s => s.value = 'all');
+
     const navLabel = document.getElementById('navPackagesLabel');
     if (navLabel) navLabel.textContent = '🆕 Нові';
-    
+
     render();
     updateAllCounts();
     showToast('🆕 Нові заявки за 24 год');
@@ -6505,7 +6526,7 @@ function tagLog(el, text) {
 document.addEventListener('click', e => {
     if (!e.target.closest('.dropdown-container')) document.querySelectorAll('.dropdown-menu').forEach(d => d.classList.remove('show'));
     if (!e.target.closest('.card-vehicle-badge') && !e.target.closest('.vehicle-dropdown')) document.querySelectorAll('.vehicle-dropdown').forEach(d => d.classList.remove('show'));
-    if (!e.target.closest('#navPassengers') && !e.target.closest('.direction-popup')) document.getElementById('directionPopup')?.classList.remove('show');
+    if (!e.target.closest('#navPackages') && !e.target.closest('.direction-popup')) document.getElementById('directionPopup')?.classList.remove('show');
 });
 </script>
 </body>
