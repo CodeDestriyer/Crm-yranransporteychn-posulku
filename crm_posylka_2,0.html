@@ -667,22 +667,22 @@
         .cg-map-link:hover { background: #1a73e8; }
 
         /* Right panel - vehicle + actions */
-        .card-right-panel { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 65px; }
+        .card-right-panel { display: none; }
         .card-vehicle-badge { background: var(--info); color: white; padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: 600; white-space: nowrap; text-align: center; cursor: default; }
         .card-vehicle-badge.empty { background: var(--bg-main); color: var(--text-secondary); border: 1px dashed var(--text-secondary); }
-        .card-actions-toggle { width: 28px; height: 28px; border: none; border-radius: 6px; background: var(--bg-main); cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; margin-top: auto; }
-        .card-actions-toggle:hover { background: var(--primary); color: white; }
-        .card-actions-toggle.open { background: var(--primary); color: white; transform: rotate(180deg); }
+        .card-actions-toggle { display: none; }
+        .card-actions-toggle:hover { display: none; }
+        .card-actions-toggle.open { display: none; }
 
         /* Collapse toggle for extra fields */
-        .cg-toggle { display: flex; align-items: center; justify-content: center; padding: 3px; background: #f8f9fb; cursor: pointer; font-size: 10px; color: var(--text-secondary); font-weight: 600; border-top: 1px solid #f0f2f5; gap: 4px; user-select: none; }
-        .cg-toggle:hover { background: #eef1f5; color: var(--primary); }
-        .cg-toggle-icon { transition: transform 0.2s; font-size: 8px; }
-        .cg-toggle-icon.open { transform: rotate(180deg); }
+        .cg-toggle { display: none; }
+        .cg-toggle:hover { display: none; }
+        .cg-toggle-icon { display: none; }
+        .cg-toggle-icon.open { display: none; }
 
         /* Collapsible extra section */
-        .cg-extra { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; opacity: 0; }
-        .cg-extra.open { max-height: 300px; opacity: 1; }
+        .cg-extra { max-height: none; overflow: visible; opacity: 1; }
+        .cg-extra.open { max-height: none; opacity: 1; }
 
         /* Payment badges */
         .card-pay-badge { font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
@@ -720,8 +720,8 @@
         .card-details .details-close-btn:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
 
         /* Actions panel */
-        .card-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 0; overflow: hidden; padding: 0 12px; background: white; transition: max-height 0.25s ease, padding 0.25s ease; }
-        .card-actions.show { max-height: 200px; padding: 10px 12px; border-top: 1px solid var(--border); }
+        .card-actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 10px 12px; background: white; border-top: 1px solid var(--border); }
+        .card-actions.show { max-height: none; padding: 10px 12px; border-top: 1px solid var(--border); }
         .btn-card-action { padding: 10px 6px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 4px; }
         .btn-card-action.btn-delete { background: #fee2e2; color: #dc2626; }
         .btn-card-action.btn-delete:hover { background: #dc2626; color: white; }
@@ -756,10 +756,11 @@
             .drag-handle span { width: 10px; }
             .card-cb { padding: 8px 4px; }
             .card-checkbox { width: 14px; height: 14px; }
-            .card-right-panel { min-width: 48px; padding: 4px 4px; }
+            .card-right-panel { display: none; }
             .card-vehicle-badge { font-size: 8px; padding: 3px 5px; }
-            .card-actions-toggle { width: 24px; height: 24px; font-size: 9px; }
-            .card-actions.show { grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 8px; }
+            .card-actions-toggle { display: none; }
+            .card-actions { grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 8px; }
+            .card-actions.show { grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 8px; }
             .btn-card-action { padding: 8px 4px; font-size: 10px; }
             .header-edit-btn { opacity: 0.4; }
         }
@@ -2834,32 +2835,19 @@ function render() {
                         ${cc('address','cg-main',`<span class="cg-val-address" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${cpBtn(p.address||'')}${(p.address||'').trim() ? `<a class="cg-map-link" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Навігація">➤</a>` : ''}${edBtn('address')}</span>`)}
                         ${cc('number','cg-sm',`<span class="cg-label">Внутр.№</span><span class="cg-val">${numberDisplay||'—'}</span>${edBtn('number')}`)}
                     </div>
-                    <!-- COLLAPSE TOGGLE -->
-                    <div class="cg-toggle" onclick="event.stopPropagation();toggleCardExtra('${uk}')">
-                        <span class="cg-toggle-icon ${extOpen?'open':''}">▼</span>
-                        <span>${extOpen?'Згорнути':'Більше'}</span>
+                    <!-- ROW 5: Phone reg (Р) | Parcel Status (Р) -->
+                    <div class="cg-row">
+                        ${cc('phoneReg','cg-main',`<span class="cg-label">Тел.реєстр.</span><span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}${edBtn('phoneReg')}`)}
+                        ${cc('parcelStatus','cg-sm',`<span class="cg-label">Стат.пос.</span><span class="cg-val">${p.parcelStatus||'—'}</span>${edBtn('parcelStatus')}`)}
                     </div>
-                    <!-- EXTRA ROWS (collapsible) -->
-                    <div class="cg-extra ${extOpen?'open':''}">
-                        <!-- ROW 5: Phone reg (Р) | АВТО (Р) | Parcel Status (Р) -->
-                        <div class="cg-row">
-                            ${cc('phoneReg','cg-main',`<span class="cg-label">Тел.реєстр.</span><span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}${edBtn('phoneReg')}`)}
-                            ${cc('vehicle','cg-mid',`<span class="cg-label">АВТО</span>${vehicleBadge}`)}
-                            ${cc('parcelStatus','cg-sm',`<span class="cg-label">Стат.пос.</span><span class="cg-val">${p.parcelStatus||'—'}</span>${edBtn('parcelStatus')}`)}
-                        </div>
-                        <!-- ROW 6: ПІБ (К,Р) | ВО (Р) | SMS Note (Р) | Photo | Timing (Р) -->
-                        <div class="cg-row">
-                            ${cc('name','cg-main',`<span class="cg-label">ПІБ</span><span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name||'')}${edBtn('name')}`)}
-                            ${cc('vo','cg-sm',`<span class="cg-label">ВО</span><span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>${edBtn('vo')}`)}
-                            ${cc('smsNote','cg-sm',`<span class="cg-label">Прим.СМС</span><span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>${edBtn('smsNote')}`)}
-                            ${cc('photo','cg-sm',`<span class="cg-label">Фото</span>${p.photo ? `<a href="${esc(String(p.photo).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--info);font-weight:600;font-size:11px;">📷 Фото</a>` : '<span style="opacity:0.3">—</span>'}`)}
-                            ${cc('timing','cg-sm',`<span class="cg-label">Таймінг</span><span class="cg-val">${p.timing||'—'}</span>${edBtn('timing')}`)}
-                        </div>
+                    <!-- ROW 6: ПІБ (К,Р) | ВО (Р) | SMS Note (Р) | Photo | Timing (Р) -->
+                    <div class="cg-row">
+                        ${cc('name','cg-main',`<span class="cg-label">ПІБ</span><span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name||'')}${edBtn('name')}`)}
+                        ${cc('vo','cg-sm',`<span class="cg-label">ВО</span><span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>${edBtn('vo')}`)}
+                        ${cc('smsNote','cg-sm',`<span class="cg-label">Прим.СМС</span><span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>${edBtn('smsNote')}`)}
+                        ${cc('photo','cg-sm',`<span class="cg-label">Фото</span>${p.photo ? `<a href="${esc(String(p.photo).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--info);font-weight:600;font-size:11px;">📷 Фото</a>` : '<span style="opacity:0.3">—</span>'}`)}
+                        ${cc('timing','cg-sm',`<span class="cg-label">Таймінг</span><span class="cg-val">${p.timing||'—'}</span>${edBtn('timing')}`)}
                     </div>
-                </div>
-                <div class="card-right-panel">
-                    <div>${vehicleBadge}</div>
-                    <button class="card-actions-toggle ${aOpen?'open':''}" onclick="event.stopPropagation();toggleActions('${uk}')">▼</button>
                 </div>
             </div>
             <div class="card-details ${dOpen?'show':''}">
@@ -2867,7 +2855,7 @@ function render() {
                 ${inlineHtml}
                 <span class="inline-save-indicator" id="saveInd_${uk.replace(/[^a-zA-Z0-9]/g,'_')}">✓ Збережено</span>
             </div>
-            <div class="card-actions ${aOpen?'show':''}">
+            <div class="card-actions show">
                 <button class="btn-card-action btn-call" onclick="event.stopPropagation();location.href='tel:${p.phone}'">📞 Дзвонити</button>
                 <button class="btn-card-action btn-msg" onclick="event.stopPropagation();window.open('https://console.smartsender.com/contacts?project=yura-transportation-131349','_blank')">💬 Писати</button>
                 <button class="btn-card-action btn-map" onclick="event.stopPropagation();openMapModal('${uk}')">🗺️ Карта</button>
