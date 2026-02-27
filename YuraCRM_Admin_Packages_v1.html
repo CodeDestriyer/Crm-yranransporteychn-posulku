@@ -2019,6 +2019,7 @@ let vehicles = [
 ];
 let filters = {date:'',vehicle:'',search:'',showArchive:false,statusFilter:'',routeVehicle:'',direction:'all',specialStatus:'',statusDateFrom:'',statusDateTo:'',showNewOnly:true};
 let selectedIds = new Set();
+let bulkMenuPinned = false;
 let expandedExtras = new Set(); // Cards with expanded extra section
 let hiddenCols = new Set(); // Hidden column keys
 let editingId = null;
@@ -3017,9 +3018,10 @@ function toggleSelectAll() {
     render();
 }
 
-function clearSelection() { 
-    selectedIds.clear(); 
-    render(); 
+function clearSelection() {
+    selectedIds.clear();
+    bulkMenuPinned = false;
+    render();
     // Ховаємо sidebar тільки тут
     const sidebar = document.getElementById('bulkActionsSidebar');
     if (sidebar) sidebar.classList.remove('show');
@@ -3030,34 +3032,45 @@ function clearSelection() {
     if (sidebarCount) sidebarCount.textContent = 0;
 }
 
+// Скидає вибір але залишає меню дій відкритим
+function resetSelection() {
+    selectedIds.clear();
+    document.getElementById('bulkCount').textContent = 0;
+    const sidebarCount = document.getElementById('bulkCountSidebar');
+    if (sidebarCount) sidebarCount.textContent = 0;
+}
+
 function updateBulkBar() {
     const bar = document.getElementById('bulkActionsBar');
     const sidebar = document.getElementById('bulkActionsSidebar');
     const count = selectedIds.size;
-    
+
     // Оновлюємо лічильники
     document.getElementById('bulkCount').textContent = count;
     const sidebarCount = document.getElementById('bulkCountSidebar');
     if (sidebarCount) sidebarCount.textContent = count;
-    
-    // Mobile bar - показуємо/ховаємо
-    bar.classList.toggle('show', count > 0);
-    
-    // PC Sidebar - тільки ПОКАЗУЄМО, не ховаємо (ховає clearSelection)
-    if (sidebar && count > 0) sidebar.classList.add('show');
-    
+
+    // Mobile bar - показуємо/ховаємо (або тримаємо відкритим якщо закріплено)
+    bar.classList.toggle('show', count > 0 || bulkMenuPinned);
+
+    // PC Sidebar - показуємо якщо є вибрані або закріплено
+    if (sidebar && (count > 0 || bulkMenuPinned)) sidebar.classList.add('show');
+
+    // Закріплюємо меню при першому виборі
+    if (count > 0) bulkMenuPinned = true;
+
     const isRouteView = filters.statusFilter === 'route' && filters.routeVehicle;
     const isArchiveView = filters.showArchive;
     const isSpecialStatus = !!filters.specialStatus; // archived, refused, transferred, deleted
     const canRestore = isArchiveView || isSpecialStatus;
     const canDeleteForever = filters.specialStatus === 'deleted';
-    
+
     // Mobile кнопки
     const restoreBtn = document.getElementById('btnBulkRestore');
     const notifyBtn = document.getElementById('btnBulkNotify');
     if (restoreBtn) restoreBtn.style.display = canRestore ? 'inline-flex' : 'none';
     if (notifyBtn) notifyBtn.style.display = isRouteView ? 'inline-flex' : 'none';
-    
+
     // PC Sidebar кнопки
     const sidebarNotify = document.getElementById('btnSidebarNotify');
     const sidebarRestore = document.getElementById('btnSidebarRestore');
@@ -3817,7 +3830,7 @@ function bulkRestore() {
                     }
                 }
             });
-            clearSelection();
+            resetSelection();
             render();
             updateAllCounts();
             showToast(`↩️ Відновлено: ${data.restored || packagesToRestore.length}`);
@@ -3836,7 +3849,7 @@ function bulkRestore() {
                 p.statusDate = '';
             }
         });
-        clearSelection();
+        resetSelection();
         saveSettings();
         render();
         updateAllCounts();
@@ -3894,7 +3907,7 @@ function bulkMarkNotified() {
             // Оновлюємо локальний список mailingIds
             records.forEach(r => mailingIds.push(String(r.id)));
             
-            clearSelection();
+            resetSelection();
             renderRoutePassengers();
             showToast(`🔔 Сповіщено: ${data.added}`);
         } else {
@@ -3974,7 +3987,7 @@ function confirmBulkVehicle() {
     });
     saveSettings();
     closeModal('bulkVehicleModal');
-    clearSelection();
+    resetSelection();
     render();
     updateAllCounts();
     showToast(`🚐 Авто призначено: ${count}`);
@@ -4102,10 +4115,10 @@ function executeCopyToRoute(byVehicle, withVehicle, conflictAction) {
                 p.mark = 'Маршрут';
             });
             saveSettings();
-            clearSelection();
+            resetSelection();
             render();
             updateAllCounts();
-            
+
             let msg = `🚀 ${data.copied} записано в маршрут`;
             if (data.archived) msg += `, 📦 ${data.archived} архівовано`;
             if (data.cleared) msg += `, 🗑️ ${data.cleared} видалено`;
@@ -4163,7 +4176,7 @@ function bulkArchive() {
                     p.statusDate = new Date().toISOString().split('T')[0];
                 }
             });
-            clearSelection();
+            resetSelection();
             render();
             updateAllCounts();
             renderCalendars();
@@ -4375,12 +4388,13 @@ function bulkDeleteForever() {
         }
     });
     
+    const deletedCount = selectedIds.size;
     hideLoader();
-    clearSelection();
+    resetSelection();
     saveSettings();
     render();
     updateAllCounts();
-    showToast(`💀 Видалено назавжди: ${selectedIds.size}`);
+    showToast(`💀 Видалено назавжди: ${deletedCount}`);
 }
 
 // Універсальна функція застосування статусу
@@ -4407,12 +4421,12 @@ function applyStatusToSelected(status, note) {
     });
     
     hideLoader();
-    clearSelection();
+    resetSelection();
     saveSettings();
     render();
     updateAllCounts();
     renderCalendars();
-    
+
     const statusNames = {
         'refused': '❌ Відмова',
         'transferred': '📆 Перенос', 
@@ -4798,7 +4812,7 @@ function applyOptimizedOrder(orderedPassengers, notGeocodedList) {
     });
     
     saveSettings();
-    clearSelection();
+    resetSelection();
     render();
     updateAllCounts();
 }
@@ -5905,10 +5919,11 @@ function applyBulkParcelStatus(status) {
         });
     }
 
-    clearSelection();
+    const appliedCount = selectedIds.size || items.length;
+    resetSelection();
     render();
     updateAllCounts();
-    showToast(`📦 Статус "${status}" → ${selectedIds.size || items.length} посилок`);
+    showToast(`📦 Статус "${status}" → ${appliedCount} посилок`);
 }
 
 // === МАСОВЕ ПРИЗНАЧЕННЯ ПРИМІТКИ СМС ===
@@ -5961,7 +5976,7 @@ function applyBulkSmsNote() {
         });
     }
     const cnt = selectedIds.size;
-    clearSelection(); render(); updateAllCounts();
+    resetSelection(); render(); updateAllCounts();
     showToast(`💬 Примітка СМС → ${cnt} посилок`);
 }
 
@@ -6016,7 +6031,7 @@ function applyBulkDateReceive() {
         });
     }
     const cnt = selectedIds.size;
-    clearSelection(); render(); updateAllCounts(); renderCalendars();
+    resetSelection(); render(); updateAllCounts(); renderCalendars();
     showToast(`📅 Дата отримання → ${cnt} посилок`);
 }
 
