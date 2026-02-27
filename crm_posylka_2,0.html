@@ -667,12 +667,12 @@
         .cg-map-link:hover { background: #1a73e8; }
 
         /* Right panel - vehicle + actions */
-        .card-right-panel { display: none; }
+        .card-right-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 40px; }
         .card-vehicle-badge { background: var(--info); color: white; padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: 600; white-space: nowrap; text-align: center; cursor: default; }
         .card-vehicle-badge.empty { background: var(--bg-main); color: var(--text-secondary); border: 1px dashed var(--text-secondary); }
-        .card-actions-toggle { display: none; }
-        .card-actions-toggle:hover { display: none; }
-        .card-actions-toggle.open { display: none; }
+        .card-actions-toggle { width: 28px; height: 28px; border: none; border-radius: 6px; background: var(--bg-main); cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
+        .card-actions-toggle:hover { background: var(--primary); color: white; }
+        .card-actions-toggle.open { background: var(--primary); color: white; transform: rotate(180deg); }
 
         /* Collapse toggle for extra fields */
         .cg-toggle { display: none; }
@@ -720,8 +720,8 @@
         .card-details .details-close-btn:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
 
         /* Actions panel */
-        .card-actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 10px 12px; background: white; border-top: 1px solid var(--border); }
-        .card-actions.show { max-height: none; padding: 10px 12px; border-top: 1px solid var(--border); }
+        .card-actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-height: 0; overflow: hidden; padding: 0 12px; background: white; transition: max-height 0.25s ease, padding 0.25s ease; }
+        .card-actions.show { max-height: 200px; padding: 10px 12px; border-top: 1px solid var(--border); }
         .btn-card-action { padding: 10px 6px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 4px; }
         .btn-card-action.btn-delete { background: #fee2e2; color: #dc2626; }
         .btn-card-action.btn-delete:hover { background: #dc2626; color: white; }
@@ -756,10 +756,9 @@
             .drag-handle span { width: 10px; }
             .card-cb { padding: 8px 4px; }
             .card-checkbox { width: 14px; height: 14px; }
-            .card-right-panel { display: none; }
+            .card-right-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 40px; }
             .card-vehicle-badge { font-size: 8px; padding: 3px 5px; }
-            .card-actions-toggle { display: none; }
-            .card-actions { grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 8px; }
+            .card-actions-toggle { width: 24px; height: 24px; font-size: 9px; }
             .card-actions.show { grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 8px; }
             .btn-card-action { padding: 8px 4px; font-size: 10px; }
             .header-edit-btn { opacity: 0.4; }
@@ -2805,7 +2804,7 @@ function render() {
                     <input type="checkbox" class="card-checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleSelect('${uk}')">
                 </div>
                 <div class="card-grid" onclick="toggleDetails('${uk}')">
-                    <!-- ROW 1: Direction + TTN (К,Р) | Weight | Date -->
+                    <!-- ROW 1: Direction + TTN | Weight | Date -->
                     <div class="cg-row">
                         <div class="cg-cell cg-main" data-col="ttn" ${hc.has('ttn')?'style="display:none"':''}>
                             ${orderNum}
@@ -2813,41 +2812,44 @@ function render() {
                             ${ttnRaw ? `<span class="cg-val-ttn">ТТН:${ttnDisplay}${cpBtn(ttnRaw)}${edBtn('ttn')}</span>` : ''}
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
                         </div>
-                        ${cc('weight','cg-sm',`<span class="cg-label">Вага</span>${weightDisplay ? `<span class="cg-val-weight">${weightDisplay}</span>${edBtn('weight')}` : `<span style="opacity:0.3">—</span>${edBtn('weight')}`}`)}
-                        ${cc('dateReg','cg-sm',`<span class="cg-label">Дата</span><span class="cg-val-date">${dateDisplay}</span>`)}
+                        ${cc('weight','cg-sm',`${weightDisplay ? `<span class="cg-val-weight">${weightDisplay}</span>${edBtn('weight')}` : `<span style="opacity:0.3">—</span>${edBtn('weight')}`}`)}
+                        ${cc('dateReg','cg-sm',`<span class="cg-val-date">${dateDisplay}</span>`)}
                     </div>
-                    <!-- ROW 2: Phone (К,Р) | АВТО | Amount (€,Р) | DateReceive (Р) -->
+                    <!-- ROW 2: Phone | АВТО | Amount | DateReceive -->
                     <div class="cg-row">
                         ${cc('phone','cg-main',`<span class="cg-val-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}${cpBtn(phoneRaw)}${edBtn('phone')}</span>`)}
                         ${cc('vehicle','cg-sm',`${vehicleBadge}`)}
                         ${cc('amount','cg-sm',`<span class="cg-val-price">${priceDisplay||'—'}</span>${edBtn('amount')}`)}
-                        ${cc('dateReceive','cg-sm',`<span class="cg-label">Отр.</span><span class="cg-val-date">${dateRecvDisplay||'—'}</span>${edBtn('dateReceive')}`)}
+                        ${cc('dateReceive','cg-sm',`<span class="cg-val-date">${dateRecvDisplay||'—'}</span>${edBtn('dateReceive')}`)}
                     </div>
-                    <!-- ROW 3: ID (К) | PayStatus (Р) | Payment (Р) | Note (Р) -->
+                    <!-- ROW 3: ID | PayStatus | Payment | Note -->
                     <div class="cg-row">
                         ${cc('id','cg-main',`<span class="cg-val-id" onclick="event.stopPropagation()">${idDisplay}${cpBtn(idRaw)}</span>`)}
-                        ${cc('payStatus','cg-sm',`<span class="cg-label">Ст.опл.</span>${payStatusBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payStatus')}`)}
-                        ${cc('payment','cg-sm',`<span class="cg-label">Оплата</span>${paymentBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payment')}`)}
-                        ${cc('note','cg-sm',`<span class="cg-label">Прим.</span>${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : '<span style="opacity:0.3">—</span>'}${edBtn('note')}`)}
+                        ${cc('payStatus','cg-sm',`${payStatusBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payStatus')}`)}
+                        ${cc('payment','cg-sm',`${paymentBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payment')}`)}
+                        ${cc('note','cg-sm',`${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : '<span style="opacity:0.3">—</span>'}${edBtn('note')}`)}
                     </div>
-                    <!-- ROW 4: Address (К, і-maps) | Internal number (Р) -->
+                    <!-- ROW 4: Address | Internal number -->
                     <div class="cg-row">
                         ${cc('address','cg-main',`<span class="cg-val-address" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${cpBtn(p.address||'')}${(p.address||'').trim() ? `<a class="cg-map-link" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Навігація">➤</a>` : ''}${edBtn('address')}</span>`)}
-                        ${cc('number','cg-sm',`<span class="cg-label">Внутр.№</span><span class="cg-val">${numberDisplay||'—'}</span>${edBtn('number')}`)}
+                        ${cc('number','cg-sm',`<span class="cg-val">${numberDisplay||'—'}</span>${edBtn('number')}`)}
                     </div>
-                    <!-- ROW 5: Phone reg (Р) | Parcel Status (Р) -->
+                    <!-- ROW 5: Phone reg | Parcel Status -->
                     <div class="cg-row">
-                        ${cc('phoneReg','cg-main',`<span class="cg-label">Тел.реєстр.</span><span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}${edBtn('phoneReg')}`)}
-                        ${cc('parcelStatus','cg-sm',`<span class="cg-label">Стат.пос.</span><span class="cg-val">${p.parcelStatus||'—'}</span>${edBtn('parcelStatus')}`)}
+                        ${cc('phoneReg','cg-main',`<span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}${edBtn('phoneReg')}`)}
+                        ${cc('parcelStatus','cg-sm',`<span class="cg-val">${p.parcelStatus||'—'}</span>${edBtn('parcelStatus')}`)}
                     </div>
-                    <!-- ROW 6: ПІБ (К,Р) | ВО (Р) | SMS Note (Р) | Photo | Timing (Р) -->
+                    <!-- ROW 6: ПІБ | ВО | SMS Note | Photo | Timing -->
                     <div class="cg-row">
-                        ${cc('name','cg-main',`<span class="cg-label">ПІБ</span><span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name||'')}${edBtn('name')}`)}
-                        ${cc('vo','cg-sm',`<span class="cg-label">ВО</span><span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>${edBtn('vo')}`)}
-                        ${cc('smsNote','cg-sm',`<span class="cg-label">Прим.СМС</span><span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>${edBtn('smsNote')}`)}
-                        ${cc('photo','cg-sm',`<span class="cg-label">Фото</span>${p.photo ? `<a href="${esc(String(p.photo).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--info);font-weight:600;font-size:11px;">📷 Фото</a>` : '<span style="opacity:0.3">—</span>'}`)}
-                        ${cc('timing','cg-sm',`<span class="cg-label">Таймінг</span><span class="cg-val">${p.timing||'—'}</span>${edBtn('timing')}`)}
+                        ${cc('name','cg-main',`<span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name||'')}${edBtn('name')}`)}
+                        ${cc('vo','cg-sm',`<span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>${edBtn('vo')}`)}
+                        ${cc('smsNote','cg-sm',`<span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>${edBtn('smsNote')}`)}
+                        ${cc('photo','cg-sm',`${p.photo ? `<a href="${esc(String(p.photo).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--info);font-weight:600;font-size:11px;">📷 Фото</a>` : '<span style="opacity:0.3">—</span>'}`)}
+                        ${cc('timing','cg-sm',`<span class="cg-val">${p.timing||'—'}</span>${edBtn('timing')}`)}
                     </div>
+                </div>
+                <div class="card-right-panel">
+                    <button class="card-actions-toggle ${aOpen?'open':''}" onclick="event.stopPropagation();toggleActions('${uk}')">▼</button>
                 </div>
             </div>
             <div class="card-details ${dOpen?'show':''}">
@@ -2855,7 +2857,7 @@ function render() {
                 ${inlineHtml}
                 <span class="inline-save-indicator" id="saveInd_${uk.replace(/[^a-zA-Z0-9]/g,'_')}">✓ Збережено</span>
             </div>
-            <div class="card-actions show">
+            <div class="card-actions ${aOpen?'show':''}">
                 <button class="btn-card-action btn-call" onclick="event.stopPropagation();location.href='tel:${p.phone}'">📞 Дзвонити</button>
                 <button class="btn-card-action btn-msg" onclick="event.stopPropagation();window.open('https://console.smartsender.com/contacts?project=yura-transportation-131349','_blank')">💬 Писати</button>
                 <button class="btn-card-action btn-map" onclick="event.stopPropagation();openMapModal('${uk}')">🗺️ Карта</button>
