@@ -3035,6 +3035,20 @@ function clearSelection() {
     if (contentArea) contentArea.classList.remove('shifted-by-bulk');
 }
 
+// Оновлює дані після bulk-дії, але залишає sidebar і вибір
+function refreshAfterAction() {
+    // Видаляємо з selectedIds записи, яких більше немає у видимому списті
+    const currentData = getFilteredData();
+    const currentUids = new Set(currentData.map((p, idx) =>
+        (p._sheet && p._rowNum) ? `${p._sheet}_${p._rowNum}` : `local_${idx}`
+    ));
+    selectedIds.forEach(uid => {
+        if (!currentUids.has(uid)) selectedIds.delete(uid);
+    });
+    render();
+    updateBulkBar();
+}
+
 function switchToMenu() {
     // Ховаємо bulk sidebar, показуємо PC sidebar
     const bulk = document.getElementById('bulkActionsSidebar');
@@ -3842,8 +3856,7 @@ function bulkRestore() {
                     }
                 }
             });
-            clearSelection();
-            render();
+            refreshAfterAction();
             updateAllCounts();
             showToast(`↩️ Відновлено: ${data.restored || packagesToRestore.length}`);
         } else {
@@ -3861,9 +3874,8 @@ function bulkRestore() {
                 p.statusDate = '';
             }
         });
-        clearSelection();
         saveSettings();
-        render();
+        refreshAfterAction();
         updateAllCounts();
         showToast('↩️ Відновлено локально');
     });
@@ -3919,7 +3931,7 @@ function bulkMarkNotified() {
             // Оновлюємо локальний список mailingIds
             records.forEach(r => mailingIds.push(String(r.id)));
             
-            clearSelection();
+            refreshAfterAction();
             renderRoutePassengers();
             showToast(`🔔 Сповіщено: ${data.added}`);
         } else {
@@ -3999,8 +4011,7 @@ function confirmBulkVehicle() {
     });
     saveSettings();
     closeModal('bulkVehicleModal');
-    clearSelection();
-    render();
+    refreshAfterAction();
     updateAllCounts();
     showToast(`🚐 Авто призначено: ${count}`);
 }
@@ -4127,10 +4138,9 @@ function executeCopyToRoute(byVehicle, withVehicle, conflictAction) {
                 p.mark = 'Маршрут';
             });
             saveSettings();
-            clearSelection();
-            render();
+            refreshAfterAction();
             updateAllCounts();
-            
+
             let msg = `🚀 ${data.copied} записано в маршрут`;
             if (data.archived) msg += `, 📦 ${data.archived} архівовано`;
             if (data.cleared) msg += `, 🗑️ ${data.cleared} видалено`;
@@ -4188,8 +4198,7 @@ function bulkArchive() {
                     p.statusDate = new Date().toISOString().split('T')[0];
                 }
             });
-            clearSelection();
-            render();
+            refreshAfterAction();
             updateAllCounts();
             renderCalendars();
             showToast(`📦 Архівовано: ${data.archived}`);
@@ -4400,12 +4409,12 @@ function bulkDeleteForever() {
         }
     });
     
+    const deletedCount = selectedIds.size;
     hideLoader();
-    clearSelection();
     saveSettings();
-    render();
+    refreshAfterAction();
     updateAllCounts();
-    showToast(`💀 Видалено назавжди: ${selectedIds.size}`);
+    showToast(`💀 Видалено назавжди: ${deletedCount}`);
 }
 
 // Універсальна функція застосування статусу
@@ -4432,12 +4441,11 @@ function applyStatusToSelected(status, note) {
     });
     
     hideLoader();
-    clearSelection();
     saveSettings();
-    render();
+    refreshAfterAction();
     updateAllCounts();
     renderCalendars();
-    
+
     const statusNames = {
         'refused': '❌ Відмова',
         'transferred': '📆 Перенос', 
@@ -4823,8 +4831,7 @@ function applyOptimizedOrder(orderedPassengers, notGeocodedList) {
     });
     
     saveSettings();
-    clearSelection();
-    render();
+    refreshAfterAction();
     updateAllCounts();
 }
 
@@ -5932,10 +5939,10 @@ function applyBulkParcelStatus(status) {
         });
     }
 
-    clearSelection();
-    render();
+    const cnt = selectedIds.size || items.length;
+    refreshAfterAction();
     updateAllCounts();
-    showToast(`📦 Статус "${status}" → ${selectedIds.size || items.length} посилок`);
+    showToast(`📦 Статус "${status}" → ${cnt} посилок`);
 }
 
 // === МАСОВЕ ПРИЗНАЧЕННЯ ПРИМІТКИ СМС ===
@@ -5988,7 +5995,7 @@ function applyBulkSmsNote() {
         });
     }
     const cnt = selectedIds.size;
-    clearSelection(); render(); updateAllCounts();
+    refreshAfterAction(); updateAllCounts();
     showToast(`💬 Примітка СМС → ${cnt} посилок`);
 }
 
@@ -6043,7 +6050,7 @@ function applyBulkDateReceive() {
         });
     }
     const cnt = selectedIds.size;
-    clearSelection(); render(); updateAllCounts(); renderCalendars();
+    refreshAfterAction(); updateAllCounts(); renderCalendars();
     showToast(`📅 Дата отримання → ${cnt} посилок`);
 }
 
