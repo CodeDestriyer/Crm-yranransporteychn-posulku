@@ -378,10 +378,22 @@ function handleGetRoutePassengers(payload) {
       });
     }
 
+    // Статистика
+    const stats = { total: passengers.length, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 };
+    for (const p of passengers) {
+      const s = (p.status || 'pending').toString().toLowerCase();
+      if (s === 'pending') stats.pending++;
+      else if (s === 'in-progress') stats.inProgress++;
+      else if (s === 'completed') stats.completed++;
+      else if (s === 'cancelled') stats.cancelled++;
+    }
+
     return sendJSON({
       success: true,
       passengers: passengers,
+      packages: passengers,    // alias для CRM
       count: passengers.length,
+      stats: stats,
       sheetName: sheetName
     });
   } catch (error) {

@@ -3457,6 +3457,18 @@ function showAllRoutes() {
     loadAllRoutePassengers();
 }
 
+function computeRouteStats(items) {
+    const stats = { total: items.length, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 };
+    for (const p of items) {
+        const s = (p.status || 'pending').toString().toLowerCase();
+        if (s === 'pending') stats.pending++;
+        else if (s === 'in-progress') stats.inProgress++;
+        else if (s === 'completed') stats.completed++;
+        else if (s === 'cancelled') stats.cancelled++;
+    }
+    return stats;
+}
+
 function showVehicleRoute(vehicleId) {
     const v = vehicles.find(x => x.id === vehicleId);
     if (!v) return showToast('❌ Авто не знайдено');
@@ -3494,21 +3506,22 @@ function showVehicleRoute(vehicleId) {
         }
         
         if (routeData.success) {
-            // Зберігаємо дані маршруту
-            routePassengers = routeData.packages.map((p, idx) => ({
+            // Зберігаємо дані маршруту (API повертає passengers або packages)
+            const items = routeData.passengers || routeData.packages || [];
+            routePassengers = items.map((p, idx) => ({
                 ...p,
                 _uid: `route_${v.id}_${idx}`,
                 _isRouteData: true,
                 _vehicleId: v.id,
                 _vehicleName: v.name
             }));
-            routeStats = routeData.stats;
+            routeStats = routeData.stats || computeRouteStats(routePassengers);
             currentRouteVehicle = v;
             
             // Рендеримо
             renderRoutePassengers();
             updateFilterButtons();
-            showToast(`🚐 ${v.name}: ${routeData.stats.total} пасажирів`);
+            showToast(`🚐 ${v.name}: ${routeStats.total} пасажирів`);
         } else {
             showToast('❌ ' + routeData.error);
         }
@@ -3577,32 +3590,33 @@ async function loadAllRoutePassengers() {
                 loaded++;
                 updateLoader(`Обробка: ${route.name}`, `${loaded} / ${routes.length}`);
                 
-                if (data.success && data.packages && data.packages.length > 0) {
+                const items = data.success ? (data.passengers || data.packages || []) : [];
+                if (items.length > 0) {
                     // Знаходимо відповідне авто
-                    const matchedVehicle = vehicles.find(v => 
-                        v.name === route.name || 
+                    const matchedVehicle = vehicles.find(v =>
+                        v.name === route.vehicle ||
+                        v.name === route.name ||
                         v.routeSheet === route.name ||
                         route.name.includes(v.name)
                     );
-                    
-                    const mapped = data.packages.map((p, idx) => ({
+
+                    const mapped = items.map((p, idx) => ({
                         ...p,
                         _uid: `route_${route.name.replace(/\s+/g, '_')}_${idx}`,
                         _isRouteData: true,
-                        _vehicleId: matchedVehicle?.id || route.name,
-                        _vehicleName: route.name
+                        _vehicleId: matchedVehicle?.id || route.vehicle || route.name,
+                        _vehicleName: route.vehicle || route.name
                     }));
                     routePassengers = routePassengers.concat(mapped);
-                    
+
                     // Додаємо статистику
-                    if (data.stats) {
-                        routeStats.total += data.stats.total || 0;
-                        routeStats.pending += data.stats.pending || 0;
-                        routeStats.inProgress += data.stats.inProgress || 0;
-                        routeStats.completed += data.stats.completed || 0;
-                        routeStats.cancelled += data.stats.cancelled || 0;
-                        routeStats.archived += data.stats.archived || 0;
-                    }
+                    const st = data.stats || computeRouteStats(items);
+                    routeStats.total += st.total || 0;
+                    routeStats.pending += st.pending || 0;
+                    routeStats.inProgress += st.inProgress || 0;
+                    routeStats.completed += st.completed || 0;
+                    routeStats.cancelled += st.cancelled || 0;
+                    routeStats.archived += st.archived || 0;
                 }
             }
         }
