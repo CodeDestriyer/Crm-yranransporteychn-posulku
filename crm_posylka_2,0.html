@@ -1308,7 +1308,7 @@
             </div>
             <div class="side-menu-collapsible" id="mobileDatesSection">
                 <div class="cal-direction-bar" style="padding:0 4px;">
-                    <select class="cal-direction-select" onchange="setDirection(this.value);closeSideMenu();">
+                    <select class="cal-direction-select" onchange="setCalendarDirection(this.value);">
                         <option value="all">📊 Всі напрямки</option>
                         <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
                         <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
@@ -1434,7 +1434,7 @@
             </div>
             <div class="pc-sidebar-content collapsed" id="pcSectionDate">
                 <div class="cal-direction-bar">
-                    <select class="cal-direction-select" onchange="setDirection(this.value)">
+                    <select class="cal-direction-select" onchange="setCalendarDirection(this.value)">
                         <option value="all">📊 Всі напрямки</option>
                         <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
                         <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
@@ -1629,7 +1629,7 @@
                         <button class="wf-btn" id="btnDate" onclick="toggleDropdown('dateDropdown')">📅 <span id="dateLabel">Дата</span> <span class="count" id="dateCount" style="display:none">0</span> ▼</button>
                         <div class="dropdown-menu" id="dateDropdown">
                             <div class="cal-direction-bar">
-                                <select class="cal-direction-select" onchange="setDirection(this.value)">
+                                <select class="cal-direction-select" onchange="setCalendarDirection(this.value)">
                                     <option value="all">📊 Всі напрямки</option>
                                     <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
                                     <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
@@ -2148,6 +2148,7 @@ let editingId = null;
 let openDetailsId = null;
 let openActionsId = null;
 let calendarDate = new Date(); // Поточна дата
+let calendarDirection = 'all'; // Напрямок тільки для календаря (незалежний від filters.direction)
 let draggedId = null;
 let undoHistory = []; // Історія для відміни дій
 
@@ -2446,11 +2447,11 @@ function renderCalendarTo(containerId) {
     const months = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
     const today = new Date().toISOString().split('T')[0];
     
-    // Рахуємо кількість посилок на кожну дату ВІДПРАВКИ (dateReceive) з урахуванням напрямку
+    // Рахуємо кількість посилок на кожну дату ВІДПРАВКИ (dateReceive) з урахуванням напрямку календаря
     const seatCounts = {};
     const leadCounts = {};
     const hiddenInCalendar = ['archived', 'refused', 'transferred', 'deleted'];
-    const dir = filters.direction;
+    const dir = calendarDirection;
     packages.filter(p => !hiddenInCalendar.includes(p.status)).filter(p => !dir || dir === 'all' || p.direction === dir).forEach(p => {
         const shipDate = p.dateReceive || p.dateReg;
         if(shipDate) {
@@ -3983,7 +3984,7 @@ function updateFilterButtons() {
 }
 
 function toggleDropdown(id) { document.querySelectorAll('.dropdown-menu').forEach(d => { if(d.id !== id) d.classList.remove('show'); }); document.getElementById(id).classList.toggle('show'); if(id === 'dateDropdown') renderCalendarTo('desktopCalendar'); }
-function resetFilters() { filters.date = ''; filters.vehicle = ''; filters.showArchive = false; filters.statusFilter = ''; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); renderCalendars(); updateVehiclesList(); updateAllCounts(); updatePcVehiclesList(); }
+function resetFilters() { filters.date = ''; filters.vehicle = ''; filters.showArchive = false; filters.statusFilter = ''; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; calendarDirection = 'all'; document.querySelectorAll('.cal-direction-select').forEach(s => s.value = 'all'); render(); renderCalendars(); updateVehiclesList(); updateAllCounts(); updatePcVehiclesList(); }
 function setVehicleFilter(id) { 
     filters.vehicle = id; 
     filters.statusFilter = ''; 
@@ -6318,7 +6319,7 @@ function toggleDirectionPopup() {
 function setDirection(dir) {
     filters.direction = dir;
     filters.showNewOnly = false; // Вимикаємо фільтр "Нові"
-    
+
     // Виходимо з режиму маршруту та спеціальних статусів
     filters.statusFilter = '';
     filters.routeVehicle = '';
@@ -6328,28 +6329,25 @@ function setDirection(dir) {
     routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 };
     currentRouteVehicle = null;
     routeStatusFilter = 'all';
-    
+
     document.getElementById('directionPopup')?.classList.remove('show');
-    
+
     // Оновлюємо активні стани
     document.querySelectorAll('.direction-option').forEach(el => {
         el.classList.toggle('active', el.dataset.dir === dir);
     });
-    
+
     // Оновлюємо мобільні
     document.getElementById('mobileDirectionAll')?.classList.toggle('active', dir === 'all');
     document.getElementById('mobileDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
     document.getElementById('mobileDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
     document.getElementById('mobileNewLeads')?.classList.remove('active');
-    
+
     // Оновлюємо PC sidebar
     document.getElementById('pcDirectionAll')?.classList.toggle('active', dir === 'all');
     document.getElementById('pcDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
     document.getElementById('pcDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
     document.getElementById('pcNewLeads')?.classList.remove('active');
-    
-    // Синхронізуємо dropdown в календарі
-    document.querySelectorAll('.cal-direction-select').forEach(s => s.value = dir);
 
     // Оновлюємо label
     const labels = {'all': 'Посилки', 'ua-eu': '🇺🇦→🇪🇺', 'eu-ua': '🇪🇺→🇺🇦'};
@@ -6360,6 +6358,14 @@ function setDirection(dir) {
     renderCalendars();
     updateVehiclesList();
     updateAllCounts();
+}
+
+// Напрямок тільки для календаря — не впливає на картки
+function setCalendarDirection(dir) {
+    calendarDirection = dir;
+    // Синхронізуємо всі календарні селекти
+    document.querySelectorAll('.cal-direction-select').forEach(s => s.value = dir);
+    renderCalendars();
 }
 
 // Показати тільки нові ліди (за останні 24 години)
@@ -6384,9 +6390,6 @@ function showNewLeads() {
     document.getElementById('pcDirectionUaEu')?.classList.remove('active');
     document.getElementById('pcDirectionEuUa')?.classList.remove('active');
     document.getElementById('pcNewLeads')?.classList.add('active');
-
-    // Синхронізуємо dropdown в календарі
-    document.querySelectorAll('.cal-direction-select').forEach(s => s.value = 'all');
 
     const navLabel = document.getElementById('navPackagesLabel');
     if (navLabel) navLabel.textContent = '🆕 Нові';
