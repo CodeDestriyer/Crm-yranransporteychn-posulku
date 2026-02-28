@@ -28,6 +28,15 @@ const CONFIG = {
 };
 
 // ============================================
+// Перетворення назви авто → назва аркуша маршруту
+// "А-Братислава" → "Братислава марш."
+// ============================================
+function vehicleToRouteSheet(vehicleName) {
+  const name = (vehicleName || '').replace(/^А-/i, '');
+  return name + ' марш.';
+}
+
+// ============================================
 // КОЛОНИ МАРШРУТНОГО АРКУША (такі ж як в CRM)
 // ============================================
 const COLUMNS = {
@@ -211,7 +220,7 @@ function handleCopyToRoute(payload) {
       if (!packages || !packages.length) continue;
 
       // Знаходимо або створюємо аркуш маршруту
-      const sheetName = vehicleName + ' марш.';
+      const sheetName = vehicleToRouteSheet(vehicleName);
       let sheet = ss.getSheetByName(sheetName);
 
       if (!sheet) {
@@ -305,7 +314,7 @@ function handleCheckRouteSheets(payload) {
     const existing = [];
 
     for (const vName of vehicleNames) {
-      const sheetName = vName + ' марш.';
+      const sheetName = vehicleToRouteSheet(vName);
       const sheet = ss.getSheetByName(sheetName);
 
       if (sheet && sheet.getLastRow() > 1) {
@@ -333,7 +342,7 @@ function handleGetRoutePassengers(payload) {
   try {
     const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
     const vehicleName = payload.vehicleName || '';
-    const sheetName = payload.sheetName || (vehicleName ? vehicleName + ' марш.' : '');
+    const sheetName = payload.sheetName || (vehicleName ? vehicleToRouteSheet(vehicleName) : '');
 
     if (!sheetName) {
       return sendJSON({ error: 'Не вказано маршрут' });
@@ -440,7 +449,7 @@ function handleDeleteRouteSheet(payload) {
     const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
     const vehicleName = payload.vehicleName || '';
     const force = payload.force || false;
-    const sheetName = vehicleName + ' марш.';
+    const sheetName = vehicleToRouteSheet(vehicleName);
 
     const sheet = ss.getSheetByName(sheetName);
     if (!sheet) {

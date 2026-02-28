@@ -3356,13 +3356,15 @@ function updateRoutesList() {
                 const count = route.count || 0;
                 totalCount += count;
 
-                // Знаходимо відповідне авто
-                const matchedVehicle = vehicles.find(v =>
-                    v.name === route.vehicle ||
-                    v.name === route.name ||
-                    v.routeSheet === route.name ||
-                    route.name.includes(v.name)
-                );
+                // Знаходимо відповідне авто (А-Братислава → Братислава)
+                const matchedVehicle = vehicles.find(v => {
+                    const clean = v.name.replace(/^А-/i, '');
+                    return v.name === route.vehicle ||
+                        clean === route.vehicle ||
+                        v.name === route.name ||
+                        v.routeSheet === route.name ||
+                        route.name.includes(clean);
+                });
 
                 if (matchedVehicle) {
                     const vid = matchedVehicle.id;
@@ -3612,13 +3614,15 @@ async function loadAllRoutePassengers() {
                 
                 const items = data.success ? (data.passengers || data.packages || []) : [];
                 if (items.length > 0) {
-                    // Знаходимо відповідне авто
-                    const matchedVehicle = vehicles.find(v =>
-                        v.name === route.vehicle ||
-                        v.name === route.name ||
-                        v.routeSheet === route.name ||
-                        route.name.includes(v.name)
-                    );
+                    // Знаходимо відповідне авто (А-Братислава → Братислава)
+                    const matchedVehicle = vehicles.find(v => {
+                        const clean = v.name.replace(/^А-/i, '');
+                        return v.name === route.vehicle ||
+                            clean === route.vehicle ||
+                            v.name === route.name ||
+                            v.routeSheet === route.name ||
+                            route.name.includes(clean);
+                    });
 
                     const mapped = items.map((p, idx) => ({
                         ...p,
@@ -3932,12 +3936,14 @@ function updateRoutesCounts() {
         if (data.success && data.routes) {
             for (const route of data.routes) {
                 const count = route.count || 0;
-                const matchedVehicle = vehicles.find(v =>
-                    v.name === route.vehicle ||
-                    v.name === route.name ||
-                    v.routeSheet === route.name ||
-                    route.name.includes(v.name)
-                );
+                const matchedVehicle = vehicles.find(v => {
+                    const clean = v.name.replace(/^А-/i, '');
+                    return v.name === route.vehicle ||
+                        clean === route.vehicle ||
+                        v.name === route.name ||
+                        v.routeSheet === route.name ||
+                        route.name.includes(clean);
+                });
                 if (matchedVehicle) {
                     const vid = matchedVehicle.id;
                     const badges = document.querySelectorAll(`[data-route-vehicle="${vid}"] .side-menu-item-count, [data-route-count="${vid}"]`);
