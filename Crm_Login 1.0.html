@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>YuraTransportation — Панель управління</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0c10;
+      --card-bg: rgba(255, 255, 255, 0.035);
+      --card-border: rgba(255, 255, 255, 0.06);
+      --text-primary: #f0f0f0;
+      --text-secondary: rgba(255, 255, 255, 0.45);
+      --driver: #f59e0b;
+      --driver-glow: rgba(245, 158, 11, 0.15);
+      --manager: #3b82f6;
+      --manager-glow: rgba(59, 130, 246, 0.15);
+      --owner: #10b981;
+      --owner-glow: rgba(16, 185, 129, 0.15);
+      --brand-red: #d90d0d;
+      --error: #ef4444;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+    html { height: 100%; }
+    body {
+      font-family: 'Manrope', sans-serif;
+      background-color: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh; min-height: 100dvh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      overflow-x: hidden; position: relative; padding: 40px 20px;
+    }
+    /* ═══ BACKGROUND ═══ */
+    body::before {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        radial-gradient(ellipse 600px 500px at 10% 15%, rgba(245, 158, 11, 0.07) 0%, transparent 70%),
+        radial-gradient(ellipse 500px 600px at 90% 25%, rgba(59, 130, 246, 0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 600px 500px at 50% 90%, rgba(16, 185, 129, 0.05) 0%, transparent 70%),
+        radial-gradient(ellipse 300px 300px at 50% 40%, rgba(217, 13, 13, 0.04) 0%, transparent 60%);
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: ''; position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+      background-size: 64px 64px; pointer-events: none; z-index: 0;
+    }
+    .noise {
+      position: fixed; inset: 0; opacity: 0.03;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0;
+    }
+    .container {
+      position: relative; z-index: 1; width: 100%; max-width: 1000px;
+      display: flex; flex-direction: column; align-items: center;
+    }
+    /* ═══ HEADER ═══ */
+    .header {
+      text-align: center; margin-bottom: 52px;
+      opacity: 0; transform: translateY(24px);
+      animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .brand-badge {
+      display: inline-block; font-family: 'Manrope', sans-serif;
+      font-size: 10px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--brand-red); background: rgba(217, 13, 13, 0.1);
+      border: 1px solid rgba(217, 13, 13, 0.2); padding: 6px 16px;
+      border-radius: 20px; margin-bottom: 20px;
+    }
+    .logo-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(44px, 9vw, 76px); letter-spacing: 3px; line-height: 1;
+      color: var(--text-primary); margin-bottom: 12px;
+    }
+    .logo-text span {
+      background: linear-gradient(135deg, var(--brand-red), #ff4444);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .subtitle {
+      font-size: clamp(13px, 2.5vw, 16px); color: var(--text-secondary);
+      font-weight: 500; letter-spacing: 0.5px;
+    }
+    /* ═══ SCREENS ═══ */
+    .screen { display: none; width: 100%; }
+    .screen.active { display: flex; flex-direction: column; align-items: center; }
+    /* ═══ CARDS GRID ═══ */
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; width: 100%; }
+    /* ═══ CARD ═══ */
+    .card {
+      position: relative; background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 36px 28px 32px; text-decoration: none;
+      color: var(--text-primary); display: flex; flex-direction: column;
+      align-items: flex-start; cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+      opacity: 0; transform: translateY(30px);
+    }
+    .card:nth-child(1) { animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s forwards; }
+    .card:nth-child(2) { animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards; }
+    .card:nth-child(3) { animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.45s forwards; }
+    .card::before {
+      content: ''; position: absolute; inset: 0; border-radius: 16px;
+      opacity: 0; transition: opacity 0.4s ease; pointer-events: none;
+    }
+    .card--driver::before { background: radial-gradient(ellipse at 50% 0%, var(--driver-glow), transparent 70%); }
+    .card--manager::before { background: radial-gradient(ellipse at 50% 0%, var(--manager-glow), transparent 70%); }
+    .card--owner::before { background: radial-gradient(ellipse at 50% 0%, var(--owner-glow), transparent 70%); }
+    .card:hover::before, .card:active::before { opacity: 1; }
+    .card:hover, .card:active { transform: translateY(-6px); border-color: rgba(255, 255, 255, 0.12); }
+    .card--driver:hover, .card--driver:active {
+      border-color: rgba(245, 158, 11, 0.3);
+      box-shadow: 0 20px 60px -15px rgba(245, 158, 11, 0.2), 0 0 0 1px rgba(245, 158, 11, 0.1);
+    }
+    .card--manager:hover, .card--manager:active {
+      border-color: rgba(59, 130, 246, 0.3);
+      box-shadow: 0 20px 60px -15px rgba(59, 130, 246, 0.2), 0 0 0 1px rgba(59, 130, 246, 0.1);
+    }
+    .card--owner:hover, .card--owner:active {
+      border-color: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 20px 60px -15px rgba(16, 185, 129, 0.2), 0 0 0 1px rgba(16, 185, 129, 0.1);
+    }
+    .card-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; margin-bottom: 24px; position: relative; z-index: 1;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card:hover .card-icon { transform: scale(1.08); }
+    .card--driver .card-icon { background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.2); }
+    .card--manager .card-icon { background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.2); }
+    .card--owner .card-icon { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(26px, 3.5vw, 34px); letter-spacing: 2px; line-height: 1.1;
+      margin-bottom: 8px; position: relative; z-index: 1;
+    }
+    .card--driver .card-title { color: var(--driver); }
+    .card--manager .card-title { color: var(--manager); }
+    .card--owner .card-title { color: var(--owner); }
+    .card-desc {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.6;
+      margin-bottom: 28px; position: relative; z-index: 1; flex: 1;
+    }
+    .card-arrow {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 700; letter-spacing: 0.5px;
+      position: relative; z-index: 1; opacity: 0.4;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .card-arrow .arrow-icon {
+      display: inline-block; transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); font-size: 18px;
+    }
+    .card:hover .card-arrow { opacity: 1; }
+    .card--driver:hover .card-arrow { color: var(--driver); }
+    .card--manager:hover .card-arrow { color: var(--manager); }
+    .card--owner:hover .card-arrow { color: var(--owner); }
+    .card:hover .card-arrow .arrow-icon { transform: translateX(4px); }
+    /* ═══ LOGIN FORM ═══ */
+    .login-box {
+      width: 100%; max-width: 400px;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 36px 32px;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .login-header { display: flex; align-items: center; gap: 14px; margin-bottom: 28px; }
+    .login-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .login-icon.manager-icon { background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.2); }
+    .login-icon.owner-icon { background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .login-title { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; }
+    .login-title.manager-title { color: var(--manager); }
+    .login-title.owner-title { color: var(--owner); }
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .form-input {
+      width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px;
+      color: var(--text-primary); font-family: 'Manrope', sans-serif;
+      font-size: 15px; font-weight: 600; outline: none;
+      transition: border-color 0.3s ease, background 0.3s ease;
+    }
+    .form-input:focus { border-color: rgba(255, 255, 255, 0.25); background: rgba(255, 255, 255, 0.07); }
+    .form-input::placeholder { color: rgba(255, 255, 255, 0.2); font-weight: 400; }
+    .form-input.manager-input:focus { border-color: rgba(59, 130, 246, 0.4); }
+    .form-input.owner-input:focus { border-color: rgba(16, 185, 129, 0.4); }
+    .form-select {
+      width: 100%; padding: 14px 16px; background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px;
+      color: var(--text-primary); font-family: 'Manrope', sans-serif;
+      font-size: 15px; font-weight: 600; outline: none; cursor: pointer;
+      -webkit-appearance: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='rgba(255,255,255,0.4)' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 14px center;
+    }
+    .form-select option { background: #1a1d24; color: #f0f0f0; }
+    .btn-login {
+      width: 100%; padding: 14px; border: none; border-radius: 10px;
+      font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 700;
+      cursor: pointer; letter-spacing: 0.5px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); margin-top: 6px;
+    }
+    .btn-login:active { transform: scale(0.98); }
+    .btn-login:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-login.manager-btn { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; }
+    .btn-login.manager-btn:hover:not(:disabled) { box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3); }
+    .btn-login.owner-btn { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .btn-login.owner-btn:hover:not(:disabled) { box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3); }
+    .btn-back {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: none; color: var(--text-secondary);
+      font-family: 'Manrope', sans-serif; font-size: 13px; font-weight: 600;
+      cursor: pointer; margin-top: 20px; padding: 8px 0;
+      transition: color 0.3s ease;
+    }
+    .btn-back:hover { color: var(--text-primary); }
+    .error-msg {
+      background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #f87171; padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; margin-bottom: 16px;
+      display: none; text-align: center;
+    }
+    .error-msg.visible { display: block; }
+    .success-msg {
+      background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);
+      color: #34d399; padding: 10px 14px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; margin-bottom: 16px;
+      display: none; text-align: center;
+    }
+    .success-msg.visible { display: block; }
+    .spinner-small {
+      display: inline-block; width: 18px; height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3); border-top-color: white;
+      border-radius: 50%; animation: spin 0.6s linear infinite;
+    }
+    /* ═══ ADMIN PANEL ═══ */
+    .admin-panel {
+      width: 100%; max-width: 600px;
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .admin-welcome {
+      text-align: center; margin-bottom: 32px;
+    }
+    .admin-welcome-name {
+      font-family: 'Bebas Neue', sans-serif; font-size: 32px;
+      color: var(--owner); letter-spacing: 2px; margin-bottom: 4px;
+    }
+    .admin-welcome-sub { font-size: 13px; color: var(--text-secondary); }
+    .admin-actions {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px;
+    }
+    .admin-action-btn {
+      padding: 14px 16px; background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 12px; color: var(--text-primary); font-family: 'Manrope', sans-serif;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex; align-items: center; gap: 8px;
+      backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    }
+    .admin-action-btn:hover {
+      border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.05);
+      transform: translateY(-2px);
+    }
+    .admin-action-btn .action-icon { font-size: 18px; }
+    .admin-action-btn.active {
+      border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.08);
+    }
+    .admin-action-btn.btn-crm {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
+      border-color: rgba(16, 185, 129, 0.25);
+      justify-content: center; font-size: 15px; padding: 16px;
+    }
+    .admin-action-btn.btn-crm:hover {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.1));
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.15);
+    }
+    /* ═══ ADMIN SUB-PANELS ═══ */
+    .admin-sub { display: none; }
+    .admin-sub.active { display: block; }
+    .sub-panel {
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 16px; padding: 28px 24px;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .sub-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      color: var(--owner); letter-spacing: 1.5px; margin-bottom: 20px;
+    }
+    /* ═══ USER LIST ═══ */
+    .user-list { display: flex; flex-direction: column; gap: 10px; }
+    .user-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 16px; background: rgba(255, 255, 255, 0.025);
+      border: 1px solid rgba(255, 255, 255, 0.04); border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+    .user-row:hover { background: rgba(255, 255, 255, 0.04); }
+    .user-role-badge {
+      padding: 3px 10px; border-radius: 6px; font-size: 10px;
+      font-weight: 800; letter-spacing: 1px; text-transform: uppercase; flex-shrink: 0;
+    }
+    .user-role-badge.role-owner { background: rgba(16, 185, 129, 0.15); color: var(--owner); }
+    .user-role-badge.role-manager { background: rgba(59, 130, 246, 0.15); color: var(--manager); }
+    .user-name { font-weight: 700; font-size: 14px; flex: 1; }
+    .user-status {
+      font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px;
+    }
+    .user-status.status-active { background: rgba(16, 185, 129, 0.12); color: var(--success); }
+    .user-status.status-blocked { background: rgba(239, 68, 68, 0.12); color: var(--error); }
+    .user-meta { font-size: 11px; color: var(--text-secondary); }
+    .user-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .user-action-btn {
+      width: 32px; height: 32px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.03); color: var(--text-secondary);
+      cursor: pointer; font-size: 14px; display: flex; align-items: center;
+      justify-content: center; transition: all 0.2s ease;
+    }
+    .user-action-btn:hover { background: rgba(255, 255, 255, 0.08); color: var(--text-primary); }
+    .user-action-btn.btn-block:hover { background: rgba(239, 68, 68, 0.1); color: var(--error); }
+    .user-action-btn.btn-delete:hover { background: rgba(239, 68, 68, 0.15); color: var(--error); }
+    .loading-users {
+      text-align: center; padding: 24px; color: var(--text-secondary); font-size: 13px;
+    }
+    /* ═══ MODAL ═══ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.7);
+      z-index: 100; align-items: center; justify-content: center; padding: 20px;
+      backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: #14161c; border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px; padding: 28px 24px; width: 100%; max-width: 400px;
+      animation: fadeUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    .modal-title {
+      font-family: 'Bebas Neue', sans-serif; font-size: 22px;
+      color: var(--owner); letter-spacing: 1.5px; margin-bottom: 16px;
+    }
+    .modal-msg {
+      font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.6;
+    }
+    .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
+    .modal-btn {
+      flex: 1; padding: 12px; border: none; border-radius: 10px;
+      font-family: 'Manrope', sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .modal-btn-cancel { background: rgba(255, 255, 255, 0.06); color: var(--text-secondary); }
+    .modal-btn-cancel:hover { background: rgba(255, 255, 255, 0.1); }
+    .modal-btn-danger { background: rgba(239, 68, 68, 0.2); color: #f87171; }
+    .modal-btn-danger:hover { background: rgba(239, 68, 68, 0.3); }
+    .modal-btn-confirm { background: linear-gradient(135deg, #10b981, #059669); color: white; }
+    .modal-btn-confirm:hover { box-shadow: 0 4px 20px rgba(16, 185, 129, 0.2); }
+    /* ═══ FOOTER ═══ */
+    .footer {
+      margin-top: 48px; text-align: center; color: rgba(255, 255, 255, 0.2);
+      font-size: 11px; font-weight: 500; letter-spacing: 1px;
+      opacity: 0; animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards;
+    }
+    .footer a { color: rgba(255, 255, 255, 0.3); text-decoration: none; transition: color 0.3s ease; }
+    .footer a:hover { color: var(--brand-red); }
+    /* ═══ ANIMATIONS ═══ */
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* ═══ RESPONSIVE ═══ */
+    @media (max-width: 768px) {
+      body { padding: 32px 16px; justify-content: flex-start; padding-top: 60px; }
+      .header { margin-bottom: 36px; }
+      .cards { grid-template-columns: 1fr; gap: 14px; }
+      .card {
+        padding: 24px 22px 22px; flex-direction: row; flex-wrap: wrap;
+        align-items: center; gap: 0;
+      }
+      .card-icon {
+        width: 48px; height: 48px; font-size: 22px; border-radius: 12px;
+        margin-bottom: 0; margin-right: 16px; flex-shrink: 0;
+      }
+      .card-content { flex: 1; min-width: 0; }
+      .card-title { font-size: 28px; margin-bottom: 4px; }
+      .card-desc { font-size: 12px; margin-bottom: 0; line-height: 1.5; }
+      .card-arrow {
+        position: absolute; right: 22px; top: 50%; transform: translateY(-50%); opacity: 0.5;
+      }
+      .card:active .card-arrow { opacity: 1; }
+      .card:active { transform: translateY(-2px) scale(0.99); }
+      .login-box { padding: 28px 24px; }
+      .admin-actions { grid-template-columns: 1fr; }
+      .user-row { flex-wrap: wrap; }
+      .user-meta { width: 100%; margin-top: 4px; }
+      .footer { margin-top: 36px; }
+    }
+    @media (max-width: 360px) {
+      .logo-text { font-size: 38px; letter-spacing: 2px; }
+      .card { padding: 20px 18px; }
+      .card-icon { width: 42px; height: 42px; font-size: 20px; margin-right: 14px; }
+      .card-title { font-size: 24px; }
+    }
+    @media (hover: none) {
+      .card:active::before { opacity: 1; }
+      .card:active .card-arrow { opacity: 1; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .header, .card, .footer, .login-box, .admin-panel { animation: none; opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="noise"></div>
+  <div class="container">
+    <header class="header">
+      <div class="brand-badge">Transportation System</div>
+      <h1 class="logo-text">YURA<span>TRANSPORTATION</span></h1>
+      <p class="subtitle" id="headerSubtitle">Оберіть вашу роль для входу в систему</p>
+    </header>
+    <!-- ═══ ЕКРАН 1: ВИБІР РОЛІ ═══ -->
+    <div class="screen active" id="screenRoles">
+      <div class="cards">
+        <a href="index_driver.html" class="card card--driver">
+          <div class="card-icon">🚛</div>
+          <div class="card-content">
+            <h2 class="card-title">Водій</h2>
+            <p class="card-desc">Маршрути, посилки, пасажири та навігація</p>
+          </div>
+          <div class="card-arrow">Увійти <span class="arrow-icon">→</span></div>
+        </a>
+        <div class="card card--manager" onclick="showLogin('manager')">
+          <div class="card-icon">📋</div>
+          <div class="card-content">
+            <h2 class="card-title">Менеджер</h2>
+            <p class="card-desc">Управління замовленнями, клієнтами та статусами</p>
+          </div>
+          <div class="card-arrow">Увійти <span class="arrow-icon">→</span></div>
+        </div>
+        <div class="card card--owner" onclick="showLogin('owner')">
+          <div class="card-icon">👑</div>
+          <div class="card-content">
+            <h2 class="card-title">Власник</h2>
+            <p class="card-desc">Повний контроль, аналітика та налаштування системи</p>
+          </div>
+          <div class="card-arrow">Увійти <span class="arrow-icon">→</span></div>
+        </div>
+      </div>
+    </div>
+    <!-- ═══ ЕКРАН 2: ЛОГІН МЕНЕДЖЕРА ═══ -->
+    <div class="screen" id="screenManagerLogin">
+      <div class="login-box">
+        <div class="login-header">
+          <div class="login-icon manager-icon">📋</div>
+          <h2 class="login-title manager-title">МЕНЕДЖЕР</h2>
+        </div>
+        <div class="error-msg" id="managerError"></div>
+        <div class="form-group">
+          <label class="form-label">Ім'я</label>
+          <input type="text" class="form-input manager-input" id="managerName" placeholder="Введіть ваше ім'я" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пароль</label>
+          <input type="password" class="form-input manager-input" id="managerPass" placeholder="Введіть пароль" autocomplete="off">
+        </div>
+        <button class="btn-login manager-btn" id="managerLoginBtn" onclick="doLogin('manager')">Увійти</button>
+        <button class="btn-back" onclick="showRoles()">← Назад до вибору ролі</button>
+      </div>
+    </div>
+    <!-- ═══ ЕКРАН 3: ЛОГІН ВЛАСНИКА ═══ -->
+    <div class="screen" id="screenOwnerLogin">
+      <div class="login-box">
+        <div class="login-header">
+          <div class="login-icon owner-icon">👑</div>
+          <h2 class="login-title owner-title">ВЛАСНИК</h2>
+        </div>
+        <div class="error-msg" id="ownerError"></div>
+        <div class="form-group">
+          <label class="form-label">Ім'я</label>
+          <input type="text" class="form-input owner-input" id="ownerName" placeholder="Введіть ваше ім'я" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Пароль</label>
+          <input type="password" class="form-input owner-input" id="ownerPass" placeholder="Введіть пароль" autocomplete="off">
+        </div>
+        <button class="btn-login owner-btn" id="ownerLoginBtn" onclick="doLogin('owner')">Увійти</button>
+        <button class="btn-back" onclick="showRoles()">← Назад до вибору ролі</button>
+      </div>
+    </div>
+    <!-- ═══ ЕКРАН 4: ПАНЕЛЬ ВЛАСНИКА ═══ -->
+    <div class="screen" id="screenAdmin">
+      <div class="admin-panel">
+        <div class="admin-welcome">
+          <div class="admin-welcome-name" id="adminWelcomeName">👑 ВЛАСНИК</div>
+          <div class="admin-welcome-sub">Панель управління системою</div>
+        </div>
+        <!-- Кнопки дій -->
+        <div class="admin-actions">
+          <button class="admin-action-btn btn-crm" onclick="goToCRM()">
+            <span class="action-icon">🚀</span> Відкрити CRM панель
+          </button>
+          <button class="admin-action-btn" id="btnUsers" onclick="toggleAdminSub('users')">
+            <span class="action-icon">👥</span> Користувачі
+          </button>
+          <button class="admin-action-btn" id="btnAddUser" onclick="toggleAdminSub('addUser')">
+            <span class="action-icon">➕</span> Додати
+          </button>
+          <button class="admin-action-btn" id="btnChangePass" onclick="toggleAdminSub('changePass')">
+            <span class="action-icon">🔑</span> Змінити пароль
+          </button>
+          <button class="admin-action-btn" onclick="doLogout()">
+            <span class="action-icon">🚪</span> Вийти
+          </button>
+        </div>
+        <!-- Список користувачів -->
+        <div class="admin-sub" id="subUsers">
+          <div class="sub-panel">
+            <div class="sub-title">👥 КОРИСТУВАЧІ</div>
+            <div class="user-list" id="userList">
+              <div class="loading-users"><span class="spinner-small"></span> Завантаження...</div>
+            </div>
+          </div>
+        </div>
+        <!-- Додати користувача -->
+        <div class="admin-sub" id="subAddUser">
+          <div class="sub-panel">
+            <div class="sub-title">➕ ДОДАТИ КОРИСТУВАЧА</div>
+            <div class="error-msg" id="addUserError"></div>
+            <div class="success-msg" id="addUserSuccess"></div>
+            <div class="form-group">
+              <label class="form-label">Роль</label>
+              <select class="form-select" id="newUserRole">
+                <option value="Менеджер">Менеджер</option>
+                <option value="Власник">Власник</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ім'я</label>
+              <input type="text" class="form-input owner-input" id="newUserName" placeholder="Ім'я нового користувача">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Пароль</label>
+              <input type="text" class="form-input owner-input" id="newUserPass" placeholder="Пароль (мін. 4 символи)">
+            </div>
+            <button class="btn-login owner-btn" onclick="doAddUser()">Додати</button>
+          </div>
+        </div>
+        <!-- Змінити пароль -->
+        <div class="admin-sub" id="subChangePass">
+          <div class="sub-panel">
+            <div class="sub-title">🔑 ЗМІНИТИ ПАРОЛЬ</div>
+            <div class="error-msg" id="changePassError"></div>
+            <div class="success-msg" id="changePassSuccess"></div>
+            <div class="form-group">
+              <label class="form-label">Старий пароль</label>
+              <input type="password" class="form-input owner-input" id="oldPass" placeholder="Введіть поточний пароль">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Новий пароль</label>
+              <input type="password" class="form-input owner-input" id="newPass" placeholder="Новий пароль (мін. 4 символи)">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Повторіть новий пароль</label>
+              <input type="password" class="form-input owner-input" id="newPass2" placeholder="Ще раз новий пароль">
+            </div>
+            <button class="btn-login owner-btn" onclick="doChangePassword()">Змінити пароль</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="footer">
+      © 2025 YuraTransportation · Розробка <a href="https://botisystem.com">BOTI System</a>
+    </footer>
+  </div>
+  <!-- ═══ МОДАЛЬНЕ ВІКНО ═══ -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-msg" id="modalMsg"></div>
+      <div id="modalExtra"></div>
+      <div class="modal-btns" id="modalBtns"></div>
+    </div>
+  </div>
+  <script>
+    // ═══════════════════════════════════════
+    const AUTH_API_URL = 'https://script.google.com/macros/s/AKfycbzZ6QAMEANL2DI5cbBgSpcg5KaW9xW8643u5SEkbQplljr4fh3BU_bek4WBQH6ikO34ww/exec';
+    const REDIRECT = {
+      'Менеджер': 'manager/index_pass_19v.html',
+      'Власник': 'manager/index_pass_19v.html'
+    };
+    // Дані поточного сеансу
+    let currentUser = { name: '', password: '', role: '' };
+    // ═══ НАВІГАЦІЯ ═══
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+    function showRoles() {
+      showScreen('screenRoles');
+      document.getElementById('headerSubtitle').textContent = 'Оберіть вашу роль для входу в систему';
+      clearAllMessages();
+    }
+    function showLogin(role) {
+      clearAllMessages();
+      if (role === 'manager') {
+        showScreen('screenManagerLogin');
+        document.getElementById('headerSubtitle').textContent = 'Вхід для менеджера';
+        const saved = localStorage.getItem('yura_manager_name');
+        if (saved) document.getElementById('managerName').value = saved;
+        setTimeout(() => {
+          const nf = document.getElementById('managerName');
+          if (nf.value) document.getElementById('managerPass').focus(); else nf.focus();
+        }, 100);
+      } else {
+        showScreen('screenOwnerLogin');
+        document.getElementById('headerSubtitle').textContent = 'Вхід для власника';
+        const saved = localStorage.getItem('yura_owner_name');
+        if (saved) document.getElementById('ownerName').value = saved;
+        setTimeout(() => {
+          const nf = document.getElementById('ownerName');
+          if (nf.value) document.getElementById('ownerPass').focus(); else nf.focus();
+        }, 100);
+      }
+    }
+    function showAdminPanel(name) {
+      showScreen('screenAdmin');
+      document.getElementById('headerSubtitle').textContent = 'Панель управління';
+      document.getElementById('adminWelcomeName').textContent = '👑 ' + name.toUpperCase();
+    }
+    function goToCRM() {
+      sessionStorage.setItem('yura_auth', JSON.stringify({
+        role: currentUser.role, name: currentUser.name, time: Date.now()
+      }));
+      window.location.href = REDIRECT['Власник'];
+    }
+    function doLogout() {
+      currentUser = { name: '', password: '', role: '' };
+      sessionStorage.removeItem('yura_auth');
+      showRoles();
+    }
+    // ═══ MESSAGES ═══
+    function clearAllMessages() {
+      document.querySelectorAll('.error-msg, .success-msg').forEach(e => {
+        e.classList.remove('visible'); e.textContent = '';
+      });
+    }
+    function showError(id, msg) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = msg; el.classList.add('visible'); }
+    }
+    function showSuccess(id, msg) {
+      const el = document.getElementById(id);
+      if (el) { el.textContent = msg; el.classList.add('visible'); }
+    }
+    // ═══ DEVICE INFO ═══
+    function getDeviceInfo() {
+      const ua = navigator.userAgent;
+      let device = 'Невідомо';
+      if (/iPhone/i.test(ua)) device = 'iPhone';
+      else if (/iPad/i.test(ua)) device = 'iPad';
+      else if (/Android/i.test(ua)) device = /Mobile/i.test(ua) ? 'Android Phone' : 'Android Tablet';
+      else if (/Windows/i.test(ua)) device = 'Windows PC';
+      else if (/Mac/i.test(ua)) device = 'Mac';
+      else if (/Linux/i.test(ua)) device = 'Linux';
+      if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) device += ' / Chrome';
+      else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) device += ' / Safari';
+      else if (/Firefox/i.test(ua)) device += ' / Firefox';
+      else if (/Edg/i.test(ua)) device += ' / Edge';
+      return device;
+    }
+    // ═══ API CALL (POST — пароль не потрапляє в URL/історію браузера) ═══
+    async function apiCall(params) {
+      const response = await fetch(AUTH_API_URL, {
+        method: 'POST',
+        body: JSON.stringify(params)
+      });
+      return await response.json();
+    }
+    // ═══ ЛОГІН ═══
+    async function doLogin(role) {
+      clearAllMessages();
+      let nameField, passField, btn, errorId;
+      if (role === 'manager') {
+        nameField = document.getElementById('managerName');
+        passField = document.getElementById('managerPass');
+        btn = document.getElementById('managerLoginBtn');
+        errorId = 'managerError';
+      } else {
+        nameField = document.getElementById('ownerName');
+        passField = document.getElementById('ownerPass');
+        btn = document.getElementById('ownerLoginBtn');
+        errorId = 'ownerError';
+      }
+      const name = nameField.value.trim();
+      const password = passField.value.trim();
+      if (!name) { showError(errorId, 'Введіть ім\'я'); nameField.focus(); return; }
+      if (!password) { showError(errorId, 'Введіть пароль'); passField.focus(); return; }
+      const originalText = btn.textContent;
+      btn.innerHTML = '<span class="spinner-small"></span>';
+      btn.disabled = true;
+      try {
+        const result = await apiCall({
+          action: 'login', name, password, device: getDeviceInfo()
+        });
+        if (result.success) {
+          localStorage.setItem('yura_' + role + '_name', name);
+          currentUser = { name: result.name, password, role: result.role };
+          if (result.role === 'Власник') {
+            showAdminPanel(result.name);
+          } else {
+            sessionStorage.setItem('yura_auth', JSON.stringify({
+              role: result.role, name: result.name, time: Date.now()
+            }));
+            window.location.href = REDIRECT[result.role] || 'manager/index_pass_19v.html';
+          }
+        } else {
+          showError(errorId, result.error || 'Помилка входу');
+          passField.value = '';
+          passField.focus();
+        }
+      } catch (err) {
+        showError(errorId, 'Помилка зʼєднання. Перевірте інтернет.');
+        console.error('Login error:', err);
+      }
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+    // ═══ ADMIN SUB-PANELS ═══
+    function toggleAdminSub(sub) {
+      const panel = document.getElementById('sub' + sub.charAt(0).toUpperCase() + sub.slice(1));
+      const allSubs = document.querySelectorAll('.admin-sub');
+      const allBtns = document.querySelectorAll('.admin-action-btn:not(.btn-crm)');
+      const isActive = panel.classList.contains('active');
+      allSubs.forEach(s => s.classList.remove('active'));
+      allBtns.forEach(b => b.classList.remove('active'));
+      clearAllMessages();
+      if (!isActive) {
+        panel.classList.add('active');
+        // Підсвічуємо кнопку
+        const btnMap = { users: 'btnUsers', addUser: 'btnAddUser', changePass: 'btnChangePass' };
+        const btn = document.getElementById(btnMap[sub]);
+        if (btn) btn.classList.add('active');
+        if (sub === 'users') loadUsers();
+      }
+    }
+    // ═══ ЗАВАНТАЖИТИ КОРИСТУВАЧІВ ═══
+    async function loadUsers() {
+      const list = document.getElementById('userList');
+      list.innerHTML = '<div class="loading-users"><span class="spinner-small"></span> Завантаження...</div>';
+      try {
+        const result = await apiCall({
+          action: 'getUsers',
+          ownerName: currentUser.name,
+          ownerPassword: currentUser.password
+        });
+        if (!result.success) {
+          list.innerHTML = '<div class="loading-users" style="color:var(--error);">' + result.error + '</div>';
+          return;
+        }
+        if (!result.users || result.users.length === 0) {
+          list.innerHTML = '<div class="loading-users">Немає користувачів</div>';
+          return;
+        }
+        let html = '';
+        result.users.forEach(u => {
+          const roleClass = u.role === 'Власник' ? 'role-owner' : 'role-manager';
+          const statusClass = u.status === 'Заблокований' ? 'status-blocked' : 'status-active';
+          const statusText = u.status === 'Заблокований' ? 'Заблоковано' : 'Активний';
+          const isSelf = u.name.toLowerCase() === currentUser.name.toLowerCase();
+          html += '<div class="user-row">';
+          html += '<span class="user-role-badge ' + roleClass + '">' + u.role + '</span>';
+          html += '<span class="user-name">' + u.name + (isSelf ? ' (ви)' : '') + '</span>';
+          html += '<span class="user-status ' + statusClass + '">' + statusText + '</span>';
+          if (!isSelf) {
+            html += '<div class="user-actions">';
+            html += '<button class="user-action-btn btn-block" title="' + (u.status === 'Заблокований' ? 'Розблокувати' : 'Заблокувати') + '" onclick="doToggleStatus(\'' + u.name.replace(/'/g, "\\'") + '\')">';
+            html += u.status === 'Заблокований' ? '🔓' : '🔒';
+            html += '</button>';
+            html += '<button class="user-action-btn btn-delete" title="Видалити" onclick="confirmDelete(\'' + u.name.replace(/'/g, "\\'") + '\', \'' + u.role + '\')">';
+            html += '🗑';
+            html += '</button>';
+            html += '</div>';
+          }
+          html += '</div>';
+          if (u.lastLogin) {
+            html += '<div style="padding:0 16px 8px;margin-top:-6px;">';
+            html += '<span class="user-meta">🕐 ' + u.lastLogin + (u.device ? ' · ' + u.device : '') + '</span>';
+            html += '</div>';
+          }
+        });
+        list.innerHTML = html;
+      } catch (err) {
+        list.innerHTML = '<div class="loading-users" style="color:var(--error);">Помилка зʼєднання</div>';
+      }
+    }
+    // ═══ БЛОКУВАННЯ ═══
+    async function doToggleStatus(targetName) {
+      try {
+        const result = await apiCall({
+          action: 'toggleStatus',
+          ownerName: currentUser.name,
+          ownerPassword: currentUser.password,
+          targetName
+        });
+        if (result.success) {
+          loadUsers();
+        } else {
+          alert(result.error);
+        }
+      } catch (err) {
+        alert('Помилка зʼєднання');
+      }
+    }
+    // ═══ ВИДАЛЕННЯ ═══
+    function confirmDelete(targetName, targetRole) {
+      document.getElementById('modalTitle').textContent = '🗑 Видалити користувача';
+      document.getElementById('modalExtra').innerHTML = '';
+      if (targetRole === 'Власник') {
+        document.getElementById('modalMsg').textContent =
+          'Для видалення Власника "' + targetName + '" потрібно ввести його пароль:';
+        document.getElementById('modalExtra').innerHTML =
+          '<div class="form-group"><input type="password" class="form-input owner-input" id="deleteTargetPass" placeholder="Пароль власника ' + targetName + '"></div>';
+        document.getElementById('modalBtns').innerHTML =
+          '<button class="modal-btn modal-btn-cancel" onclick="closeModal()">Скасувати</button>' +
+          '<button class="modal-btn modal-btn-danger" onclick="doDeleteUser(\'' + targetName.replace(/'/g, "\\'") + '\', true)">Видалити</button>';
+      } else {
+        document.getElementById('modalMsg').textContent =
+          'Ви впевнені що хочете видалити менеджера "' + targetName + '"?';
+        document.getElementById('modalBtns').innerHTML =
+          '<button class="modal-btn modal-btn-cancel" onclick="closeModal()">Скасувати</button>' +
+          '<button class="modal-btn modal-btn-danger" onclick="doDeleteUser(\'' + targetName.replace(/'/g, "\\'") + '\', false)">Видалити</button>';
+      }
+      document.getElementById('modalOverlay').classList.add('active');
+    }
+    async function doDeleteUser(targetName, needPass) {
+      const params = {
+        action: 'deleteUser',
+        ownerName: currentUser.name,
+        ownerPassword: currentUser.password,
+        targetName
+      };
+      if (needPass) {
+        const passInput = document.getElementById('deleteTargetPass');
+        if (!passInput || !passInput.value.trim()) {
+          alert('Введіть пароль Власника');
+          return;
+        }
+        params.targetPassword = passInput.value.trim();
+      }
+      try {
+        const result = await apiCall(params);
+        closeModal();
+        if (result.success) {
+          loadUsers();
+        } else {
+          alert(result.error);
+        }
+      } catch (err) {
+        closeModal();
+        alert('Помилка зʼєднання');
+      }
+    }
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+    }
+    // ═══ ДОДАТИ КОРИСТУВАЧА ═══
+    async function doAddUser() {
+      clearAllMessages();
+      const role = document.getElementById('newUserRole').value;
+      const name = document.getElementById('newUserName').value.trim();
+      const password = document.getElementById('newUserPass').value.trim();
+      if (!name) { showError('addUserError', 'Введіть ім\'я'); return; }
+      if (!password || password.length < 4) { showError('addUserError', 'Пароль мінімум 4 символи'); return; }
+      try {
+        const result = await apiCall({
+          action: 'addUser',
+          ownerName: currentUser.name,
+          ownerPassword: currentUser.password,
+          newRole: role,
+          newName: name,
+          newPassword: password
+        });
+        if (result.success) {
+          showSuccess('addUserSuccess', result.message);
+          document.getElementById('newUserName').value = '';
+          document.getElementById('newUserPass').value = '';
+        } else {
+          showError('addUserError', result.error);
+        }
+      } catch (err) {
+        showError('addUserError', 'Помилка зʼєднання');
+      }
+    }
+    // ═══ ЗМІНИТИ ПАРОЛЬ ═══
+    async function doChangePassword() {
+      clearAllMessages();
+      const oldPass = document.getElementById('oldPass').value.trim();
+      const newPass = document.getElementById('newPass').value.trim();
+      const newPass2 = document.getElementById('newPass2').value.trim();
+      if (!oldPass) { showError('changePassError', 'Введіть старий пароль'); return; }
+      if (!newPass || newPass.length < 4) { showError('changePassError', 'Новий пароль мінімум 4 символи'); return; }
+      if (newPass !== newPass2) { showError('changePassError', 'Паролі не співпадають'); return; }
+      try {
+        const result = await apiCall({
+          action: 'changePassword',
+          name: currentUser.name,
+          oldPassword: oldPass,
+          newPassword: newPass
+        });
+        if (result.success) {
+          showSuccess('changePassSuccess', 'Пароль успішно змінено!');
+          currentUser.password = newPass;
+          document.getElementById('oldPass').value = '';
+          document.getElementById('newPass').value = '';
+          document.getElementById('newPass2').value = '';
+        } else {
+          showError('changePassError', result.error);
+        }
+      } catch (err) {
+        showError('changePassError', 'Помилка зʼєднання');
+      }
+    }
+    // ═══ ENTER KEY ═══
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        if (document.getElementById('screenManagerLogin').classList.contains('active')) doLogin('manager');
+        else if (document.getElementById('screenOwnerLogin').classList.contains('active')) doLogin('owner');
+      }
+    });
+    // ═══ CLICK OUTSIDE MODAL ═══
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  </script>
+</body>
+</html>
