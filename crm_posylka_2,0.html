@@ -2523,15 +2523,38 @@ function renderCalendarTo(containerId) {
 
 function changeMonth(delta) { calendarDate.setMonth(calendarDate.getMonth() + delta); renderCalendars(); }
 function goToday() { calendarDate = new Date(); selectDate(new Date().toISOString().split('T')[0]); }
-function selectDate(dateStr) { 
-    filters.date = dateStr; 
-    filters.statusFilter = ''; 
-    renderCalendars(); 
-    render(); 
-    updateFilterButtons(); 
-    updateVehiclesList(); 
+function selectDate(dateStr) {
+    filters.date = dateStr;
+    filters.statusFilter = '';
+    filters.showNewOnly = false;
+
+    // Синхронізуємо напрямок карток з напрямком календаря
+    filters.direction = calendarDirection;
+
+    // Оновлюємо UI кнопок напрямку
+    const dir = calendarDirection;
+    document.querySelectorAll('.direction-option').forEach(el => {
+        el.classList.toggle('active', el.dataset.dir === dir);
+    });
+    document.getElementById('mobileDirectionAll')?.classList.toggle('active', dir === 'all');
+    document.getElementById('mobileDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
+    document.getElementById('mobileDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
+    document.getElementById('mobileNewLeads')?.classList.remove('active');
+    document.getElementById('pcDirectionAll')?.classList.toggle('active', dir === 'all');
+    document.getElementById('pcDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
+    document.getElementById('pcDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
+    document.getElementById('pcNewLeads')?.classList.remove('active');
+
+    const labels = {'all': 'Посилки', 'ua-eu': '🇺🇦→🇪🇺', 'eu-ua': '🇪🇺→🇺🇦'};
+    const navLabel = document.getElementById('navPackagesLabel');
+    if (navLabel) navLabel.textContent = labels[dir] || 'Посилки';
+
+    renderCalendars();
+    render();
+    updateFilterButtons();
+    updateVehiclesList();
     document.getElementById('dateDropdown')?.classList.remove('show');
-    
+
     // Перевірка на перевищення місткості
     if (dateStr) {
         checkCapacityWarning(dateStr);
