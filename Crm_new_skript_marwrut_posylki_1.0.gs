@@ -219,6 +219,12 @@ function doPost(e) {
       case 'checkMailing':
         return respond(checkMailingByIds(payload));
 
+      case 'clearMailing':
+        return respond(clearMailing(payload));
+
+      case 'clearOldMailing':
+        return respond(clearOldMailing(payload));
+
       // --- ДЕБАГ ---
       case 'getStructure':
         return respond(getStructure());
@@ -1003,68 +1009,120 @@ function handleDriverStatusUpdate(data) {
 
 // ============================================
 // РОЗСИЛКА — "Провірка розсилки"
+//
+// Структура аркуша (9 колонок A-I):
+//   A: Стовпець 1 (ІД посилки)
+//   B: Стовпець 2 (користувач/дата)
+//   C: Стовпець 3 (дод. інфо)
+//   D: Статус (sent / archived)
+//   E: DATE_ARCHIVE
+//   F: ARCHIVED_BY
+//   G: ARCHIVE_REASON
+//   H: SOURCE_SHEET
+//   I: ARCHIVE_ID
+//
+// Логіка:
+// - SmartSender кидає ІД в цей аркуш
+// - checkMailing → перевіряє чи ІД є (розсилка зроблена)
+// - Записи з ARCHIVE_ID (кол. I) = вже архівовані → НЕ актуальні
+// - clearOldMailing → чистить записи старіші за N днів
+// - clearMailing → повне очищення (або тільки архівованих)
 // ============================================
 
+var MAILING_COL = {
+  ID: 0,              // A — ІД посилки
+  USER: 1,            // B — хто/коли
+  INFO: 2,            // C — дод. інфо
+  STATUS: 3,          // D — Статус
+  DATE_ARCHIVE: 4,    // E — DATE_ARCHIVE
+  ARCHIVED_BY: 5,     // F — ARCHIVED_BY
+  ARCHIVE_REASON: 6,  // G — ARCHIVE_REASON
+  SOURCE_SHEET: 7,    // H — SOURCE_SHEET
+  ARCHIVE_ID: 8       // I — ARCHIVE_ID
+};
+var MAILING_COLS = 9;
+
 // getMailingStatus — Всі ІД з розсилки
+// Повертає activeIds (без ARCHIVE_ID) + allIds (всі)
 function getMailingStatus() {
   try {
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     var sheet = ss.getSheetByName(SHEET_MAILING);
 
     if (!sheet || sheet.getLastRow() < 2) {
-      return { success: true, mailingIds: [], count: 0 };
+      return { success: true, mailingIds: [], activeIds: [], archivedIds: [], count: 0 };
     }
 
     var lastRow = sheet.getLastRow();
-    var readCols = Math.min(sheet.getLastColumn(), 4);
+    var readCols = Math.min(sheet.getLastColumn(), MAILING_COLS);
     var data = sheet.getRange(2, 1, lastRow - 1, readCols).getValues();
 
-    var mailingData = [];
-    var mailingIds = [];
+    var activeIds = [];
+    var archivedIds = [];
+    var allData = [];
 
     for (var i = 0; i < data.length; i++) {
       var row = data[i];
-      // Шукаємо ІД (може бути в різних колонках)
-      var id = '';
-      var status = '';
+      var id = str(row[MAILING_COL.ID]);
+      if (!id || id.indexOf('dd.mm') !== -1) continue;
 
-      // Колонки A, B, C — дані, D — Статус
-      for (var c = 0; c < Math.min(3, row.length); c++) {
-        var val = str(row[c]);
-        if (val && val.indexOf('dd.mm') === -1 && val.length > 1) {
-          if (!id) id = val;
-        }
-      }
-      if (row.length > 3) status = str(row[3]);
+      var archiveId = readCols > MAILING_COL.ARCHIVE_ID ? str(row[MAILING_COL.ARCHIVE_ID]) : '';
+      var status = readCols > MAILING_COL.STATUS ? str(row[MAILING_COL.STATUS]) : '';
+      var isArchived = archiveId !== '' || status === 'archived';
 
-      if (id) {
-        mailingIds.push(id);
-        mailingData.push({ id: id, status: status });
+      allData.push({
+        rowNum: i + 2,
+        id: id,
+        user: str(row[MAILING_COL.USER]),
+        status: status,
+        archiveId: archiveId,
+        isArchived: isArchived
+      });
+
+      if (isArchived) {
+        archivedIds.push(id);
+      } else {
+        activeIds.push(id);
       }
     }
 
-    // Унікальні
-    var uniqueIds = [];
+    // Унікальні активні
+    var uniqueActive = [];
     var seen = {};
-    for (var u = 0; u < mailingIds.length; u++) {
-      if (!seen[mailingIds[u]]) {
-        seen[mailingIds[u]] = true;
-        uniqueIds.push(mailingIds[u]);
+    for (var u = 0; u < activeIds.length; u++) {
+      if (!seen[activeIds[u]]) {
+        seen[activeIds[u]] = true;
+        uniqueActive.push(activeIds[u]);
+      }
+    }
+
+    // Унікальні всі (для сумісності)
+    var allIds = [];
+    var seenAll = {};
+    for (var a = 0; a < allData.length; a++) {
+      if (!seenAll[allData[a].id]) {
+        seenAll[allData[a].id] = true;
+        allIds.push(allData[a].id);
       }
     }
 
     return {
       success: true,
-      mailingIds: uniqueIds,
-      mailingData: mailingData,
-      count: uniqueIds.length
+      mailingIds: allIds,          // всі (для сумісності)
+      activeIds: uniqueActive,     // тільки актуальні (без ARCHIVE_ID)
+      archivedIds: archivedIds,
+      mailingData: allData,
+      count: allIds.length,
+      activeCount: uniqueActive.length,
+      archivedCount: archivedIds.length
     };
   } catch (err) {
     return { success: false, error: err.toString() };
   }
 }
 
-// checkMailingByIds — Перевірити конкретні ІД (чи зроблена розсилка)
+// checkMailingByIds — Перевірити конкретні ІД
+// Дивиться тільки АКТУАЛЬНІ записи (без ARCHIVE_ID)
 function checkMailingByIds(payload) {
   try {
     var idsToCheck = payload.ids || [];
@@ -1075,18 +1133,35 @@ function checkMailingByIds(payload) {
     var statusResult = getMailingStatus();
     if (!statusResult.success) return statusResult;
 
-    var mailingSet = {};
-    for (var m = 0; m < statusResult.mailingIds.length; m++) {
-      mailingSet[statusResult.mailingIds[m]] = true;
+    // Використовуємо activeIds — тільки актуальні
+    var activeSet = {};
+    for (var m = 0; m < statusResult.activeIds.length; m++) {
+      activeSet[statusResult.activeIds[m]] = true;
+    }
+
+    // Також маємо allIds для інфо
+    var allSet = {};
+    for (var a = 0; a < statusResult.mailingIds.length; a++) {
+      allSet[statusResult.mailingIds[a]] = true;
     }
 
     var results = {};
     var mailedCount = 0;
+    var archivedMailedCount = 0;
+
     for (var i = 0; i < idsToCheck.length; i++) {
       var id = String(idsToCheck[i]).trim();
-      var isMailed = mailingSet[id] === true;
-      results[id] = isMailed;
-      if (isMailed) mailedCount++;
+      var isActive = activeSet[id] === true;
+      var wasEverMailed = allSet[id] === true;
+
+      results[id] = {
+        mailed: isActive,                // актуальна розсилка
+        wasMailedBefore: wasEverMailed,   // колись була (навіть якщо архівована)
+        archivedMailing: wasEverMailed && !isActive  // розсилка була, але запис архівований
+      };
+
+      if (isActive) mailedCount++;
+      if (wasEverMailed && !isActive) archivedMailedCount++;
     }
 
     return {
@@ -1094,7 +1169,8 @@ function checkMailingByIds(payload) {
       results: results,
       total: idsToCheck.length,
       mailed: mailedCount,
-      notMailed: idsToCheck.length - mailedCount
+      archivedMailed: archivedMailedCount,
+      notMailed: idsToCheck.length - mailedCount - archivedMailedCount
     };
   } catch (err) {
     return { success: false, error: err.toString() };
@@ -1109,7 +1185,10 @@ function addMailingRecord(payload) {
 
     if (!sheet) {
       sheet = ss.insertSheet(SHEET_MAILING);
-      sheet.getRange(1, 1, 1, 4).setValues([['Стовпець 1', 'Стовпець 2', 'Стовпець 3', 'Статус']]);
+      sheet.getRange(1, 1, 1, MAILING_COLS).setValues([[
+        'Стовпець 1', 'Стовпець 2', 'Стовпець 3', 'Статус',
+        'DATE_ARCHIVE', 'ARCHIVED_BY', 'ARCHIVE_REASON', 'SOURCE_SHEET', 'ARCHIVE_ID'
+      ]]);
     }
 
     var records = payload.records || [];
@@ -1125,20 +1204,142 @@ function addMailingRecord(payload) {
 
     for (var i = 0; i < records.length; i++) {
       var r = records[i];
-      rows.push([
-        r.id || r.packageId || '',
-        userName,
-        date,
-        r.status || 'sent'
-      ]);
+      var newRow = new Array(MAILING_COLS);
+      for (var c = 0; c < MAILING_COLS; c++) newRow[c] = '';
+      newRow[MAILING_COL.ID] = r.id || r.packageId || '';
+      newRow[MAILING_COL.USER] = userName;
+      newRow[MAILING_COL.INFO] = date;
+      newRow[MAILING_COL.STATUS] = r.status || 'sent';
+      rows.push(newRow);
     }
 
-    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, 4).setValues(rows);
+    sheet.getRange(sheet.getLastRow() + 1, 1, rows.length, MAILING_COLS).setValues(rows);
 
     return { success: true, added: rows.length };
   } catch (err) {
     return { success: false, error: err.toString() };
   }
+}
+
+// clearMailing — Очищення розсилки
+// mode: 'all' — видалити все, 'archived' — тільки з ARCHIVE_ID
+function clearMailing(payload) {
+  try {
+    var mode = payload.mode || 'archived';  // за замовчуванням — тільки архівовані
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var sheet = ss.getSheetByName(SHEET_MAILING);
+
+    if (!sheet || sheet.getLastRow() < 2) {
+      return { success: true, deleted: 0, message: 'Нічого очищувати' };
+    }
+
+    if (mode === 'all') {
+      // Видаляємо ВСЕ крім заголовка
+      var totalRows = sheet.getLastRow() - 1;
+      sheet.deleteRows(2, totalRows);
+      writeLog('clearMailing', SHEET_MAILING, 0, 'all', totalRows + ' рядків');
+      return { success: true, deleted: totalRows, mode: 'all' };
+    }
+
+    // mode === 'archived' — видаляємо тільки рядки з ARCHIVE_ID
+    var lastRow = sheet.getLastRow();
+    var readCols = Math.min(sheet.getLastColumn(), MAILING_COLS);
+    var data = sheet.getRange(2, 1, lastRow - 1, readCols).getValues();
+
+    // Збираємо рядки для видалення (знизу вгору)
+    var rowsToDelete = [];
+    for (var i = data.length - 1; i >= 0; i--) {
+      var archiveId = readCols > MAILING_COL.ARCHIVE_ID ? str(data[i][MAILING_COL.ARCHIVE_ID]) : '';
+      var status = readCols > MAILING_COL.STATUS ? str(data[i][MAILING_COL.STATUS]) : '';
+      if (archiveId || status === 'archived') {
+        rowsToDelete.push(i + 2);
+      }
+    }
+
+    // Видаляємо знизу вгору
+    for (var d = 0; d < rowsToDelete.length; d++) {
+      sheet.deleteRow(rowsToDelete[d]);
+    }
+
+    writeLog('clearMailing', SHEET_MAILING, 0, 'archived', rowsToDelete.length + ' рядків');
+
+    return {
+      success: true,
+      deleted: rowsToDelete.length,
+      remaining: (lastRow - 1) - rowsToDelete.length,
+      mode: 'archived'
+    };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
+
+// clearOldMailing — Очистити записи старіші за N днів
+function clearOldMailing(payload) {
+  try {
+    var days = parseInt(payload.days) || 30;  // за замовчуванням 30 днів
+    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    var sheet = ss.getSheetByName(SHEET_MAILING);
+
+    if (!sheet || sheet.getLastRow() < 2) {
+      return { success: true, deleted: 0, message: 'Нічого очищувати' };
+    }
+
+    var lastRow = sheet.getLastRow();
+    var readCols = Math.min(sheet.getLastColumn(), MAILING_COLS);
+    var data = sheet.getRange(2, 1, lastRow - 1, readCols).getValues();
+
+    var cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+
+    var rowsToDelete = [];
+    for (var i = data.length - 1; i >= 0; i--) {
+      // Дата може бути в колонці C (INFO) або E (DATE_ARCHIVE)
+      var dateStr = str(data[i][MAILING_COL.INFO]);
+      var archiveDateStr = readCols > MAILING_COL.DATE_ARCHIVE ? str(data[i][MAILING_COL.DATE_ARCHIVE]) : '';
+
+      var recordDate = parseMailingDate(dateStr) || parseMailingDate(archiveDateStr);
+
+      if (recordDate && recordDate < cutoff) {
+        rowsToDelete.push(i + 2);
+      }
+    }
+
+    // Видаляємо знизу вгору
+    for (var d = 0; d < rowsToDelete.length; d++) {
+      sheet.deleteRow(rowsToDelete[d]);
+    }
+
+    writeLog('clearOldMailing', SHEET_MAILING, 0, '>' + days + ' днів', rowsToDelete.length + ' рядків');
+
+    return {
+      success: true,
+      deleted: rowsToDelete.length,
+      remaining: (lastRow - 1) - rowsToDelete.length,
+      days: days
+    };
+  } catch (err) {
+    return { success: false, error: err.toString() };
+  }
+}
+
+// Парсинг дати розсилки (dd.MM.yyyy або yyyy-MM-dd)
+function parseMailingDate(dateStr) {
+  if (!dateStr) return null;
+  // dd.MM.yyyy
+  if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(dateStr)) {
+    var p = dateStr.split('.');
+    return new Date(parseInt(p[2]), parseInt(p[1]) - 1, parseInt(p[0]));
+  }
+  // yyyy-MM-dd
+  if (/^\d{4}-\d{2}-\d{2}/.test(dateStr)) {
+    return new Date(dateStr.substring(0, 10));
+  }
+  try {
+    var d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return d;
+  } catch (e) {}
+  return null;
 }
 
 // ============================================
