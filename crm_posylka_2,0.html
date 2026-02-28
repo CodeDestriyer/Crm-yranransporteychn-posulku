@@ -2850,20 +2850,20 @@ function render() {
         const dirClass = isUaEu ? '' : ' eu-ua';
 
         // Values
-        const phoneRaw = p.phone || '—';
-        const phoneDisplay = hasSearch ? highlightSearch(phoneRaw) : phoneRaw;
+        const phoneRaw = p.phone || '';
+        const phoneDisplay = hasSearch ? highlightSearch(phoneRaw || '—') : (phoneRaw || '');
         const weightDisplay = p.weight ? p.weight + ' кг' : '';
         const priceDisplay = p.amount ? '€' + p.amount : '';
         const ttnRaw = p.ttn || '';
         const ttnDisplay = hasSearch ? highlightSearch(ttnRaw) : ttnRaw;
-        const idRaw = p.id || '—';
-        const idDisplay = hasSearch ? highlightSearch(idRaw) : idRaw;
-        const nameDisplay = hasSearch ? highlightSearch(p.name || '—') : (p.name || '—');
+        const idRaw = p.id || '';
+        const idDisplay = hasSearch ? highlightSearch(idRaw || '—') : (idRaw || '');
+        const nameDisplay = hasSearch ? highlightSearch(p.name || '—') : (p.name || '');
         const numberDisplay = p.number || '';
-        const dateDisplay = p.dateReg ? getFieldValue(p, 'dateReg') : '—';
+        const dateDisplay = p.dateReg ? getFieldValue(p, 'dateReg') : '';
         const dateRecvDisplay = p.dateReceive ? getFieldValue(p, 'dateReceive') : '';
-        const addressShort = p.address ? (p.address.length > 45 ? p.address.substring(0, 45) + '...' : p.address) : '—';
-        const addressDisplay = hasSearch ? highlightSearch(addressShort) : addressShort;
+        const addressShort = p.address ? (p.address.length > 45 ? p.address.substring(0, 45) + '...' : p.address) : '';
+        const addressDisplay = hasSearch ? highlightSearch(addressShort || '—') : (addressShort || '');
         const noteShort = p.note ? (p.note.length > 30 ? p.note.substring(0, 30) + '...' : p.note) : '';
 
         // Payment
@@ -2874,12 +2874,14 @@ function render() {
         // Vehicle
         const vehicleBadge = veh
             ? `<span class="card-vehicle-badge">${veh.name}</span>`
-            : `<span class="card-vehicle-badge empty">—</span>`;
+            : `<span style="opacity:0.3;font-size:10px">${ALL_COLUMNS['vehicle']?.label||'Авто'}</span>`;
         const orderNum = isRouteView ? `<span class="order-num">${idx + 1}</span>` : '';
         const notGeocodedClass = p._notGeocoded ? 'not-geocoded-card' : '';
 
         // Helper: cell with col visibility
         const cc = (col, cls, content) => `<div class="cg-cell ${cls}" data-col="${col}" ${hc.has(col)?'style="display:none"':''}>${content}</div>`;
+        // Helper: placeholder — shows column label when empty
+        const ph = (col) => `<span style="opacity:0.3;font-size:10px">${ALL_COLUMNS[col]?.label||col}</span>`;
 
         // Helper: copy btn
         const cpBtn = (val) => `<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(val)}',this)" title="Копіювати">📋</button>`;
@@ -2959,40 +2961,40 @@ function render() {
                             ${ttnRaw ? `<span class="cg-val-ttn">ТТН:${ttnDisplay}${cpBtn(ttnRaw)}${edBtn('ttn')}</span>` : ''}
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
                         </div>
-                        ${cc('weight','cg-sm',`${weightDisplay ? `<span class="cg-val-weight">${weightDisplay}</span>${edBtn('weight')}` : `<span style="opacity:0.3">—</span>${edBtn('weight')}`}`)}
-                        ${cc('dateReg','cg-sm',`<span class="cg-val-date">${dateDisplay}</span>`)}
+                        ${cc('weight','cg-sm',`${weightDisplay ? `<span class="cg-val-weight">${weightDisplay}</span>${edBtn('weight')}` : `${ph('weight')}${edBtn('weight')}`}`)}
+                        ${cc('dateReg','cg-sm',`${dateDisplay ? `<span class="cg-val-date">${dateDisplay}</span>` : ph('dateReg')}`)}
                     </div>
                     <!-- ROW 2: Phone | АВТО | Amount | DateReceive -->
                     <div class="cg-row">
-                        ${cc('phone','cg-main',`<span class="cg-val-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}${cpBtn(phoneRaw)}${edBtn('phone')}</span>`)}
+                        ${cc('phone','cg-main',`${phoneRaw ? `<span class="cg-val-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}${cpBtn(phoneRaw)}${edBtn('phone')}</span>` : `${ph('phone')}${edBtn('phone')}`}`)}
                         ${cc('vehicle','cg-sm',`${vehicleBadge}`)}
-                        ${cc('amount','cg-sm',`<span class="cg-val-price">${priceDisplay||'—'}</span>${edBtn('amount')}`)}
-                        ${cc('dateReceive','cg-sm',`<span class="cg-val-date">${dateRecvDisplay||'—'}</span>${edBtn('dateReceive')}`)}
+                        ${cc('amount','cg-sm',`${priceDisplay ? `<span class="cg-val-price">${priceDisplay}</span>${edBtn('amount')}` : `${ph('amount')}${edBtn('amount')}`}`)}
+                        ${cc('dateReceive','cg-sm',`${dateRecvDisplay ? `<span class="cg-val-date">${dateRecvDisplay}</span>${edBtn('dateReceive')}` : `${ph('dateReceive')}${edBtn('dateReceive')}`}`)}
                     </div>
                     <!-- ROW 3: ID | PayStatus | Payment | Note -->
                     <div class="cg-row">
-                        ${cc('id','cg-main',`<span class="cg-val-id" onclick="event.stopPropagation()">${idDisplay}${cpBtn(idRaw)}</span>`)}
-                        ${cc('payStatus','cg-sm',`${payStatusBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payStatus')}`)}
-                        ${cc('payment','cg-sm',`${paymentBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payment')}`)}
-                        ${cc('note','cg-sm',`${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : '<span style="opacity:0.3">—</span>'}${edBtn('note')}`)}
+                        ${cc('id','cg-main',`${idRaw ? `<span class="cg-val-id" onclick="event.stopPropagation()">${idDisplay}${cpBtn(idRaw)}</span>` : ph('id')}`)}
+                        ${cc('payStatus','cg-sm',`${payStatusBadge||ph('payStatus')}${edBtn('payStatus')}`)}
+                        ${cc('payment','cg-sm',`${paymentBadge||ph('payment')}${edBtn('payment')}`)}
+                        ${cc('note','cg-sm',`${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : ph('note')}${edBtn('note')}`)}
                     </div>
                     <!-- ROW 4: Address | Internal number -->
                     <div class="cg-row">
-                        ${cc('address','cg-main',`<span class="cg-val-address" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${cpBtn(p.address||'')}${(p.address||'').trim() ? `<a class="cg-map-link" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Навігація">➤</a>` : ''}${edBtn('address')}</span>`)}
-                        ${cc('number','cg-sm',`<span class="cg-val">${numberDisplay||'—'}</span>${edBtn('number')}`)}
+                        ${cc('address','cg-main',`${p.address ? `<span class="cg-val-address" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${cpBtn(p.address)}${`<a class="cg-map-link" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Навігація">➤</a>`}${edBtn('address')}</span>` : `${ph('address')}${edBtn('address')}`}`)}
+                        ${cc('number','cg-sm',`${numberDisplay ? `<span class="cg-val">${numberDisplay}</span>${edBtn('number')}` : `${ph('number')}${edBtn('number')}`}`)}
                     </div>
                     <!-- ROW 5: Phone reg | Parcel Status -->
                     <div class="cg-row">
-                        ${cc('phoneReg','cg-main',`<span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}${edBtn('phoneReg')}`)}
-                        ${cc('parcelStatus','cg-sm',`<span class="cg-val">${p.parcelStatus||'—'}</span>${edBtn('parcelStatus')}`)}
+                        ${cc('phoneReg','cg-main',`${p.phoneReg ? `<span class="cg-val">${p.phoneReg}</span>${cpBtn(p.phoneReg)}${edBtn('phoneReg')}` : `${ph('phoneReg')}${edBtn('phoneReg')}`}`)}
+                        ${cc('parcelStatus','cg-sm',`${p.parcelStatus ? `<span class="cg-val">${p.parcelStatus}</span>${edBtn('parcelStatus')}` : `${ph('parcelStatus')}${edBtn('parcelStatus')}`}`)}
                     </div>
                     <!-- ROW 6: ПІБ | ВО | SMS Note | Photo | Timing -->
                     <div class="cg-row">
-                        ${cc('name','cg-main',`<span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name||'')}${edBtn('name')}`)}
-                        ${cc('vo','cg-sm',`<span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>${edBtn('vo')}`)}
-                        ${cc('smsNote','cg-sm',`<span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>${edBtn('smsNote')}`)}
-                        ${cc('photo','cg-sm',`${p.photo ? `<a href="${esc(String(p.photo).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--info);font-weight:600;font-size:11px;">📷 Фото</a>` : '<span style="opacity:0.3">—</span>'}`)}
-                        ${cc('timing','cg-sm',`<span class="cg-val">${p.timing||'—'}</span>${edBtn('timing')}`)}
+                        ${cc('name','cg-main',`${p.name ? `<span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name)}${edBtn('name')}` : `${ph('name')}${edBtn('name')}`}`)}
+                        ${cc('vo','cg-sm',`${p.vo ? `<span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo}</span>${edBtn('vo')}` : `${ph('vo')}${edBtn('vo')}`}`)}
+                        ${cc('smsNote','cg-sm',`${p.smsNote ? `<span class="cg-val">${p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote}</span>${edBtn('smsNote')}` : `${ph('smsNote')}${edBtn('smsNote')}`}`)}
+                        ${cc('photo','cg-sm',`${p.photo ? `<a href="${esc(String(p.photo).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--info);font-weight:600;font-size:11px;">📷 Фото</a>` : ph('photo')}`)}
+                        ${cc('timing','cg-sm',`${p.timing ? `<span class="cg-val">${p.timing}</span>${edBtn('timing')}` : `${ph('timing')}${edBtn('timing')}`}`)}
                     </div>
                 </div>
                 <div class="card-right-panel">
