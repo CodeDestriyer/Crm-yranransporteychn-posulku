@@ -667,22 +667,22 @@
         .cg-map-link:hover { background: #1a73e8; }
 
         /* Right panel - vehicle + actions */
-        .card-right-panel { display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 6px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 65px; }
+        .card-right-panel { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; border-left: 1px solid var(--border); flex-shrink: 0; min-width: 40px; }
         .card-vehicle-badge { background: var(--info); color: white; padding: 4px 8px; border-radius: 4px; font-size: 9px; font-weight: 600; white-space: nowrap; text-align: center; cursor: default; }
         .card-vehicle-badge.empty { background: var(--bg-main); color: var(--text-secondary); border: 1px dashed var(--text-secondary); }
-        .card-actions-toggle { width: 28px; height: 28px; border: none; border-radius: 6px; background: var(--bg-main); cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; margin-top: auto; }
+        .card-actions-toggle { width: 28px; height: 28px; border: none; border-radius: 6px; background: var(--bg-main); cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; flex-shrink: 0; }
         .card-actions-toggle:hover { background: var(--primary); color: white; }
         .card-actions-toggle.open { background: var(--primary); color: white; transform: rotate(180deg); }
 
         /* Collapse toggle for extra fields */
-        .cg-toggle { display: flex; align-items: center; justify-content: center; padding: 3px; background: #f8f9fb; cursor: pointer; font-size: 10px; color: var(--text-secondary); font-weight: 600; border-top: 1px solid #f0f2f5; gap: 4px; user-select: none; }
-        .cg-toggle:hover { background: #eef1f5; color: var(--primary); }
-        .cg-toggle-icon { transition: transform 0.2s; font-size: 8px; }
-        .cg-toggle-icon.open { transform: rotate(180deg); }
+        .cg-toggle { display: none; }
+        .cg-toggle:hover { display: none; }
+        .cg-toggle-icon { display: none; }
+        .cg-toggle-icon.open { display: none; }
 
         /* Collapsible extra section */
-        .cg-extra { max-height: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.3s ease; opacity: 0; }
-        .cg-extra.open { max-height: 300px; opacity: 1; }
+        .cg-extra { max-height: none; overflow: visible; opacity: 1; }
+        .cg-extra.open { max-height: none; opacity: 1; }
 
         /* Payment badges */
         .card-pay-badge { font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px; flex-shrink: 0; white-space: nowrap; }
@@ -720,7 +720,7 @@
         .card-details .details-close-btn:hover { background: #fee2e2; color: #dc2626; border-color: #dc2626; }
 
         /* Actions panel */
-        .card-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; max-height: 0; overflow: hidden; padding: 0 12px; background: white; transition: max-height 0.25s ease, padding 0.25s ease; }
+        .card-actions { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-height: 0; overflow: hidden; padding: 0 12px; background: white; transition: max-height 0.25s ease, padding 0.25s ease; }
         .card-actions.show { max-height: 200px; padding: 10px 12px; border-top: 1px solid var(--border); }
         .btn-card-action { padding: 10px 6px; border: none; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 4px; }
         .btn-card-action.btn-delete { background: #fee2e2; color: #dc2626; }
@@ -728,9 +728,36 @@
 
         /* Mobile responsive */
         @media (max-width: 768px) {
-            .cg-row { flex-wrap: wrap; }
-            .cg-main, .cg-mid, .cg-sm { min-width: 0; flex: 1 1 100%; }
-            .cg-cell { border-right: none; border-bottom: 1px solid #f8f9fb; }
+            /* Compact mobile cards - no full-width stretching */
+            .cg-row { flex-wrap: wrap; min-height: 26px; }
+            .cg-main { flex: 1 1 auto; min-width: 120px; }
+            .cg-mid { flex: 0 1 auto; min-width: 60px; }
+            .cg-sm { flex: 0 1 auto; min-width: 55px; }
+            .cg-cell { padding: 3px 6px; font-size: 11px; border-right: 1px solid #f0f2f5; }
+            .cg-cell:last-child { border-right: none; }
+
+            /* Hide less important rows on mobile to save space */
+            .card-grid .cg-row:nth-child(5),
+            .card-grid .cg-row:nth-child(6) { display: none; }
+
+            /* Compact values */
+            .cg-val-phone { font-size: 12px; }
+            .cg-val-address { font-size: 11px; }
+            .cg-val-dir { font-size: 10px; padding: 2px 6px; }
+            .cg-val-ttn { font-size: 9px; padding: 1px 4px; }
+            .order-num { font-size: 9px; padding: 1px 4px; }
+
+            /* Drag handle smaller */
+            .drag-handle { padding: 8px 4px; }
+            .drag-handle span { width: 10px; }
+
+            /* Right panel compact */
+            .card-right-panel { min-width: 36px; padding: 4px; }
+            .card-actions-toggle { width: 26px; height: 26px; font-size: 10px; }
+
+            /* Actions grid - 2 columns on mobile */
+            .card-actions.show { grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 8px; }
+            .btn-card-action { padding: 6px 4px; font-size: 10px; }
         }
         
         /* Route stats - адаптивна статистика */
@@ -752,16 +779,30 @@
             .route-stat-item { padding: 10px 6px; }
             .route-stat-num { font-size: 20px; }
             .route-stat-label { font-size: 10px; }
-            .drag-handle { padding: 8px 4px; }
-            .drag-handle span { width: 10px; }
-            .card-cb { padding: 8px 4px; }
+
+            /* Super compact for small phones */
+            .cg-row { min-height: 24px; }
+            .cg-cell { padding: 2px 4px; font-size: 10px; }
+            .cg-main { min-width: 100px; }
+            .cg-sm { min-width: 45px; }
+            .cg-val-phone { font-size: 11px; }
+            .cg-val-dir { font-size: 9px; padding: 2px 5px; }
+
+            .drag-handle { padding: 6px 3px; }
+            .drag-handle span { width: 8px; }
+            .card-cb { padding: 6px 3px; }
             .card-checkbox { width: 14px; height: 14px; }
-            .card-right-panel { min-width: 48px; padding: 4px 4px; }
-            .card-vehicle-badge { font-size: 8px; padding: 3px 5px; }
-            .card-actions-toggle { width: 24px; height: 24px; font-size: 9px; }
-            .card-actions.show { grid-template-columns: repeat(2, 1fr); gap: 5px; padding: 8px; }
-            .btn-card-action { padding: 8px 4px; font-size: 10px; }
+            .card-right-panel { min-width: 32px; padding: 3px; }
+            .card-actions-toggle { width: 22px; height: 22px; font-size: 8px; }
+            .card-vehicle-badge { font-size: 8px; padding: 2px 4px; }
+
+            /* Actions 2 columns on tiny screens */
+            .card-actions.show { grid-template-columns: repeat(2, 1fr); gap: 4px; padding: 6px; }
+            .btn-card-action { padding: 6px 3px; font-size: 9px; }
             .header-edit-btn { opacity: 0.4; }
+
+            /* Hide copy/edit buttons on mobile to save space */
+            .copy-btn-mini { display: none; }
         }
         .btn-call { background: var(--primary); color: white; }
         .btn-msg { background: #7c3aed; color: white; }
@@ -936,6 +977,86 @@
         @media (max-width: 1099px) {
             /* Mobile: bulk sidebar ЗАХОВАНО, використовуємо bulk-actions-bar */
             .bulk-actions-sidebar { display: none !important; }
+
+            /* Mobile bulk action bar — компактна панель внизу */
+            .bulk-actions-bar {
+                position: fixed;
+                bottom: 58px;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #7f1d1d 0%, #5b1010 100%);
+                z-index: 150;
+                display: none;
+                flex-direction: column;
+                box-shadow: 0 -4px 20px rgba(0,0,0,0.25);
+                border-radius: 16px 16px 0 0;
+                padding: 0;
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+            }
+            .bulk-actions-bar.show {
+                display: flex;
+                transform: translateY(0);
+            }
+            .bulk-actions-content {
+                display: flex;
+                flex-direction: column;
+                gap: 0;
+            }
+            /* Верхній рядок: кількість + кнопка закрити */
+            .bulk-bar-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 10px 14px 6px;
+            }
+            .bulk-selected {
+                color: rgba(255,255,255,0.95);
+                font-size: 13px;
+                font-weight: 600;
+            }
+            .bulk-bar-close {
+                background: rgba(255,255,255,0.15);
+                border: none;
+                color: white;
+                width: 28px;
+                height: 28px;
+                border-radius: 50%;
+                font-size: 14px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            /* Кнопки дій — горизонтальна прокрутка */
+            .bulk-buttons {
+                display: flex;
+                gap: 6px;
+                padding: 6px 14px 12px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+            }
+            .bulk-buttons::-webkit-scrollbar { display: none; }
+            .bulk-btn {
+                flex-shrink: 0;
+                padding: 8px 12px;
+                border: none;
+                border-radius: 10px;
+                background: rgba(255,255,255,0.15);
+                color: white;
+                font-size: 13px;
+                font-weight: 500;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                white-space: nowrap;
+                transition: background 0.2s;
+                font-family: inherit;
+            }
+            .bulk-btn:hover { background: rgba(255,255,255,0.25); }
+            .bulk-btn:active { background: rgba(255,255,255,0.35); }
         }
 
         /* VEHICLE BADGE ON CARD */
@@ -1187,7 +1308,7 @@
             </div>
             <div class="side-menu-collapsible" id="mobileDatesSection">
                 <div class="cal-direction-bar" style="padding:0 4px;">
-                    <select class="cal-direction-select" onchange="setDirection(this.value);closeSideMenu();">
+                    <select class="cal-direction-select" onchange="setCalendarDirection(this.value);">
                         <option value="all">📊 Всі напрямки</option>
                         <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
                         <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
@@ -1313,7 +1434,7 @@
             </div>
             <div class="pc-sidebar-content collapsed" id="pcSectionDate">
                 <div class="cal-direction-bar">
-                    <select class="cal-direction-select" onchange="setDirection(this.value)">
+                    <select class="cal-direction-select" onchange="setCalendarDirection(this.value)">
                         <option value="all">📊 Всі напрямки</option>
                         <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
                         <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
@@ -1508,7 +1629,7 @@
                         <button class="wf-btn" id="btnDate" onclick="toggleDropdown('dateDropdown')">📅 <span id="dateLabel">Дата</span> <span class="count" id="dateCount" style="display:none">0</span> ▼</button>
                         <div class="dropdown-menu" id="dateDropdown">
                             <div class="cal-direction-bar">
-                                <select class="cal-direction-select" onchange="setDirection(this.value)">
+                                <select class="cal-direction-select" onchange="setCalendarDirection(this.value)">
                                     <option value="all">📊 Всі напрямки</option>
                                     <option value="ua-eu">🇺🇦→🇪🇺 Україна-Європа</option>
                                     <option value="eu-ua">🇪🇺→🇺🇦 Європа-Україна</option>
@@ -1655,20 +1776,22 @@
 <!-- BULK ACTIONS BAR - Mobile версія -->
 <div class="bulk-actions-bar" id="bulkActionsBar">
     <div class="bulk-actions-content">
-        <span class="bulk-selected">Вибрано: <span id="bulkCount">0</span></span>
+        <div class="bulk-bar-header">
+            <span class="bulk-selected">Вибрано: <span id="bulkCount">0</span></span>
+            <button class="bulk-bar-close" onclick="clearSelection()">✕</button>
+        </div>
         <div class="bulk-buttons">
             <button class="bulk-btn select-all" onclick="selectAllVisible()">☑️ Всі</button>
             <button class="bulk-btn vehicle" onclick="openBulkVehicleModal()">🚐 Авто</button>
-            <button class="bulk-btn optimize" onclick="bulkOptimize()">⚡</button>
-            <button class="bulk-btn route" onclick="bulkMoveToRoute()">🚀</button>
-            <button class="bulk-btn" onclick="openTagModal()" style="background:rgba(139,92,246,0.4);">🏷️</button>
-            <button class="bulk-btn" onclick="bulkSetParcelStatus()" style="background:var(--info);">📋</button>
-            <button class="bulk-btn" onclick="bulkSetSmsNote()" style="background:#7c3aed;">💬</button>
-            <button class="bulk-btn" onclick="bulkSetDateReceive()" style="background:var(--success);">📅</button>
+            <button class="bulk-btn optimize" onclick="bulkOptimize()">⚡ Опт</button>
+            <button class="bulk-btn route" onclick="bulkMoveToRoute()">🚀 Маршрут</button>
+            <button class="bulk-btn" onclick="openTagModal()" style="background:rgba(139,92,246,0.4);">🏷️ Тег</button>
+            <button class="bulk-btn" onclick="bulkSetParcelStatus()" style="background:var(--info);">📋 Статус</button>
+            <button class="bulk-btn" onclick="bulkSetSmsNote()" style="background:#7c3aed;">💬 СМС</button>
+            <button class="bulk-btn" onclick="bulkSetDateReceive()" style="background:var(--success);">📅 Дата</button>
             <button class="bulk-btn notify" id="btnBulkNotify" onclick="bulkMarkNotified()" style="display:none;background:#f97316;">🔔</button>
-            <button class="bulk-btn archive" id="btnBulkArchive" onclick="bulkArchive()">📦</button>
+            <button class="bulk-btn archive" id="btnBulkArchive" onclick="bulkArchive()">📦 Архів</button>
             <button class="bulk-btn restore" id="btnBulkRestore" onclick="bulkRestore()" style="display:none;background:var(--success);">↩️</button>
-            <button class="bulk-btn cancel" onclick="clearSelection()">✕</button>
         </div>
     </div>
 </div>
@@ -2025,6 +2148,7 @@ let editingId = null;
 let openDetailsId = null;
 let openActionsId = null;
 let calendarDate = new Date(); // Поточна дата
+let calendarDirection = 'all'; // Напрямок тільки для календаря (незалежний від filters.direction)
 let draggedId = null;
 let undoHistory = []; // Історія для відміни дій
 
@@ -2323,11 +2447,11 @@ function renderCalendarTo(containerId) {
     const months = ['Січень','Лютий','Березень','Квітень','Травень','Червень','Липень','Серпень','Вересень','Жовтень','Листопад','Грудень'];
     const today = new Date().toISOString().split('T')[0];
     
-    // Рахуємо кількість посилок на кожну дату ВІДПРАВКИ (dateReceive) з урахуванням напрямку
+    // Рахуємо кількість посилок на кожну дату ВІДПРАВКИ (dateReceive) з урахуванням напрямку календаря
     const seatCounts = {};
     const leadCounts = {};
     const hiddenInCalendar = ['archived', 'refused', 'transferred', 'deleted'];
-    const dir = filters.direction;
+    const dir = calendarDirection;
     packages.filter(p => !hiddenInCalendar.includes(p.status)).filter(p => !dir || dir === 'all' || p.direction === dir).forEach(p => {
         const shipDate = p.dateReceive || p.dateReg;
         if(shipDate) {
@@ -2399,15 +2523,38 @@ function renderCalendarTo(containerId) {
 
 function changeMonth(delta) { calendarDate.setMonth(calendarDate.getMonth() + delta); renderCalendars(); }
 function goToday() { calendarDate = new Date(); selectDate(new Date().toISOString().split('T')[0]); }
-function selectDate(dateStr) { 
-    filters.date = dateStr; 
-    filters.statusFilter = ''; 
-    renderCalendars(); 
-    render(); 
-    updateFilterButtons(); 
-    updateVehiclesList(); 
+function selectDate(dateStr) {
+    filters.date = dateStr;
+    filters.statusFilter = '';
+    filters.showNewOnly = false;
+
+    // Синхронізуємо напрямок карток з напрямком календаря
+    filters.direction = calendarDirection;
+
+    // Оновлюємо UI кнопок напрямку
+    const dir = calendarDirection;
+    document.querySelectorAll('.direction-option').forEach(el => {
+        el.classList.toggle('active', el.dataset.dir === dir);
+    });
+    document.getElementById('mobileDirectionAll')?.classList.toggle('active', dir === 'all');
+    document.getElementById('mobileDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
+    document.getElementById('mobileDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
+    document.getElementById('mobileNewLeads')?.classList.remove('active');
+    document.getElementById('pcDirectionAll')?.classList.toggle('active', dir === 'all');
+    document.getElementById('pcDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
+    document.getElementById('pcDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
+    document.getElementById('pcNewLeads')?.classList.remove('active');
+
+    const labels = {'all': 'Посилки', 'ua-eu': '🇺🇦→🇪🇺', 'eu-ua': '🇪🇺→🇺🇦'};
+    const navLabel = document.getElementById('navPackagesLabel');
+    if (navLabel) navLabel.textContent = labels[dir] || 'Посилки';
+
+    renderCalendars();
+    render();
+    updateFilterButtons();
+    updateVehiclesList();
     document.getElementById('dateDropdown')?.classList.remove('show');
-    
+
     // Перевірка на перевищення місткості
     if (dateStr) {
         checkCapacityWarning(dateStr);
@@ -2703,20 +2850,20 @@ function render() {
         const dirClass = isUaEu ? '' : ' eu-ua';
 
         // Values
-        const phoneRaw = p.phone || '—';
-        const phoneDisplay = hasSearch ? highlightSearch(phoneRaw) : phoneRaw;
+        const phoneRaw = p.phone || '';
+        const phoneDisplay = hasSearch ? highlightSearch(phoneRaw || '—') : (phoneRaw || '');
         const weightDisplay = p.weight ? p.weight + ' кг' : '';
         const priceDisplay = p.amount ? '€' + p.amount : '';
         const ttnRaw = p.ttn || '';
         const ttnDisplay = hasSearch ? highlightSearch(ttnRaw) : ttnRaw;
-        const idRaw = p.id || '—';
-        const idDisplay = hasSearch ? highlightSearch(idRaw) : idRaw;
-        const nameDisplay = hasSearch ? highlightSearch(p.name || '—') : (p.name || '—');
+        const idRaw = p.id || '';
+        const idDisplay = hasSearch ? highlightSearch(idRaw || '—') : (idRaw || '');
+        const nameDisplay = hasSearch ? highlightSearch(p.name || '—') : (p.name || '');
         const numberDisplay = p.number || '';
-        const dateDisplay = p.dateReg ? getFieldValue(p, 'dateReg') : '—';
+        const dateDisplay = p.dateReg ? getFieldValue(p, 'dateReg') : '';
         const dateRecvDisplay = p.dateReceive ? getFieldValue(p, 'dateReceive') : '';
-        const addressShort = p.address ? (p.address.length > 45 ? p.address.substring(0, 45) + '...' : p.address) : '—';
-        const addressDisplay = hasSearch ? highlightSearch(addressShort) : addressShort;
+        const addressShort = p.address ? (p.address.length > 45 ? p.address.substring(0, 45) + '...' : p.address) : '';
+        const addressDisplay = hasSearch ? highlightSearch(addressShort || '—') : (addressShort || '');
         const noteShort = p.note ? (p.note.length > 30 ? p.note.substring(0, 30) + '...' : p.note) : '';
 
         // Payment
@@ -2727,12 +2874,14 @@ function render() {
         // Vehicle
         const vehicleBadge = veh
             ? `<span class="card-vehicle-badge">${veh.name}</span>`
-            : `<span class="card-vehicle-badge empty">—</span>`;
+            : `<span style="opacity:0.3;font-size:10px">${ALL_COLUMNS['vehicle']?.label||'Авто'}</span>`;
         const orderNum = isRouteView ? `<span class="order-num">${idx + 1}</span>` : '';
         const notGeocodedClass = p._notGeocoded ? 'not-geocoded-card' : '';
 
         // Helper: cell with col visibility
         const cc = (col, cls, content) => `<div class="cg-cell ${cls}" data-col="${col}" ${hc.has(col)?'style="display:none"':''}>${content}</div>`;
+        // Helper: placeholder — shows column label when empty
+        const ph = (col) => `<span style="opacity:0.3;font-size:10px">${ALL_COLUMNS[col]?.label||col}</span>`;
 
         // Helper: copy btn
         const cpBtn = (val) => `<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(val)}',this)" title="Копіювати">📋</button>`;
@@ -2804,7 +2953,7 @@ function render() {
                     <input type="checkbox" class="card-checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleSelect('${uk}')">
                 </div>
                 <div class="card-grid" onclick="toggleDetails('${uk}')">
-                    <!-- ROW 1: Direction + TTN (К,Р) | Weight | Date -->
+                    <!-- ROW 1: Direction + TTN | Weight | Date -->
                     <div class="cg-row">
                         <div class="cg-cell cg-main" data-col="ttn" ${hc.has('ttn')?'style="display:none"':''}>
                             ${orderNum}
@@ -2812,53 +2961,43 @@ function render() {
                             ${ttnRaw ? `<span class="cg-val-ttn">ТТН:${ttnDisplay}${cpBtn(ttnRaw)}${edBtn('ttn')}</span>` : ''}
                             ${p.isNew ? '<span class="new-tag">NEW</span>' : ''}
                         </div>
-                        ${cc('weight','cg-sm',`<span class="cg-label">Вага</span>${weightDisplay ? `<span class="cg-val-weight">${weightDisplay}</span>${edBtn('weight')}` : `<span style="opacity:0.3">—</span>${edBtn('weight')}`}`)}
-                        ${cc('dateReg','cg-sm',`<span class="cg-label">Дата</span><span class="cg-val-date">${dateDisplay}</span>`)}
+                        ${cc('weight','cg-sm',`${weightDisplay ? `<span class="cg-val-weight">${weightDisplay}</span>${edBtn('weight')}` : `${ph('weight')}${edBtn('weight')}`}`)}
+                        ${cc('dateReg','cg-sm',`${dateDisplay ? `<span class="cg-val-date">${dateDisplay}</span>` : ph('dateReg')}`)}
                     </div>
-                    <!-- ROW 2: Phone (К,Р) | АВТО | Amount (€,Р) | DateReceive (Р) -->
+                    <!-- ROW 2: Phone | АВТО | Amount | DateReceive -->
                     <div class="cg-row">
-                        ${cc('phone','cg-main',`<span class="cg-val-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}${cpBtn(phoneRaw)}${edBtn('phone')}</span>`)}
+                        ${cc('phone','cg-main',`${phoneRaw ? `<span class="cg-val-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}${cpBtn(phoneRaw)}${edBtn('phone')}</span>` : `${ph('phone')}${edBtn('phone')}`}`)}
                         ${cc('vehicle','cg-sm',`${vehicleBadge}`)}
-                        ${cc('amount','cg-sm',`<span class="cg-val-price">${priceDisplay||'—'}</span>${edBtn('amount')}`)}
-                        ${cc('dateReceive','cg-sm',`<span class="cg-label">Отр.</span><span class="cg-val-date">${dateRecvDisplay||'—'}</span>${edBtn('dateReceive')}`)}
+                        ${cc('amount','cg-sm',`${priceDisplay ? `<span class="cg-val-price">${priceDisplay}</span>${edBtn('amount')}` : `${ph('amount')}${edBtn('amount')}`}`)}
+                        ${cc('dateReceive','cg-sm',`${dateRecvDisplay ? `<span class="cg-val-date">${dateRecvDisplay}</span>${edBtn('dateReceive')}` : `${ph('dateReceive')}${edBtn('dateReceive')}`}`)}
                     </div>
-                    <!-- ROW 3: ID (К) | PayStatus (Р) | Payment (Р) | Note (Р) -->
+                    <!-- ROW 3: ID | PayStatus | Payment | Note -->
                     <div class="cg-row">
-                        ${cc('id','cg-main',`<span class="cg-val-id" onclick="event.stopPropagation()">${idDisplay}${cpBtn(idRaw)}</span>`)}
-                        ${cc('payStatus','cg-sm',`<span class="cg-label">Ст.опл.</span>${payStatusBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payStatus')}`)}
-                        ${cc('payment','cg-sm',`<span class="cg-label">Оплата</span>${paymentBadge||'<span style="opacity:0.3">—</span>'}${edBtn('payment')}`)}
-                        ${cc('note','cg-sm',`<span class="cg-label">Прим.</span>${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : '<span style="opacity:0.3">—</span>'}${edBtn('note')}`)}
+                        ${cc('id','cg-main',`${idRaw ? `<span class="cg-val-id" onclick="event.stopPropagation()">${idDisplay}${cpBtn(idRaw)}</span>` : ph('id')}`)}
+                        ${cc('payStatus','cg-sm',`${payStatusBadge||ph('payStatus')}${edBtn('payStatus')}`)}
+                        ${cc('payment','cg-sm',`${paymentBadge||ph('payment')}${edBtn('payment')}`)}
+                        ${cc('note','cg-sm',`${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : ph('note')}${edBtn('note')}`)}
                     </div>
-                    <!-- ROW 4: Address (К, і-maps) | Internal number (Р) -->
+                    <!-- ROW 4: Address | Internal number -->
                     <div class="cg-row">
-                        ${cc('address','cg-main',`<span class="cg-val-address" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${cpBtn(p.address||'')}${(p.address||'').trim() ? `<a class="cg-map-link" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Навігація">➤</a>` : ''}${edBtn('address')}</span>`)}
-                        ${cc('number','cg-sm',`<span class="cg-label">Внутр.№</span><span class="cg-val">${numberDisplay||'—'}</span>${edBtn('number')}`)}
+                        ${cc('address','cg-main',`${p.address ? `<span class="cg-val-address" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${cpBtn(p.address)}${`<a class="cg-map-link" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Навігація">➤</a>`}${edBtn('address')}</span>` : `${ph('address')}${edBtn('address')}`}`)}
+                        ${cc('number','cg-sm',`${numberDisplay ? `<span class="cg-val">${numberDisplay}</span>${edBtn('number')}` : `${ph('number')}${edBtn('number')}`}`)}
                     </div>
-                    <!-- COLLAPSE TOGGLE -->
-                    <div class="cg-toggle" onclick="event.stopPropagation();toggleCardExtra('${uk}')">
-                        <span class="cg-toggle-icon ${extOpen?'open':''}">▼</span>
-                        <span>${extOpen?'Згорнути':'Більше'}</span>
+                    <!-- ROW 5: Phone reg | Parcel Status -->
+                    <div class="cg-row">
+                        ${cc('phoneReg','cg-main',`${p.phoneReg ? `<span class="cg-val">${p.phoneReg}</span>${cpBtn(p.phoneReg)}${edBtn('phoneReg')}` : `${ph('phoneReg')}${edBtn('phoneReg')}`}`)}
+                        ${cc('parcelStatus','cg-sm',`${p.parcelStatus ? `<span class="cg-val">${p.parcelStatus}</span>${edBtn('parcelStatus')}` : `${ph('parcelStatus')}${edBtn('parcelStatus')}`}`)}
                     </div>
-                    <!-- EXTRA ROWS (collapsible) -->
-                    <div class="cg-extra ${extOpen?'open':''}">
-                        <!-- ROW 5: Phone reg (Р) | АВТО (Р) | Parcel Status (Р) -->
-                        <div class="cg-row">
-                            ${cc('phoneReg','cg-main',`<span class="cg-label">Тел.реєстр.</span><span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}${edBtn('phoneReg')}`)}
-                            ${cc('vehicle','cg-mid',`<span class="cg-label">АВТО</span>${vehicleBadge}`)}
-                            ${cc('parcelStatus','cg-sm',`<span class="cg-label">Стат.пос.</span><span class="cg-val">${p.parcelStatus||'—'}</span>${edBtn('parcelStatus')}`)}
-                        </div>
-                        <!-- ROW 6: ПІБ (К,Р) | ВО (Р) | SMS Note (Р) | Photo | Timing (Р) -->
-                        <div class="cg-row">
-                            ${cc('name','cg-main',`<span class="cg-label">ПІБ</span><span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name||'')}${edBtn('name')}`)}
-                            ${cc('vo','cg-sm',`<span class="cg-label">ВО</span><span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>${edBtn('vo')}`)}
-                            ${cc('smsNote','cg-sm',`<span class="cg-label">Прим.СМС</span><span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>${edBtn('smsNote')}`)}
-                            ${cc('photo','cg-sm',`<span class="cg-label">Фото</span>${p.photo ? `<a href="${esc(String(p.photo).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--info);font-weight:600;font-size:11px;">📷 Фото</a>` : '<span style="opacity:0.3">—</span>'}`)}
-                            ${cc('timing','cg-sm',`<span class="cg-label">Таймінг</span><span class="cg-val">${p.timing||'—'}</span>${edBtn('timing')}`)}
-                        </div>
+                    <!-- ROW 6: ПІБ | ВО | SMS Note | Photo | Timing -->
+                    <div class="cg-row">
+                        ${cc('name','cg-main',`${p.name ? `<span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name)}${edBtn('name')}` : `${ph('name')}${edBtn('name')}`}`)}
+                        ${cc('vo','cg-sm',`${p.vo ? `<span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo}</span>${edBtn('vo')}` : `${ph('vo')}${edBtn('vo')}`}`)}
+                        ${cc('smsNote','cg-sm',`${p.smsNote ? `<span class="cg-val">${p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote}</span>${edBtn('smsNote')}` : `${ph('smsNote')}${edBtn('smsNote')}`}`)}
+                        ${cc('photo','cg-sm',`${p.photo ? `<a href="${esc(String(p.photo).trim())}" target="_blank" rel="noopener" onclick="event.stopPropagation()" style="color:var(--info);font-weight:600;font-size:11px;">📷 Фото</a>` : ph('photo')}`)}
+                        ${cc('timing','cg-sm',`${p.timing ? `<span class="cg-val">${p.timing}</span>${edBtn('timing')}` : `${ph('timing')}${edBtn('timing')}`}`)}
                     </div>
                 </div>
                 <div class="card-right-panel">
-                    <div>${vehicleBadge}</div>
                     <button class="card-actions-toggle ${aOpen?'open':''}" onclick="event.stopPropagation();toggleActions('${uk}')">▼</button>
                 </div>
             </div>
@@ -2916,6 +3055,10 @@ function handleDrop(e, targetId) {
 // Хелпер: знайти пасажира по uniqueKey
 function findPackageByUid(uid) {
     if (!uid) return null;
+    // Шукаємо в routePassengers якщо uid починається з 'route_'
+    if (uid.startsWith('route_')) {
+        return routePassengers.find(p => p._uid === uid) || null;
+    }
     if (uid.startsWith('local_')) {
         const idx = parseInt(uid.replace('local_', ''));
         const data = getFilteredData();
@@ -3223,43 +3366,63 @@ function updatePcVehiclesList() {
 function updateRoutesList() {
     // Спочатку показуємо з локальними даними
     renderRoutesListLocal();
-    
-    // Потім асинхронно оновлюємо з API
-    vehicles.forEach(v => {
-        fetch(ROUTE_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({
-                action: 'getRoutePassengers',
-                payload: { vehicleName: v.name }
-            })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                // Оновлюємо badge в desktop dropdown
-                const desktopBadge = document.querySelector(`#routesList [data-vehicle="${v.id}"] .badge`);
-                if (desktopBadge) {
-                    desktopBadge.textContent = data.stats.total;
-                    desktopBadge.style.background = data.stats.total > 0 ? 'var(--success)' : 'var(--border)';
-                    desktopBadge.style.color = data.stats.total > 0 ? 'white' : 'var(--text-secondary)';
-                }
-                
-                // Оновлюємо badge в mobile menu
-                const mobileBadge = document.querySelector(`#mobileRoutesList [data-vehicle="${v.id}"] .side-menu-item-count`);
-                if (mobileBadge) {
-                    mobileBadge.textContent = data.stats.total;
-                }
-                
-                // Оновлюємо badge в PC sidebar
-                const pcBadge = document.querySelector(`#pcRoutesList [data-vehicle="${v.id}"] .item-count`);
-                if (pcBadge) {
-                    pcBadge.textContent = data.stats.total;
+
+    // Один API виклик для всіх маршрутів замість N окремих
+    fetch(ROUTE_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'getAvailableRoutes' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success && data.routes) {
+            let totalCount = 0;
+
+            for (const route of data.routes) {
+                const count = route.count || 0;
+                totalCount += count;
+
+                // Знаходимо відповідне авто (А-Братислава → Братислава)
+                const matchedVehicle = vehicles.find(v => {
+                    const clean = v.name.replace(/^А-/i, '');
+                    return v.name === route.vehicle ||
+                        clean === route.vehicle ||
+                        v.name === route.name ||
+                        v.routeSheet === route.name ||
+                        route.name.includes(clean);
+                });
+
+                if (matchedVehicle) {
+                    const vid = matchedVehicle.id;
+
+                    // Desktop dropdown badge
+                    const desktopBadge = document.querySelector(`#routesList [data-vehicle="${vid}"] .badge`);
+                    if (desktopBadge) {
+                        desktopBadge.textContent = count;
+                        desktopBadge.style.background = count > 0 ? 'var(--success)' : 'var(--border)';
+                        desktopBadge.style.color = count > 0 ? 'white' : 'var(--text-secondary)';
+                    }
+
+                    // Mobile menu badge
+                    const mobileBadge = document.querySelector(`#mobileRoutesList [data-vehicle="${vid}"] .side-menu-item-count`);
+                    if (mobileBadge) mobileBadge.textContent = count;
+
+                    // PC sidebar badge
+                    const pcBadge = document.querySelector(`#pcRoutesList [data-vehicle="${vid}"] .item-count`);
+                    if (pcBadge) pcBadge.textContent = count;
                 }
             }
-        })
-        .catch(() => {});
-    });
+
+            // Оновлюємо загальний лічильник "Всі маршрути"
+            const countRoute = document.getElementById('countRoute');
+            const pcCount = document.getElementById('pcCountRoute');
+            const mobileCount = document.getElementById('mobileCountRoute');
+            if (countRoute) countRoute.textContent = totalCount;
+            if (pcCount) pcCount.textContent = totalCount;
+            if (mobileCount) mobileCount.textContent = totalCount;
+        }
+    })
+    .catch(() => {});
 }
 
 // Рендер списку маршрутів з локальними даними (швидко)
@@ -3300,8 +3463,6 @@ function renderRoutesListLocal() {
     const pcRoutesList = document.getElementById('pcRoutesList');
     if (pcRoutesList) pcRoutesList.innerHTML = pcRoutesHtml;
     
-    // Оновлюємо лічильник "Всі маршрути" через API
-    updateAllRoutesCount();
 }
 
 // Оновлення лічильника "Всі маршрути" через API
@@ -3344,6 +3505,18 @@ function showAllRoutes() {
     loadAllRoutePassengers();
 }
 
+function computeRouteStats(items) {
+    const stats = { total: items.length, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 };
+    for (const p of items) {
+        const s = (p.status || 'pending').toString().toLowerCase();
+        if (s === 'pending') stats.pending++;
+        else if (s === 'in-progress') stats.inProgress++;
+        else if (s === 'completed') stats.completed++;
+        else if (s === 'cancelled') stats.cancelled++;
+    }
+    return stats;
+}
+
 function showVehicleRoute(vehicleId) {
     const v = vehicles.find(x => x.id === vehicleId);
     if (!v) return showToast('❌ Авто не знайдено');
@@ -3381,21 +3554,22 @@ function showVehicleRoute(vehicleId) {
         }
         
         if (routeData.success) {
-            // Зберігаємо дані маршруту
-            routePassengers = routeData.packages.map((p, idx) => ({
+            // Зберігаємо дані маршруту (API повертає passengers або packages)
+            const items = routeData.passengers || routeData.packages || [];
+            routePassengers = items.map((p, idx) => ({
                 ...p,
                 _uid: `route_${v.id}_${idx}`,
                 _isRouteData: true,
                 _vehicleId: v.id,
                 _vehicleName: v.name
             }));
-            routeStats = routeData.stats;
+            routeStats = routeData.stats || computeRouteStats(routePassengers);
             currentRouteVehicle = v;
             
             // Рендеримо
             renderRoutePassengers();
             updateFilterButtons();
-            showToast(`🚐 ${v.name}: ${routeData.stats.total} пасажирів`);
+            showToast(`🚐 ${v.name}: ${routeStats.total} пасажирів`);
         } else {
             showToast('❌ ' + routeData.error);
         }
@@ -3464,32 +3638,35 @@ async function loadAllRoutePassengers() {
                 loaded++;
                 updateLoader(`Обробка: ${route.name}`, `${loaded} / ${routes.length}`);
                 
-                if (data.success && data.packages && data.packages.length > 0) {
-                    // Знаходимо відповідне авто
-                    const matchedVehicle = vehicles.find(v => 
-                        v.name === route.name || 
-                        v.routeSheet === route.name ||
-                        route.name.includes(v.name)
-                    );
-                    
-                    const mapped = data.packages.map((p, idx) => ({
+                const items = data.success ? (data.passengers || data.packages || []) : [];
+                if (items.length > 0) {
+                    // Знаходимо відповідне авто (А-Братислава → Братислава)
+                    const matchedVehicle = vehicles.find(v => {
+                        const clean = v.name.replace(/^А-/i, '');
+                        return v.name === route.vehicle ||
+                            clean === route.vehicle ||
+                            v.name === route.name ||
+                            v.routeSheet === route.name ||
+                            route.name.includes(clean);
+                    });
+
+                    const mapped = items.map((p, idx) => ({
                         ...p,
                         _uid: `route_${route.name.replace(/\s+/g, '_')}_${idx}`,
                         _isRouteData: true,
-                        _vehicleId: matchedVehicle?.id || route.name,
-                        _vehicleName: route.name
+                        _vehicleId: matchedVehicle?.id || route.vehicle || route.name,
+                        _vehicleName: route.vehicle || route.name
                     }));
                     routePassengers = routePassengers.concat(mapped);
-                    
+
                     // Додаємо статистику
-                    if (data.stats) {
-                        routeStats.total += data.stats.total || 0;
-                        routeStats.pending += data.stats.pending || 0;
-                        routeStats.inProgress += data.stats.inProgress || 0;
-                        routeStats.completed += data.stats.completed || 0;
-                        routeStats.cancelled += data.stats.cancelled || 0;
-                        routeStats.archived += data.stats.archived || 0;
-                    }
+                    const st = data.stats || computeRouteStats(items);
+                    routeStats.total += st.total || 0;
+                    routeStats.pending += st.pending || 0;
+                    routeStats.inProgress += st.inProgress || 0;
+                    routeStats.completed += st.completed || 0;
+                    routeStats.cancelled += st.cancelled || 0;
+                    routeStats.archived += st.archived || 0;
                 }
             }
         }
@@ -3603,103 +3780,165 @@ function renderRoutePassengers() {
         return;
     }
     
-    // Картки пасажирів - використовуємо стандартний стиль lead-card
+    // Картки пасажирів - ІДЕНТИЧНА структура як основна карточка (card-main > card-grid > cg-row > cg-cell)
+    const hc = hiddenCols;
+    const hasSearch = filters.search && filters.search.trim();
+    const esc = (v) => (v || '').toString().replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    const cpBtn = (val) => `<button class="copy-btn-mini" onclick="event.stopPropagation();copyToClip('${esc(val)}',this)" title="Копіювати">📋</button>`;
+    const cc = (col, cls, content) => `<div class="cg-cell ${cls}" data-col="${col}" ${hc.has(col)?'style="display:none"':''}>${content}</div>`;
+
     filteredPassengers.forEach((p, idx) => {
-        // Визначаємо клас по статусу водія
-        let statusClass = '';
-        let statusBadge = '<span class="status-badge pending">⏳ Очікує</span>';
-        
-        if (p.driverStatus === 'completed') {
-            statusClass = 'driver-completed';
-            statusBadge = '<span class="status-badge completed">✅ Готово</span>';
-        } else if (p.driverStatus === 'in-progress') {
-            statusClass = 'driver-in-progress';
-            statusBadge = '<span class="status-badge in-progress">🔄 В дорозі</span>';
-        } else if (p.driverStatus === 'cancelled') {
-            statusClass = 'driver-cancelled';
-            statusBadge = '<span class="status-badge cancelled">❌ Відмова</span>';
-        } else if (p.driverStatus === 'archived') {
-            statusClass = 'driver-archived';
-            statusBadge = '<span class="status-badge archived">📦 Архів</span>';
-        }
-        
-        // Перевіряємо чи сповіщений
-        const isNotified = mailingIds.includes(String(p.id));
-        const notifyBadge = isNotified 
-            ? '<span style="background:#f97316;color:white;padding:2px 6px;border-radius:4px;font-size:9px;font-weight:600;">🔔 Сповіщено</span>' 
-            : '';
-        const notifyClass = isNotified ? 'is-notified' : '';
-        
+        const uk = p._uid;
+        const sel = selectedIds.has(uk);
+        const dOpen = openDetailsId === uk;
+        const aOpen = openActionsId === uk;
         const veh = vehicles.find(v => v.id === p._vehicleId || v.name === p._vehicleName);
-        const vehicleBadge = veh 
-            ? `<span class="card-vehicle-badge">${veh.name}</span>` 
-            : `<span class="card-vehicle-badge">${p._vehicleName || '?'}</span>`;
-        
-        const isSelected = selectedIds.has(p._uid);
-        
-        html += `
-            <div class="lead-card ${statusClass} ${notifyClass} ${isSelected ? 'selected' : ''}" data-uid="${p._uid}">
-                <div class="card-header" onclick="toggleRouteCardDetails('${p._uid}')">
-                    <div class="card-checkbox-wrap">
-                        <input type="checkbox" class="card-checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation();toggleSelect('${p._uid}')">
-                        <span class="route-order-num">${idx + 1}</span>
+        const isUaEu = p.direction === 'ua-eu';
+
+        const dirLabel = isUaEu ? 'UA→EU' : 'EU→UA';
+        const dirClass = isUaEu ? '' : ' eu-ua';
+
+        const phoneRaw = p.phone || '—';
+        const phoneDisplay = hasSearch ? highlightSearch(phoneRaw) : phoneRaw;
+        const weightDisplay = p.weight ? p.weight + ' кг' : '';
+        const ttnRaw = p.ttn || '';
+        const ttnDisplay = hasSearch ? highlightSearch(ttnRaw) : ttnRaw;
+        const idRaw = p.id || '—';
+        const idDisplay = hasSearch ? highlightSearch(idRaw) : idRaw;
+        const nameDisplay = hasSearch ? highlightSearch(p.name || '—') : (p.name || '—');
+        const numberDisplay = p.number || '';
+        const priceDisplay = p.amount ? '€' + p.amount : '';
+        const dateDisplay = p.dateReg || p.date || '—';
+        const dateRecvDisplay = p.dateReceive || '';
+        const addressShort = p.address ? (p.address.length > 45 ? p.address.substring(0, 45) + '...' : p.address) : '—';
+        const addressDisplay = hasSearch ? highlightSearch(addressShort) : addressShort;
+        const noteShort = p.note ? (p.note.length > 30 ? p.note.substring(0, 30) + '...' : p.note) : '';
+
+        // Payment badges
+        const payStatusClass = p.payStatus === 'Оплачено' ? 'paid' : (p.payStatus === 'Неоплачено' ? 'unpaid' : '');
+        const payStatusBadge = p.payStatus ? `<span class="card-pay-badge ${payStatusClass||'neutral'}">${p.payStatus}</span>` : '';
+        const paymentBadge = p.payment ? `<span class="card-pay-badge neutral">${p.payment}</span>` : '';
+
+        // Vehicle badge
+        const vehicleBadge = veh
+            ? `<span class="card-vehicle-badge">${veh.name}</span>`
+            : `<span class="card-vehicle-badge">${p._vehicleName || '—'}</span>`;
+
+        // Driver status badge (compact for right panel)
+        let driverStatusBadge = '<span class="status-badge pending" style="font-size:10px;padding:2px 5px;">⏳</span>';
+        if (p.driverStatus === 'completed') driverStatusBadge = '<span class="status-badge completed" style="font-size:10px;padding:2px 5px;">✅</span>';
+        else if (p.driverStatus === 'in-progress') driverStatusBadge = '<span class="status-badge in-progress" style="font-size:10px;padding:2px 5px;">🔄</span>';
+        else if (p.driverStatus === 'cancelled') driverStatusBadge = '<span class="status-badge cancelled" style="font-size:10px;padding:2px 5px;">❌</span>';
+
+        // Notification badge
+        const isNotified = mailingIds.includes(String(p.id));
+        const notifyIcon = isNotified ? '<span style="color:#f97316;font-size:11px;" title="Сповіщено">🔔</span>' : '';
+
+        // Inline edit fields for details panel
+        const vehOpts = vehicles.map(v => `<option value="${esc(v.name)}" ${(p._vehicleId===v.id||p._vehicleName===v.name)?'selected':''}>${v.name}</option>`).join('');
+        const payStatuses = ['Оплачено','Неоплачено','Відправник','Отримувач'];
+        const payments = ['При отр гот','При отр на карту','Відпр на карту','Картка','Готівка'];
+        const parcelStatuses = ['Невідомий','Зареєстровано','Оформлено','Кордон','Доставка'];
+        const voOptions = ['Д','Ш','Б'];
+        const selOpt = (field, val, options) => options.map(o => `<option value="${esc(o)}" ${val===o?'selected':''}>${o}</option>`).join('');
+        const mkInput = (label, field, val, ph, type) => `<div class="inline-edit-field"><span class="inline-edit-label">${label}</span><input class="inline-edit-input" type="${type||'text'}" value="${esc(val)}" placeholder="${ph||'—'}" onchange="inlineRouteSave('${uk}','${field}',this.value)" onclick="event.stopPropagation()"></div>`;
+        const mkSelect = (label, field, val, opts) => `<div class="inline-edit-field select-field"><span class="inline-edit-label">${label}</span><select class="inline-edit-select" onchange="inlineRouteSave('${uk}','${field}',this.value)" onclick="event.stopPropagation()"><option value="">—</option>${selOpt(field,val,opts)}</select></div>`;
+
+        let inlineHtml = `<div class="inline-edit-grid">`;
+        inlineHtml += `<div class="inline-section-title">Контакт</div>`;
+        inlineHtml += mkInput('Телефон','phone',p.phone,'+380...');
+        inlineHtml += mkInput('Тел. реєстратора','phoneReg',p.phoneReg,'+380...');
+        inlineHtml += mkInput('ТТН','ttn',p.ttn,'—');
+        inlineHtml += `<div class="inline-section-title">Деталі</div>`;
+        inlineHtml += mkInput("ПІБ",'name',p.name,'—');
+        inlineHtml += mkInput('Вага','weight',p.weight,'—');
+        inlineHtml += mkInput('Адреса','address',p.address,'—');
+        inlineHtml += mkInput('Сума','amount',p.amount,'—');
+        inlineHtml += mkSelect('Оплата','payment',p.payment,payments);
+        inlineHtml += mkInput('Таймінг','timing',p.timing,'—');
+        inlineHtml += mkInput('Примітка','note',p.note,'—');
+        inlineHtml += mkInput('SMS','smsNote',p.smsNote,'—');
+        inlineHtml += mkSelect('Статус посилки','parcelStatus',p.parcelStatus,parcelStatuses);
+        inlineHtml += mkSelect('ВО','vo',p.vo,voOptions);
+        inlineHtml += `</div>`;
+
+        html += `<div class="lead-card status-route ${sel?'selected':''}" data-uid="${uk}" data-id="${p.id}">
+            <div class="card-main">
+                <div class="card-cb" style="flex-direction:column;gap:4px;">
+                    <input type="checkbox" class="card-checkbox" ${sel?'checked':''} onclick="event.stopPropagation();toggleSelect('${uk}')">
+                    <span class="route-order-num">${idx + 1}</span>
+                </div>
+                <div class="card-grid" onclick="toggleDetails('${uk}')">
+                    <!-- ROW 1: Direction + TTN | Weight | Date -->
+                    <div class="cg-row">
+                        ${cc('ttn','cg-main',`<span class="cg-val-dir${dirClass}">${dirLabel}</span>${ttnRaw ? `<span class="cg-val-ttn">ТТН:${ttnDisplay}${cpBtn(ttnRaw)}</span>` : ''}`)}
+                        ${cc('weight','cg-sm',`${weightDisplay ? `<span class="cg-val-weight">${weightDisplay}</span>` : '<span style="opacity:0.3">—</span>'}`)}
+                        ${cc('dateReg','cg-sm',`<span class="cg-val-date">${dateDisplay}</span>`)}
                     </div>
-                    <div class="card-body">
-                        <div class="card-top-row">
-                            <span class="card-phone">${p.phone || '—'}</span>
-                            <span class="card-seats">👥 ${p.weight || ''}</span>
-                            <span class="card-date">${p.date || '—'}</span>
-                            ${p.payment ? `<span class="card-price">💰 ${p.payment}</span>` : ''}
-                        </div>
-                        <div class="card-row2-wrap">
-                            <div class="card-route-row">
-                                <span class="card-route">📍 ${p.address || '?'}${p.ttn ? ` <span style="color:var(--info);font-size:10px;">ТТН: ${p.ttn}</span>` : ''}</span>
-                            </div>
-                            <div class="card-info-row">
-                                <span class="card-id">${p.id || '—'}</span>
-                                <span class="card-name">${p.name || '—'}</span>
-                            </div>
-                        </div>
-                        <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-                            ${statusBadge}
-                            ${notifyBadge}
-                            ${p.timing ? `<span style="font-size:10px;color:#666;">⏰ ${p.timing}</span>` : ''}
-                        </div>
-                        ${p.note ? `<div style="font-size:10px;color:#666;margin-top:4px;font-style:italic;">📝 ${p.note}</div>` : ''}
+                    <!-- ROW 2: Phone | АВТО | Amount | DateReceive -->
+                    <div class="cg-row">
+                        ${cc('phone','cg-main',`<span class="cg-val-phone" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">${phoneDisplay}${cpBtn(phoneRaw)}</span>`)}
+                        ${cc('vehicle','cg-sm',`${vehicleBadge}`)}
+                        ${cc('amount','cg-sm',`<span class="cg-val-price">${priceDisplay||'—'}</span>`)}
+                        ${cc('dateReceive','cg-sm',`<span class="cg-val-date">${dateRecvDisplay||'—'}</span>`)}
                     </div>
-                    <div class="card-right-section">
-                        <div class="card-vehicle">
-                            ${vehicleBadge}
-                        </div>
-                        <span class="card-expand-icon">▼</span>
+                    <!-- ROW 3: ID | PayStatus | Payment | Note -->
+                    <div class="cg-row">
+                        ${cc('id','cg-main',`<span class="cg-val-id" onclick="event.stopPropagation()">${idDisplay}${cpBtn(idRaw)}</span>`)}
+                        ${cc('payStatus','cg-sm',`${payStatusBadge||'<span style="opacity:0.3">—</span>'}`)}
+                        ${cc('payment','cg-sm',`${paymentBadge||'<span style="opacity:0.3">—</span>'}`)}
+                        ${cc('note','cg-sm',`${noteShort ? `<span class="cg-val-note">${noteShort}</span>` : '<span style="opacity:0.3">—</span>'}`)}
+                    </div>
+                    <!-- ROW 4: Address | Internal number -->
+                    <div class="cg-row">
+                        ${cc('address','cg-main',`<span class="cg-val-address" onclick="event.stopPropagation()" onmousedown="event.stopPropagation()">📍 ${addressDisplay}${cpBtn(p.address||'')}${(p.address||'').trim() ? `<a class="cg-map-link" href="https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Навігація">➤</a>` : ''}</span>`)}
+                        ${cc('number','cg-sm',`<span class="cg-val">${numberDisplay||'—'}</span>`)}
+                    </div>
+                    <!-- ROW 5: Phone reg | Parcel Status -->
+                    <div class="cg-row">
+                        ${cc('phoneReg','cg-main',`<span class="cg-val">${p.phoneReg||'—'}</span>${p.phoneReg?cpBtn(p.phoneReg):''}`)}
+                        ${cc('parcelStatus','cg-sm',`<span class="cg-val">${p.parcelStatus||'—'}</span>`)}
+                    </div>
+                    <!-- ROW 6: ПІБ | ВО | SMS Note | Timing -->
+                    <div class="cg-row">
+                        ${cc('name','cg-main',`<span class="cg-val-name">${nameDisplay}</span>${cpBtn(p.name||'')}`)}
+                        ${cc('vo','cg-sm',`<span class="cg-val" style="font-weight:700;color:var(--purple);">${p.vo||'—'}</span>`)}
+                        ${cc('smsNote','cg-sm',`<span class="cg-val">${p.smsNote ? (p.smsNote.length>25?p.smsNote.substring(0,25)+'...':p.smsNote) : '—'}</span>`)}
+                        ${cc('timing','cg-sm',`<span class="cg-val">${p.timing||'—'}</span>`)}
                     </div>
                 </div>
-                <div class="card-details" id="details_${p._uid}" style="display:none;">
-                    <div class="details-grid">
-                        <div class="detail-item"><span class="detail-label">📞 Телефон</span><span class="detail-value">${p.phone || '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">📞 Реєстратор</span><span class="detail-value">${p.phoneReg || '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">👤 ПІБ</span><span class="detail-value">${p.name || '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">📦 Вага</span><span class="detail-value">${p.weight ? p.weight + ' кг' : '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">📍 Адреса</span><span class="detail-value">${p.address || '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">📋 ТТН</span><span class="detail-value">${p.ttn || '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">💰 Сума</span><span class="detail-value">${p.amount ? '€' + p.amount : '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">💳 Оплата</span><span class="detail-value">${p.payment || '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">⏰ Таймінг</span><span class="detail-value">${p.timing || '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">📅 Дата</span><span class="detail-value">${p.dateReg || '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">👨‍💼 Диспетчер</span><span class="detail-value">${p.dispatcher || '—'}</span></div>
-                        <div class="detail-item"><span class="detail-label">⚖️ Вага</span><span class="detail-value">${p.weight || '—'}</span></div>
-                    </div>
-                    ${p.note ? `<div class="detail-note"><span class="detail-label">📝 Примітка</span><div>${p.note}</div></div>` : ''}
-                    <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
-                        <button class="btn-card-action btn-call" onclick="event.stopPropagation();location.href='tel:${p.phone}'" style="flex:1;">📞 Дзвонити</button>
-                        <button class="btn-card-action btn-msg" onclick="event.stopPropagation();window.open('https://console.smartsender.com/contacts?project=yura-transportation-131349','_blank')" style="flex:1;">💬 Писати</button>
-                    </div>
+                <div class="card-right-panel" style="gap:6px;">
+                    <button class="card-actions-toggle ${aOpen?'open':''}" onclick="event.stopPropagation();toggleActions('${uk}')">▼</button>
+                    ${driverStatusBadge}
+                    ${notifyIcon}
                 </div>
             </div>
-        `;
+            <div class="card-details ${dOpen?'show':''}">
+                <button class="details-close-btn" onclick="event.stopPropagation();toggleDetails('${uk}')" title="Згорнути">✕</button>
+                ${inlineHtml}
+                <span class="inline-save-indicator" id="saveInd_${uk.replace(/[^a-zA-Z0-9]/g,'_')}">✓ Збережено</span>
+            </div>
+            <div class="card-actions ${aOpen?'show':''}">
+                <button class="btn-card-action btn-call" onclick="event.stopPropagation();location.href='tel:${p.phone}'">📞 Дзвонити</button>
+                <button class="btn-card-action btn-msg" onclick="event.stopPropagation();window.open('https://console.smartsender.com/contacts?project=yura-transportation-131349','_blank')">💬 Писати</button>
+                <button class="btn-card-action btn-map" onclick="event.stopPropagation();openMapModal('${uk}')">🗺️ Карта</button>
+            </div>
+        </div>`;
     });
 
     container.innerHTML = html;
+}
+
+// Збереження інлайн-полів для маршрутних карток
+function inlineRouteSave(uid, field, value) {
+    const p = routePassengers.find(x => x._uid === uid);
+    if (!p) return;
+    p[field] = value;
+
+    // Показуємо індикатор збереження
+    const indId = 'saveInd_' + uid.replace(/[^a-zA-Z0-9]/g, '_');
+    const ind = document.getElementById(indId);
+    if (ind) { ind.classList.add('show'); setTimeout(() => ind.classList.remove('show'), 1500); }
 }
 
 // Фільтр по статусу в маршруті
@@ -3708,50 +3947,49 @@ function filterRouteByStatus(status) {
     renderRoutePassengers();
 }
 
-// Розгортання деталей картки маршруту
-function toggleRouteCardDetails(uid) {
-    const details = document.getElementById('details_' + uid);
-    const card = details?.closest('.lead-card');
-    if (!details || !card) return;
-    
-    const isOpen = details.style.display !== 'none';
-    
-    // Закриваємо всі інші
-    document.querySelectorAll('.card-details').forEach(d => {
-        d.style.display = 'none';
-        d.closest('.lead-card')?.classList.remove('expanded');
-    });
-    
-    // Відкриваємо/закриваємо поточну
-    if (!isOpen) {
-        details.style.display = 'block';
-        card.classList.add('expanded');
-    }
-}
+// Розгортання деталей картки маршруту - використовує основний toggleDetails()
 
 // Оновити кількість в маршрутах (викликається при відкритті dropdown)
 function updateRoutesCounts() {
-    vehicles.forEach(v => {
-        fetch(ROUTE_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({
-                action: 'getRoutePassengers',
-                payload: { vehicleName: v.name }
-            })
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                // Оновлюємо badge в dropdown
-                const badges = document.querySelectorAll(`[data-route-vehicle="${v.id}"] .side-menu-item-count, [data-route-count="${v.id}"]`);
-                badges.forEach(badge => {
-                    badge.textContent = data.stats.total;
+    // Один API виклик замість N окремих
+    fetch(ROUTE_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ action: 'getAvailableRoutes' })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success && data.routes) {
+            for (const route of data.routes) {
+                const count = route.count || 0;
+                const matchedVehicle = vehicles.find(v => {
+                    const clean = v.name.replace(/^А-/i, '');
+                    return v.name === route.vehicle ||
+                        clean === route.vehicle ||
+                        v.name === route.name ||
+                        v.routeSheet === route.name ||
+                        route.name.includes(clean);
                 });
+                if (matchedVehicle) {
+                    const vid = matchedVehicle.id;
+                    const badges = document.querySelectorAll(`[data-route-vehicle="${vid}"] .side-menu-item-count, [data-route-count="${vid}"]`);
+                    badges.forEach(badge => { badge.textContent = count; });
+
+                    const desktopBadge = document.querySelector(`#routesList [data-vehicle="${vid}"] .badge`);
+                    if (desktopBadge) {
+                        desktopBadge.textContent = count;
+                        desktopBadge.style.background = count > 0 ? 'var(--success)' : 'var(--border)';
+                        desktopBadge.style.color = count > 0 ? 'white' : 'var(--text-secondary)';
+                    }
+                    const mobileBadge = document.querySelector(`#mobileRoutesList [data-vehicle="${vid}"] .side-menu-item-count`);
+                    if (mobileBadge) mobileBadge.textContent = count;
+                    const pcBadge = document.querySelector(`#pcRoutesList [data-vehicle="${vid}"] .item-count`);
+                    if (pcBadge) pcBadge.textContent = count;
+                }
             }
-        })
-        .catch(() => {});
-    });
+        }
+    })
+    .catch(() => {});
 }
 
 function updateFilterButtons() {
@@ -3771,7 +4009,7 @@ function updateFilterButtons() {
 }
 
 function toggleDropdown(id) { document.querySelectorAll('.dropdown-menu').forEach(d => { if(d.id !== id) d.classList.remove('show'); }); document.getElementById(id).classList.toggle('show'); if(id === 'dateDropdown') renderCalendarTo('desktopCalendar'); }
-function resetFilters() { filters.date = ''; filters.vehicle = ''; filters.showArchive = false; filters.statusFilter = ''; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); renderCalendars(); updateVehiclesList(); updateAllCounts(); updatePcVehiclesList(); }
+function resetFilters() { filters.date = ''; filters.vehicle = ''; filters.showArchive = false; filters.statusFilter = ''; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; calendarDirection = 'all'; document.querySelectorAll('.cal-direction-select').forEach(s => s.value = 'all'); render(); renderCalendars(); updateVehiclesList(); updateAllCounts(); updatePcVehiclesList(); }
 function setVehicleFilter(id) { 
     filters.vehicle = id; 
     filters.statusFilter = ''; 
@@ -6106,7 +6344,7 @@ function toggleDirectionPopup() {
 function setDirection(dir) {
     filters.direction = dir;
     filters.showNewOnly = false; // Вимикаємо фільтр "Нові"
-    
+
     // Виходимо з режиму маршруту та спеціальних статусів
     filters.statusFilter = '';
     filters.routeVehicle = '';
@@ -6116,28 +6354,25 @@ function setDirection(dir) {
     routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 };
     currentRouteVehicle = null;
     routeStatusFilter = 'all';
-    
+
     document.getElementById('directionPopup')?.classList.remove('show');
-    
+
     // Оновлюємо активні стани
     document.querySelectorAll('.direction-option').forEach(el => {
         el.classList.toggle('active', el.dataset.dir === dir);
     });
-    
+
     // Оновлюємо мобільні
     document.getElementById('mobileDirectionAll')?.classList.toggle('active', dir === 'all');
     document.getElementById('mobileDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
     document.getElementById('mobileDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
     document.getElementById('mobileNewLeads')?.classList.remove('active');
-    
+
     // Оновлюємо PC sidebar
     document.getElementById('pcDirectionAll')?.classList.toggle('active', dir === 'all');
     document.getElementById('pcDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
     document.getElementById('pcDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
     document.getElementById('pcNewLeads')?.classList.remove('active');
-    
-    // Синхронізуємо dropdown в календарі
-    document.querySelectorAll('.cal-direction-select').forEach(s => s.value = dir);
 
     // Оновлюємо label
     const labels = {'all': 'Посилки', 'ua-eu': '🇺🇦→🇪🇺', 'eu-ua': '🇪🇺→🇺🇦'};
@@ -6148,6 +6383,14 @@ function setDirection(dir) {
     renderCalendars();
     updateVehiclesList();
     updateAllCounts();
+}
+
+// Напрямок тільки для календаря — не впливає на картки
+function setCalendarDirection(dir) {
+    calendarDirection = dir;
+    // Синхронізуємо всі календарні селекти
+    document.querySelectorAll('.cal-direction-select').forEach(s => s.value = dir);
+    renderCalendars();
 }
 
 // Показати тільки нові ліди (за останні 24 години)
@@ -6172,9 +6415,6 @@ function showNewLeads() {
     document.getElementById('pcDirectionUaEu')?.classList.remove('active');
     document.getElementById('pcDirectionEuUa')?.classList.remove('active');
     document.getElementById('pcNewLeads')?.classList.add('active');
-
-    // Синхронізуємо dropdown в календарі
-    document.querySelectorAll('.cal-direction-select').forEach(s => s.value = 'all');
 
     const navLabel = document.getElementById('navPackagesLabel');
     if (navLabel) navLabel.textContent = '🆕 Нові';
@@ -6230,8 +6470,8 @@ function openMapLocation(type) {
 // 📦 API для посилок — ЗАМІНІТЬ НА СВІЙ URL ПІСЛЯ ДЕПЛОЯ
 const API_URL = 'https://script.google.com/macros/s/AKfycby35ZXeqMKfdGJbTZW-TqMslq30tM2ju7It_KWJgSV-aEBti6r_3LD_orYnSy3wGc-yYQ/exec';
 
-// API для маршрутів посилок (підключимо пізніше)
-const ROUTE_API_URL = '';
+// 🚐 API для маршрутів посилок (route_api_posylka.gs)
+const ROUTE_API_URL = 'https://script.google.com/macros/s/AKfycbzd7aIwe6AiisrnDlUngC4ZgCe1RvHQs7jpXQbtQCenGYULsjnxvfOtlMCnTThar03eOg/exec';
 
 // Нормалізація дати до формату YYYY-MM-DD
 function normalizeDate(dateStr) {
@@ -6405,10 +6645,11 @@ function updatePackageOnServer(pkg) {
             smsNote: pkg.smsNote || '',
             dateReceive: pkg.dateReceive || '',
             photo: pkg.photo || '',
-            status: pkg.status || ''
+            status: pkg.status || '',
+            vehicle: pkg.vehicle || ''
         }
     };
-    
+
     fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
@@ -6417,7 +6658,7 @@ function updatePackageOnServer(pkg) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            showToast('✅ Збережено');
+            // Тихе збереження - не показуємо тост при кожному оновленні
         } else {
             showToast('❌ ' + data.error);
         }
