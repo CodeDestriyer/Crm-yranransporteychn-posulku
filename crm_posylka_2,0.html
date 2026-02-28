@@ -6343,7 +6343,8 @@ function openMapLocation(type) {
 // 📦 API для посилок — ЗАМІНІТЬ НА СВІЙ URL ПІСЛЯ ДЕПЛОЯ
 const API_URL = 'https://script.google.com/macros/s/AKfycby35ZXeqMKfdGJbTZW-TqMslq30tM2ju7It_KWJgSV-aEBti6r_3LD_orYnSy3wGc-yYQ/exec';
 
-// API для маршрутів посилок (підключимо пізніше)
+// 🚐 API для маршрутів посилок — ВСТАВТЕ URL ПІСЛЯ ДЕПЛОЯ route_api_posylka.gs
+// Деплой: Google Apps Script → Deploy → New deployment → Web app → Execute as Me → Anyone
 const ROUTE_API_URL = '';
 
 // Нормалізація дати до формату YYYY-MM-DD
@@ -6518,10 +6519,11 @@ function updatePackageOnServer(pkg) {
             smsNote: pkg.smsNote || '',
             dateReceive: pkg.dateReceive || '',
             photo: pkg.photo || '',
-            status: pkg.status || ''
+            status: pkg.status || '',
+            vehicle: pkg.vehicle || ''
         }
     };
-    
+
     fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
@@ -6530,7 +6532,7 @@ function updatePackageOnServer(pkg) {
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            showToast('✅ Збережено');
+            // Тихе збереження - не показуємо тост при кожному оновленні
         } else {
             showToast('❌ ' + data.error);
         }
