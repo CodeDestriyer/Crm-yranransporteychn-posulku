@@ -1,0 +1,1458 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer">
+    <meta name="description" content="Yura Transportation Driver App">
+    <title id="pageTitle">Yura Transportation - Driver App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Raleway:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDbSS6XSCJ3MafbrSp-rIX1-x130bwzevo&libraries=routes,places"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Poppins', 'Segoe UI', sans-serif; background: #f5f5f5; min-height: 100vh; }
+        a[href*="botisystem"],
+        a[href*="script.google"],
+        a[href*="driver-app"] {
+            display: none !important;
+        }
+        .screen { display: none; width: 100%; min-height: 100vh; }
+        .screen.active { display: flex; }
+        #loginScreen {
+            flex-direction: column;
+            background: linear-gradient(135deg, #1a3a5e 0%, #0d1f3c 100%);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .login-container { max-width: 400px; width: 100%; }
+        .login-title {
+            text-align: center;
+            color: #ffffff;
+            font-size: 32px;
+            margin-bottom: 5px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            font-family: 'Raleway', sans-serif;
+        }
+        .login-brand {
+            text-align: center;
+            color: #d90d0d;
+            font-size: 11px;
+            margin-bottom: 25px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .login-subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.7);
+            font-size: 12px;
+            margin-top: 8px;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+        .login-form { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 600; color: #1a3a5e; margin-bottom: 8px; font-size: 14px; }
+        .form-group input { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; }
+        .form-group input:focus { outline: none; border-color: #1a3a5e; box-shadow: 0 0 0 3px rgba(26, 58, 94, 0.1); }
+        .btn-login { width: 100%; padding: 12px; margin-top: 20px; background: linear-gradient(135deg, #d90d0d 0%, #a00a0a 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(217, 13, 13, 0.3); }
+        .error-msg { color: #dc3545; font-size: 12px; margin-top: 10px; text-align: center; display: none; }
+        .password-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .password-modal-box {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 380px;
+            overflow: hidden;
+            animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .password-modal-header {
+            background: linear-gradient(135deg, #1a3a5e 0%, #0d1f3c 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 4px solid #d90d0d;
+        }
+        .password-modal-header h2 {
+            font-size: 20px;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .password-modal-body {
+            padding: 24px 20px;
+        }
+        .password-route-name {
+            color: #1a3a5e;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        .password-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s;
+        }
+        .password-input:focus {
+            outline: none;
+            border-color: #1a3a5e;
+            box-shadow: 0 0 0 3px rgba(26, 58, 94, 0.1);
+        }
+        .password-modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 16px 20px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+        .password-btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
+        }
+        .password-btn-cancel {
+            background: #e9ecef;
+            color: #495057;
+        }
+        .password-btn-cancel:hover {
+            background: #dee2e6;
+            transform: translateY(-2px);
+        }
+        .password-btn-submit {
+            background: linear-gradient(135deg, #d90d0d 0%, #a00a0a 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(217, 13, 13, 0.3);
+        }
+        .password-btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(217, 13, 13, 0.4);
+        }
+        #routeScreen {
+            flex-direction: column;
+            background: linear-gradient(135deg, #1a3a1a 0%, #0d2614 100%);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .routes-container { max-width: 600px; width: 100%; }
+        .header-title {
+            text-align: center;
+            color: #ffffff;
+            font-size: 24px;
+            margin-bottom: 6px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            font-family: 'Raleway', sans-serif;
+        }
+        .header-brand {
+            text-align: center;
+            font-size: 10px;
+            color: #d90d0d;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            font-family: 'Poppins', sans-serif;
+        }
+        .header-driver-subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.6);
+            font-size: 11px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        .driver-info { text-align: center; color: white; font-size: 14px; margin-bottom: 25px; padding: 10px; background: rgba(76, 175, 80, 0.2); border-radius: 8px; }
+        .route-section {
+            margin-bottom: 25px;
+        }
+        .route-section-title {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            border-left: 4px solid #d90d0d;
+        }
+        .routes-grid { display: grid; gap: 15px; }
+        .route-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border: 2px solid #1a3a5e;
+            border-radius: 12px;
+            padding: 18px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(26, 58, 94, 0.15);
+        }
+        .route-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(217, 13, 13, 0.2);
+            border-color: #d90d0d;
+        }
+        .route-name {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1a3a5e;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+        .route-type-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .badge-delivery {
+            background: rgba(255, 193, 7, 0.2);
+            color: #f57c00;
+        }
+        .badge-passenger {
+            background: rgba(33, 150, 243, 0.2);
+            color: #1976d2;
+        }
+        #listScreen {
+            flex-direction: column;
+            background: #f5f5f5;
+            padding: 0;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+        .list-header {
+            background: linear-gradient(135deg, #1a3a5e 0%, #0d1f3c 100%);
+            color: white;
+            padding: 14px 12px;
+            border-bottom: 4px solid #d90d0d;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header-title-list { font-size: 16px; font-weight: 700; }
+        .header-subtitle { font-size: 11px; opacity: 0.8; }
+        .btn-back {
+            background: rgba(217, 13, 13, 0.15);
+            color: #d90d0d;
+            border: 2px solid #d90d0d;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+            transition: all 0.2s;
+        }
+        .btn-back:hover {
+            background: #d90d0d;
+            color: white;
+        }
+        .btn-refresh {
+            background: rgba(33, 150, 243, 0.2);
+            color: #2196F3;
+            border: 2px solid #2196F3;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        .btn-refresh:hover { background: #2196F3; color: white; }
+        .filter-bar {
+            display: flex;
+            gap: 2px;
+            margin-top: 4px;
+        }
+        .filter-btn {
+            padding: 2px 1px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 7px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            flex: 1;
+            min-width: 35px;
+            white-space: nowrap;
+            text-align: center;
+            position: relative;
+        }
+        .filter-btn:hover {
+            background: rgba(76, 175, 80, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+        .filter-btn.active {
+            background: rgba(255, 255, 255, 0.25);
+            color: white;
+            border-color: white;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+        }
+        .filter-count {
+            display: inline;
+            font-size: 9px;
+            font-weight: 700;
+            margin-left: 1px;
+        }
+        .filter-label {
+            display: inline;
+            font-size: 6px;
+            opacity: 0.85;
+        }
+        .filter-btn.has-new::after {
+            content: '\01F6A8';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 16px;
+            animation: blink 1s infinite;
+            z-index: 10;
+        }
+        @keyframes blink { 0%, 50%, 100% { opacity: 1; } 25%, 75% { opacity: 0.5; } }
+        .deliveries-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        .delivery-card {
+            background: white;
+            border-left: 8px solid #ffc107;
+            border-radius: 10px;
+            padding: 8px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .delivery-card.status-pending {
+            border-left-color: #FFB74D;
+            background: linear-gradient(135deg, #FFF8E1 0%, #FFECB3 100%);
+            box-shadow: 0 4px 15px rgba(255, 183, 77, 0.2);
+        }
+        .delivery-card.status-in-progress {
+            border-left-color: #42A5F5;
+            background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
+            box-shadow: 0 4px 15px rgba(66, 165, 245, 0.2);
+        }
+        .delivery-card.status-completed {
+            border-left-color: #66BB6A;
+            background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+            box-shadow: 0 4px 15px rgba(102, 187, 106, 0.2);
+        }
+        .delivery-card.status-cancelled {
+            border-left-color: #EF5350;
+            background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+            box-shadow: 0 4px 15px rgba(239, 83, 80, 0.2);
+        }
+        .delivery-card.is-new { border: 2px solid #ff6b35; box-shadow: 0 0 15px rgba(255, 107, 53, 0.5); }
+        .delivery-card:hover {
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+        }
+        .card-row {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            margin-bottom: 6px;
+        }
+        .card-row:last-child { margin-bottom: 0; }
+        .delivery-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #4CAF50 0%, #2d5016 100%);
+            color: white;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 12px;
+            flex-shrink: 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        .delivery-card.status-in-progress .delivery-number {
+            background: linear-gradient(135deg, #2196F3 0%, #1565C0 100%);
+        }
+        .delivery-card.status-completed .delivery-number {
+            background: linear-gradient(135deg, #4CAF50 0%, #2d5016 100%);
+        }
+        .delivery-card.status-cancelled .delivery-number {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        .delivery-number.new::after {
+            content: '\01F6A8';
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            font-size: 16px;
+        }
+        .card-main-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .card-address {
+            font-weight: 600;
+            color: #2d5016;
+            font-size: 12px;
+            word-break: break-word;
+            margin-bottom: 2px;
+        }
+        .card-details-line {
+            font-size: 11px;
+            color: #555;
+            margin-bottom: 2px;
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .detail-badge {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-size: 9px;
+            font-weight: 600;
+            color: #2d5016;
+        }
+        .card-phone {
+            color: #4CAF50;
+            font-weight: 600;
+        }
+        .card-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 5px;
+            margin-top: 8px;
+        }
+        .btn-small-card {
+            padding: 5px 8px;
+            border: 1px solid #D0D0D0;
+            border-radius: 6px;
+            font-size: 9px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+            background: linear-gradient(135deg, #F5F5F5 0%, #ECECEC 100%);
+            color: #555;
+        }
+        .btn-small-card:hover {
+            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            background: linear-gradient(135deg, #EFEFEF 0%, #E5E5E5 100%);
+        }
+        .status-buttons-card {
+            display: flex;
+            gap: 2px;
+            margin-top: 5px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+        .status-btn-card {
+            padding: 2px 1px;
+            border: 2px solid #e0e0e0;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: all 0.3s ease;
+            background: white;
+            flex: 1;
+            min-width: 38px;
+            white-space: nowrap;
+            text-align: center;
+        }
+        .status-in-progress-btn {
+            color: #0066cc;
+            border-color: #0066cc;
+        }
+        .status-in-progress-btn:hover { background: rgba(0, 102, 204, 0.1); }
+        .status-completed-btn {
+            color: #28a745;
+            border-color: #28a745;
+        }
+        .status-completed-btn:hover { background: rgba(40, 167, 69, 0.1); }
+        .status-cancelled-btn {
+            color: #dc3545;
+            border-color: #dc3545;
+        }
+        .status-cancelled-btn:hover { background: rgba(220, 53, 69, 0.1); }
+        .status-undo-btn {
+            color: #9c27b0;
+            border-color: #9c27b0;
+        }
+        .status-undo-btn:hover:not(:disabled) { background: rgba(156, 39, 176, 0.1); }
+        .status-undo-btn:disabled {
+            color: #ccc;
+            border-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.5;
+        }
+        .card-expandable {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 2px solid #e0e0e0;
+        }
+        .card-expandable.show {
+            display: block;
+        }
+        .detail-section {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 3px solid #4CAF50;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+        .detail-label {
+            font-size: 9px;
+            color: #2d5016;
+            font-weight: 700;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        .detail-value {
+            font-size: 12px;
+            color: #333;
+            line-height: 1.4;
+            word-break: break-word;
+        }
+        .detail-photo {
+            width: 100%;
+            max-height: 150px;
+            border-radius: 6px;
+            margin-top: 6px;
+        }
+        .cancel-reason {
+            display: none;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(220, 53, 69, 0.1);
+            border-left: 3px solid #dc3545;
+            border-radius: 6px;
+        }
+        .cancel-reason.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .cancel-reason textarea {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #dc3545;
+            border-radius: 6px;
+            font-size: 11px;
+            font-family: Arial;
+            resize: vertical;
+            min-height: 70px;
+        }
+        .btn-submit-cancel {
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 11px;
+        }
+        .btn-submit-cancel:hover {
+            background: #c82333;
+        }
+        .loading { text-align: center; padding: 40px; color: #2d5016; }
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: none;
+            z-index: 3000;
+            max-width: 280px;
+            font-size: 12px;
+        }
+        .toast.show { display: block; animation: slideInUp 0.3s ease-out; }
+        @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @media (max-width: 768px) {
+            .filter-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="loginScreen" class="screen active">
+        <div class="login-container">
+            <div class="login-title">YURA TRANSPORTATION</div>
+            <div class="login-brand">DRIVER PANEL</div>
+            <div class="login-subtitle">BOTI_DRIVER</div>
+            <div class="login-form">
+                <div class="form-group">
+                    <label>&#128100; Твоє ім'я</label>
+                    <input type="text" id="driverNameInput" placeholder="Введи своє ім'я">
+                </div>
+                <button class="btn-login" id="loginButton">Увійти</button>
+                <div class="error-msg" id="errorMsg"></div>
+            </div>
+        </div>
+    </div>
+    <div id="routeScreen" class="screen">
+        <div class="routes-container">
+            <div class="header-title">YURA TRANSPORTATION</div>
+            <div class="header-brand">DRIVER APP</div>
+            <div class="header-driver-subtitle">BOTI_DRIVER</div>
+            <div class="driver-info" id="driverInfoDisplay">&#128100; Водій: -</div>
+            <div class="route-section">
+                <div class="route-section-title">&#128230; ПОСИЛКИ</div>
+                <div class="routes-grid">
+                    <div class="route-card" onclick="selectRoute('Братислава марш.', '1234', 'delivery')">
+                        <div class="route-name">Братислава</div>
+                        <span class="route-type-badge badge-delivery">ПОСИЛКИ</span>
+                    </div>
+                    <div class="route-card" onclick="selectRoute('Нітра марш.', '12345', 'delivery')">
+                        <div class="route-name">Нітра</div>
+                        <span class="route-type-badge badge-delivery">ПОСИЛКИ</span>
+                    </div>
+                    <div class="route-card" onclick="selectRoute('Словаччина марш.', '123456', 'delivery')">
+                        <div class="route-name">Словаччина</div>
+                        <span class="route-type-badge badge-delivery">ПОСИЛКИ</span>
+                    </div>
+                    <div class="route-card" onclick="selectRoute('Кошице+прешов марш.', '1234567', 'delivery')">
+                        <div class="route-name">Кошице + Прешов</div>
+                        <span class="route-type-badge badge-delivery">ПОСИЛКИ</span>
+                    </div>
+                </div>
+            </div>
+            <div class="route-section">
+                <div class="route-section-title">&#128101; ПАСАЖИРИ <button onclick="loadPassengerRoutes()" style="background:none;border:none;cursor:pointer;font-size:14px;">&#128260;</button></div>
+                <div class="routes-grid" id="passengerRoutesGrid">
+                    <div style="text-align:center;color:rgba(255,255,255,0.7);padding:20px;">Завантаження...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="listScreen" class="screen">
+        <div class="list-header">
+            <div class="header-top">
+                <div>
+                    <div class="header-title-list" id="listHeaderIcon">&#128230; Посилки</div>
+                    <div class="header-subtitle" id="routeNameDisplay">-</div>
+                </div>
+                <div style="display: flex; gap: 6px;">
+                    <button class="btn-refresh" onclick="forceLoadDeliveries()">&#128260; Оновити</button>
+                    <button class="btn-back" onclick="goBack()">&#8592; Назад</button>
+                </div>
+            </div>
+            <div class="filter-bar">
+                <button class="filter-btn active" id="filterAll" onclick="filterByStatus('all')">
+                    <span class="filter-label">УСЬОГО</span>
+                    <span class="filter-count" id="countAll">0</span>
+                </button>
+                <button class="filter-btn" id="filterProgress" onclick="filterByStatus('in-progress')">
+                    <span class="filter-label">&#128260; В ПРОЦЕСІ</span>
+                    <span class="filter-count" id="countProgress">0</span>
+                </button>
+                <button class="filter-btn" id="filterCompleted" onclick="filterByStatus('completed')">
+                    <span class="filter-label">&#9989; ГОТОВО</span>
+                    <span class="filter-count" id="countCompleted">0</span>
+                </button>
+                <button class="filter-btn" id="filterCancelled" onclick="filterByStatus('cancelled')">
+                    <span class="filter-label">&#10060; СКАС.</span>
+                    <span class="filter-count" id="countCancelled">0</span>
+                </button>
+            </div>
+        </div>
+        <div class="deliveries-container" id="deliveriesList">
+            <div class="loading"><div class="spinner"></div><p>Завантаження...</p></div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+        const CONFIG = {
+            COMPANY_NAME: 'Юра Транспортейшн',
+            DELIVERY_SPREADSHEET_ID: '1Pd3nv3fbwZ_0YSzdG4cda-q52BQT57E0hDe7eQej6z8',
+            DELIVERY_API_URL: 'https://script.google.com/macros/s/AKfycbzd7aIwe6AiisrnDlUngC4ZgCe1RvHQs7jpXQbtQCenGYULsjnxvfOtlMCnTThar03eOg/exec',
+            PASSENGER_API_URL: 'https://script.google.com/macros/s/AKfycbwcota7jx-I9FTaRH3KmMqK3WX18-Fauy8uJfKxf0tMiShWCqSJoexobbQCIxGStXHN/exec',
+            ROUTES_API_URL: 'https://script.google.com/macros/s/AKfycbwcota7jx-I9FTaRH3KmMqK3WX18-Fauy8uJfKxf0tMiShWCqSJoexobbQCIxGStXHN/exec',
+            GOOGLE_MAPS_KEY: 'AIzaSyDbSS6XSCJ3MafbrSp-rIX1-x130bwzevo',
+            DELIVERY_ROUTES: [
+                { name: 'Братислава марш.', password: '1234' },
+                { name: 'Нітра марш.', password: '12345' },
+                { name: 'Словаччина марш.', password: '123456' },
+                { name: 'Кошице+прешов марш.', password: '1234567' }
+            ]
+        };
+        let currentSheet = '';
+        let currentRouteType = 'delivery';
+        let deliveries = [];
+        let driverName = '';
+        let deliveryStatuses = {};
+        let newDeliveries = [];
+        let currentFilter = 'all';
+        let lastUpdateTime = 0;
+        let isFirstLoad = true;
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+        function saveStatuses() {
+            const key = 'driverStatuses_' + currentSheet;
+            localStorage.setItem(key, JSON.stringify(deliveryStatuses));
+        }
+        function loadStatuses() {
+            const key = 'driverStatuses_' + currentSheet;
+            const saved = localStorage.getItem(key);
+            if (saved) {
+                try {
+                    deliveryStatuses = JSON.parse(saved);
+                } catch (e) {
+                    deliveryStatuses = {};
+                }
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('pageTitle').textContent = CONFIG.COMPANY_NAME + ' - Driver Panel';
+            document.querySelector('.login-brand').textContent = CONFIG.COMPANY_NAME.toUpperCase();
+            var loginButton = document.getElementById('loginButton');
+            if (loginButton) {
+                loginButton.addEventListener('click', handleLogin);
+            }
+            var driverNameInput = document.getElementById('driverNameInput');
+            if (driverNameInput) {
+                driverNameInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') handleLogin();
+                });
+            }
+            var savedName = localStorage.getItem('driverName');
+            if (savedName && driverNameInput) {
+                driverNameInput.value = savedName;
+            }
+            loadPassengerRoutes();
+        });
+        async function loadPassengerRoutes() {
+            var grid = document.getElementById('passengerRoutesGrid');
+            if (!grid) return;
+            grid.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.7);padding:20px;">&#9203; Завантаження...</div>';
+            try {
+                var response = await fetch(CONFIG.ROUTES_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({ action: 'getAvailableRoutes' })
+                });
+                var data = await response.json();
+                if (data.success && data.routes && data.routes.length > 0) {
+                    var passengerRoutes = data.routes;
+                    if (passengerRoutes.length === 0) {
+                        grid.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.7);padding:20px;">Немає маршрутів</div>';
+                        return;
+                    }
+                    grid.innerHTML = passengerRoutes.map(function(route) {
+                        return '<div class="route-card" onclick="selectRoute(\'' + escapeHtml(route.name) + '\', \'\', \'passenger\')">' +
+                            '<div class="route-name">' + escapeHtml(route.name) + '</div>' +
+                            '<span class="route-type-badge badge-passenger">ПАСАЖИРИ (' + route.count + ')</span>' +
+                        '</div>';
+                    }).join('');
+                } else {
+                    grid.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.7);padding:20px;">Немає маршрутів</div>';
+                }
+            } catch (error) {
+                console.error('Помилка завантаження маршрутів:', error);
+                grid.innerHTML = '<div style="text-align:center;color:#ff6b6b;padding:20px;">&#10060; Помилка завантаження</div>';
+            }
+        }
+        function showToast(message) {
+            var toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(function() { toast.classList.remove('show'); }, 3000);
+        }
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+            document.getElementById(screenId).classList.add('active');
+        }
+        function handleLogin() {
+            var name = document.getElementById('driverNameInput').value.trim();
+            if (!name) {
+                showErrorMsg('Введи своє ім\'я');
+                return;
+            }
+            driverName = name;
+            localStorage.setItem('driverName', name);
+            document.getElementById('driverInfoDisplay').textContent = '&#128100; Водій: ' + escapeHtml(name);
+            showScreen('routeScreen');
+            document.getElementById('errorMsg').style.display = 'none';
+            document.getElementById('driverNameInput').value = '';
+            showToast('Добре, ' + name + '!');
+        }
+        function showErrorMsg(msg) {
+            var errorMsg = document.getElementById('errorMsg');
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+        }
+        function selectRoute(route, correctPassword, routeType) {
+            if (routeType === 'passenger') {
+                openRoute(route, routeType);
+            } else {
+                showPasswordModal(route, correctPassword, routeType);
+            }
+        }
+        function openRoute(route, routeType) {
+            var list = document.getElementById('deliveriesList');
+            list.innerHTML = '<div class="loading"><div class="spinner"></div><p>Завантаження...</p></div>';
+            deliveries = [];
+            currentSheet = route;
+            currentRouteType = routeType;
+            deliveryStatuses = {};
+            newDeliveries = [];
+            currentFilter = 'all';
+            lastUpdateTime = 0;
+            isFirstLoad = true;
+            loadStatuses();
+            document.querySelectorAll('.filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
+            document.getElementById('filterAll').classList.add('active');
+            var headerIcon = document.getElementById('listHeaderIcon');
+            headerIcon.textContent = routeType === 'passenger' ? '&#128101; Пасажири' : '&#128230; Посилки';
+            showScreen('listScreen');
+            document.getElementById('routeNameDisplay').textContent = route;
+            showToast('Відкрито ' + route);
+            loadDeliveries();
+        }
+        function showPasswordModal(route, correctPassword, routeType) {
+            var modal = document.createElement('div');
+            modal.className = 'password-modal-overlay';
+            modal.id = 'passwordModal';
+            modal.innerHTML = '<div class="password-modal-box">' +
+                '<div class="password-modal-header"><h2>Введи пароль</h2></div>' +
+                '<div class="password-modal-body">' +
+                    '<p class="password-route-name">' + escapeHtml(route) + '</p>' +
+                    '<input type="password" id="passwordInput" class="password-input" placeholder="Пароль" autocomplete="off">' +
+                '</div>' +
+                '<div class="password-modal-footer">' +
+                    '<button class="password-btn password-btn-cancel" onclick="closePasswordModal()">Скасувати</button>' +
+                    '<button class="password-btn password-btn-submit" id="submitPasswordBtn">Вхід</button>' +
+                '</div>' +
+            '</div>';
+            document.body.appendChild(modal);
+            var passwordInput = document.getElementById('passwordInput');
+            var submitBtn = document.getElementById('submitPasswordBtn');
+            passwordInput.focus();
+            submitBtn.onclick = function() {
+                submitPassword(route, correctPassword, routeType);
+            };
+            passwordInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') submitPassword(route, correctPassword, routeType);
+            });
+        }
+        function closePasswordModal() {
+            var modal = document.getElementById('passwordModal');
+            if (modal) modal.remove();
+        }
+        function submitPassword(route, correctPassword, routeType) {
+            var passwordInput = document.getElementById('passwordInput');
+            var password = passwordInput.value.trim();
+            if (!password) {
+                showToast('Введи пароль');
+                return;
+            }
+            if (password !== correctPassword) {
+                showToast('Неправильний пароль!');
+                return;
+            }
+            closePasswordModal();
+            openRoute(route, routeType);
+        }
+        function goBack() {
+            showScreen('routeScreen');
+        }
+        async function loadDeliveries() {
+            var now = Date.now();
+            if (deliveries.length > 0 && (now - lastUpdateTime) < 30000) {
+                renderDeliveries();
+                updateStats();
+                showToast('Дані з кешу');
+                return;
+            }
+            await fetchDeliveries();
+        }
+        async function forceLoadDeliveries() {
+            lastUpdateTime = 0;
+            await fetchDeliveries();
+        }
+        async function fetchDeliveries() {
+            var list = document.getElementById('deliveriesList');
+            list.innerHTML = '<div class="loading"><div class="spinner"></div><p>Завантаження...</p></div>';
+            try {
+                var url, response, data, items;
+                if (currentRouteType === 'delivery') {
+                    url = CONFIG.DELIVERY_API_URL + '?action=getDeliveries&sheet=' + encodeURIComponent(currentSheet);
+                    response = await fetch(url);
+                    data = await response.json();
+                    if (data.error) {
+                        list.innerHTML = '<div class="loading">&#10060; Помилка: ' + escapeHtml(data.error) + '</div>';
+                        return;
+                    }
+                    items = data.deliveries;
+                } else {
+                    response = await fetch(CONFIG.PASSENGER_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify({
+                            action: 'getRoutePassengers',
+                            payload: { sheetName: currentSheet }
+                        })
+                    });
+                    data = await response.json();
+                    if (!data.success) {
+                        list.innerHTML = '<div class="loading">&#10060; Помилка: ' + escapeHtml(data.error || 'Невідома помилка') + '</div>';
+                        return;
+                    }
+                    items = data.passengers;
+                }
+                console.log('Items loaded:', items ? items.length : 0);
+                if (!items || items.length === 0) {
+                    var itemType = currentRouteType === 'delivery' ? 'Посилок' : 'Пасажирів';
+                    list.innerHTML = '<div class="loading">&#10060; ' + itemType + ' не знайдено</div>';
+                    return;
+                }
+                var oldIds = deliveries.map(function(d) {
+                    return currentRouteType === 'delivery' ? d.internalNumber : d.rowNum;
+                });
+                if (isFirstLoad) {
+                    newDeliveries = [];
+                    isFirstLoad = false;
+                } else {
+                    newDeliveries = items.filter(function(d) {
+                        var id = currentRouteType === 'delivery' ? d.internalNumber : d.rowNum;
+                        return !oldIds.includes(id);
+                    }).map(function(d) {
+                        return currentRouteType === 'delivery' ? d.internalNumber : d.rowNum;
+                    });
+                }
+                deliveries = items;
+                deliveries.forEach(function(item) {
+                    var itemId = currentRouteType === 'delivery' ? item.internalNumber : item.rowNum;
+                    var apiStatus = currentRouteType === 'delivery' ? item.status : item.driverStatus;
+                    if (apiStatus && apiStatus !== 'pending') {
+                        deliveryStatuses[itemId] = apiStatus;
+                    }
+                });
+                saveStatuses();
+                lastUpdateTime = Date.now();
+                renderDeliveries();
+                updateStats();
+                showToast('Завантажено ' + deliveries.length + ' записів');
+            } catch (error) {
+                console.error('Помилка завантаження:', error);
+                list.innerHTML = '<div class="loading">&#10060; Помилка: ' + escapeHtml(error.message) + '</div>';
+            }
+        }
+        function updateStats() {
+            var total = deliveries.length;
+            var inProgress = 0, completed = 0, cancelled = 0;
+            deliveries.forEach(function(item) {
+                var itemId = currentRouteType === 'delivery' ? item.internalNumber : item.rowNum;
+                var status = deliveryStatuses[itemId] || 'pending';
+                if (status === 'in-progress') inProgress++;
+                else if (status === 'completed') completed++;
+                else if (status === 'cancelled') cancelled++;
+            });
+            document.getElementById('countAll').textContent = total;
+            document.getElementById('countProgress').textContent = inProgress;
+            document.getElementById('countCompleted').textContent = completed;
+            document.getElementById('countCancelled').textContent = cancelled;
+            if (newDeliveries.length > 0) {
+                document.getElementById('filterAll').classList.add('has-new');
+            } else {
+                document.getElementById('filterAll').classList.remove('has-new');
+            }
+        }
+        function filterByStatus(status) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
+            if (status === 'all') document.getElementById('filterAll').classList.add('active');
+            else if (status === 'in-progress') document.getElementById('filterProgress').classList.add('active');
+            else if (status === 'completed') document.getElementById('filterCompleted').classList.add('active');
+            else if (status === 'cancelled') document.getElementById('filterCancelled').classList.add('active');
+            renderDeliveries();
+        }
+        function renderDeliveries() {
+            if (currentRouteType === 'delivery') {
+                renderDeliveryCards();
+            } else {
+                renderPassengerCards();
+            }
+        }
+        function renderDeliveryCards() {
+            var list = document.getElementById('deliveriesList');
+            list.innerHTML = '';
+            var filteredDeliveries = deliveries.filter(function(delivery) {
+                var status = deliveryStatuses[delivery.internalNumber] || 'pending';
+                if (currentFilter === 'all') return true;
+                return status === currentFilter;
+            });
+            if (filteredDeliveries.length === 0) {
+                list.innerHTML = '<div class="loading">&#128230; Нічого не знайдено</div>';
+                return;
+            }
+            filteredDeliveries.forEach(function(delivery) {
+                var globalIndex = deliveries.findIndex(function(d) { return d.internalNumber === delivery.internalNumber; });
+                var status = deliveryStatuses[delivery.internalNumber] || 'pending';
+                var statusIcon = status === 'completed' ? '&#9989;' : status === 'cancelled' ? '&#10060;' : status === 'in-progress' ? '&#128260;' : '&#9203;';
+                var isNew = newDeliveries.includes(delivery.internalNumber);
+                var card = document.createElement('div');
+                card.className = 'delivery-card status-' + status;
+                if (isNew) card.classList.add('is-new');
+                var canUndo = status === 'completed' || status === 'cancelled';
+                var safeId = escapeHtml(delivery.internalNumber);
+                var safePhone = escapeHtml(delivery.phone);
+                var safeAddress = escapeHtml(delivery.address);
+                card.innerHTML = '<div class="card-row">' +
+                        '<div class="delivery-number ' + (isNew ? 'new' : '') + '">' + (globalIndex + 1) + '</div>' +
+                        '<div class="card-main-info">' +
+                            '<div class="card-address">#' + safeId + ' - ' + safeAddress + '</div>' +
+                        '</div>' +
+                        '<span style="font-size: 16px; font-weight: bold;">' + statusIcon + '</span>' +
+                    '</div>' +
+                    '<div class="card-details-line">' +
+                        (delivery.ttn ? '<span class="detail-badge" style="font-weight:800;color:#C62828;">ТТН: <strong>' + escapeHtml(delivery.ttn) + '</strong></span>' : '') +
+                        (delivery.timing ? '<span class="detail-badge">&#9200; ' + escapeHtml(delivery.timing) + '</span>' : '') +
+                    '</div>' +
+                    '<div class="card-details-line">' +
+                        '<span class="card-phone" style="font-weight:700;">&#128222; <strong>' + safePhone + '</strong></span>' +
+                        (delivery.price ? '<span class="detail-badge" style="font-weight:800;color:#2E7D32;">&#128176; <strong>&#8364;' + escapeHtml(delivery.price) + '</strong></span>' : '') +
+                        (delivery.payment ? '<span class="detail-badge" style="font-weight:700;"><strong>' + escapeHtml(delivery.payment) + '</strong></span>' : '') +
+                        (delivery.paymentStatus ? '<span class="detail-badge" style="font-weight:700;"><strong>' + escapeHtml(delivery.paymentStatus) + '</strong></span>' : '') +
+                    '</div>' +
+                    '<div class="card-buttons">' +
+                        '<button class="btn-small-card" onclick="callNumber(\'' + safePhone + '\')">&#9742; Дзвонити</button>' +
+                        '<button class="btn-small-card" onclick="navigateTo(' + delivery.coords.lat + ',' + delivery.coords.lng + ')">&#128506; Карти</button>' +
+                        '<button class="btn-small-card" onclick="toggleExpand(this.closest(\'.delivery-card\'),\'' + safeId + '\')">&#128194; Деталі</button>' +
+                    '</div>' +
+                    '<div class="status-buttons-card">' +
+                        '<button class="status-btn-card status-in-progress-btn" onclick="setDeliveryStatus(\'' + safeId + '\',\'in-progress\')">&#128260;</button>' +
+                        '<button class="status-btn-card status-completed-btn" onclick="setDeliveryStatus(\'' + safeId + '\',\'completed\')">&#9989;</button>' +
+                        '<button class="status-btn-card status-cancelled-btn" onclick="showCancelReason(\'' + safeId + '\')">&#10060;</button>' +
+                        '<button class="status-btn-card status-undo-btn" onclick="undoStatus(\'' + safeId + '\')" ' + (canUndo ? '' : 'disabled') + '>&#8617;</button>' +
+                    '</div>' +
+                    '<div class="card-expandable" id="expand-' + safeId + '">' +
+                        renderExpandedInfoDelivery(delivery) +
+                    '</div>' +
+                    '<div class="cancel-reason" id="cancel-' + safeId + '">' +
+                        '<textarea id="reason-' + safeId + '" placeholder="Причина скасування..."></textarea>' +
+                        '<button class="btn-submit-cancel" onclick="submitCancellation(\'' + safeId + '\')">Підтвердити скасування</button>' +
+                    '</div>';
+                list.appendChild(card);
+            });
+        }
+        function renderExpandedInfoDelivery(delivery) {
+            var html = '<div class="detail-section"><div class="detail-label">&#128100; ПІБ</div><div class="detail-value">' + escapeHtml(delivery.name || 'N/A') + '</div></div>' +
+                '<div class="detail-section"><div class="detail-label">&#128290; Номер / ІД</div><div class="detail-value">' + escapeHtml(delivery.internalNumber) + (delivery.id ? ' / ' + escapeHtml(delivery.id) : '') + '</div></div>' +
+                '<div class="detail-section"><div class="detail-label">&#128196; ТТН</div><div class="detail-value">' + escapeHtml(delivery.ttn || 'N/A') + '</div></div>' +
+                '<div class="detail-section"><div class="detail-label">&#9878; Вага</div><div class="detail-value">' + escapeHtml(delivery.weight || 'N/A') + '</div></div>';
+            if (delivery.note && String(delivery.note).trim()) {
+                html += '<div class="detail-section"><div class="detail-label">&#128221; Примітка</div><div class="detail-value">' + escapeHtml(delivery.note) + '</div></div>';
+            }
+            if (delivery.photo && String(delivery.photo).trim() && (delivery.photo.startsWith('http://') || delivery.photo.startsWith('https://'))) {
+                html += '<div class="detail-section"><div class="detail-label">&#128247; Фото</div>' +
+                    '<img src="' + escapeHtml(delivery.photo) + '" alt="Фото" class="detail-photo" onerror="this.style.display=\'none\'">' +
+                '</div>';
+            }
+            return html;
+        }
+        function renderPassengerCards() {
+            var list = document.getElementById('deliveriesList');
+            list.innerHTML = '';
+            var filteredPassengers = deliveries.filter(function(passenger) {
+                var status = deliveryStatuses[passenger.rowNum] || 'pending';
+                if (currentFilter === 'all') return true;
+                return status === currentFilter;
+            });
+            if (filteredPassengers.length === 0) {
+                list.innerHTML = '<div class="loading">&#128101; Нічого не знайдено</div>';
+                return;
+            }
+            filteredPassengers.forEach(function(passenger, index) {
+                var uniqueId = passenger.rowNum;
+                var status = deliveryStatuses[uniqueId] || 'pending';
+                var statusIcon = status === 'completed' ? '&#9989;' : status === 'cancelled' ? '&#10060;' : status === 'in-progress' ? '&#128260;' : '&#9203;';
+                var isNew = newDeliveries.includes(uniqueId);
+                var card = document.createElement('div');
+                card.className = 'delivery-card status-' + status;
+                if (isNew) card.classList.add('is-new');
+                var canUndo = status === 'completed' || status === 'cancelled';
+                var safeName = escapeHtml(passenger.name);
+                var safeFrom = escapeHtml(passenger.from);
+                var safeTo = escapeHtml(passenger.to);
+                var safePhone = escapeHtml(passenger.phone);
+                var safeId = escapeHtml(passenger.id);
+                card.innerHTML = '<div class="card-row">' +
+                        '<div class="delivery-number ' + (isNew ? 'new' : '') + '">' + (index + 1) + '</div>' +
+                        '<div class="card-main-info">' +
+                            '<div class="card-address">' + safeName + '</div>' +
+                            '<div style="font-size:11px;color:#666;margin-top:2px;">&#128663; ' + safeFrom + ' &#8594; ' + safeTo + '</div>' +
+                        '</div>' +
+                        '<span style="font-size:16px;font-weight:bold;">' + statusIcon + '</span>' +
+                    '</div>' +
+                    '<div class="card-details-line">' +
+                        (passenger.date ? '<span class="detail-badge">&#128197; ' + escapeHtml(passenger.date) + '</span>' : '') +
+                        (passenger.timing ? '<span class="detail-badge">&#9200; ' + escapeHtml(passenger.timing) + '</span>' : '') +
+                        (passenger.seats ? '<span class="detail-badge">&#128101; ' + passenger.seats + ' місць</span>' : '') +
+                    '</div>' +
+                    '<div class="card-details-line">' +
+                        '<span class="card-phone" style="font-weight:700;">&#128222; <strong>' + safePhone + '</strong></span>' +
+                        (passenger.payment ? '<span class="detail-badge" style="font-weight:800;color:#2E7D32;">&#128176; <strong>&#8364;' + escapeHtml(passenger.payment) + '</strong></span>' : '') +
+                    '</div>' +
+                    '<div class="card-buttons">' +
+                        '<button class="btn-small-card" onclick="callNumber(\'' + safePhone + '\')">&#9742; Дзвонити</button>' +
+                        '<button class="btn-small-card" onclick="navigateToAddress(\'' + safeFrom.replace(/'/g, "\\'") + '\')">&#128663; Відправка</button>' +
+                        '<button class="btn-small-card" onclick="navigateToAddress(\'' + safeTo.replace(/'/g, "\\'") + '\')">&#127937; Прибуття</button>' +
+                    '</div>' +
+                    '<div class="card-buttons" style="grid-template-columns:1fr;margin-top:5px;">' +
+                        '<button class="btn-small-card" onclick="toggleExpand(this.closest(\'.delivery-card\'),\'' + uniqueId + '\')">&#128194; Деталі</button>' +
+                    '</div>' +
+                    '<div class="status-buttons-card">' +
+                        '<button class="status-btn-card status-in-progress-btn" onclick="setPassengerStatus(' + uniqueId + ',\'in-progress\')">&#128260;</button>' +
+                        '<button class="status-btn-card status-completed-btn" onclick="setPassengerStatus(' + uniqueId + ',\'completed\')">&#9989;</button>' +
+                        '<button class="status-btn-card status-cancelled-btn" onclick="showCancelReason(\'' + uniqueId + '\')">&#10060;</button>' +
+                        '<button class="status-btn-card status-undo-btn" onclick="undoStatusPassenger(' + uniqueId + ')" ' + (canUndo ? '' : 'disabled') + '>&#8617;</button>' +
+                    '</div>' +
+                    '<div class="card-expandable" id="expand-' + uniqueId + '">' +
+                        renderExpandedInfoPassenger(passenger) +
+                    '</div>' +
+                    '<div class="cancel-reason" id="cancel-' + uniqueId + '">' +
+                        '<textarea id="reason-' + uniqueId + '" placeholder="Причина скасування..."></textarea>' +
+                        '<button class="btn-submit-cancel" onclick="submitCancellationPassenger(' + uniqueId + ')">Підтвердити скасування</button>' +
+                    '</div>';
+                list.appendChild(card);
+            });
+        }
+        function renderExpandedInfoPassenger(passenger) {
+            return '<div class="detail-section"><div class="detail-label">&#128100; ПІБ</div><div class="detail-value">' + escapeHtml(passenger.name || 'N/A') + '</div></div>' +
+                '<div class="detail-section"><div class="detail-label">&#128290; ІД</div><div class="detail-value">' + escapeHtml(passenger.id || 'N/A') + '</div></div>' +
+                '<div class="detail-section"><div class="detail-label">&#128197; Дата виїзду</div><div class="detail-value">' + escapeHtml(passenger.date || 'N/A') + '</div></div>' +
+                '<div class="detail-section"><div class="detail-label">&#128205; Маршрут</div><div class="detail-value">' + escapeHtml(passenger.from) + ' &#8594; ' + escapeHtml(passenger.to) + '</div></div>' +
+                '<div class="detail-section"><div class="detail-label">&#128101; Місць</div><div class="detail-value">' + (passenger.seats || 'N/A') + '</div></div>' +
+                '<div class="detail-section"><div class="detail-label">&#9878; Вага</div><div class="detail-value">' + escapeHtml(passenger.weight || 'N/A') + '</div></div>' +
+                '<div class="detail-section"><div class="detail-label">&#128663; Автомобіль</div><div class="detail-value">' + escapeHtml(passenger.vehicle || 'N/A') + '</div></div>' +
+                (passenger.note && String(passenger.note).trim() ? '<div class="detail-section"><div class="detail-label">&#128221; Примітка</div><div class="detail-value">' + escapeHtml(passenger.note) + '</div></div>' : '');
+        }
+        function toggleExpand(cardElement, itemId) {
+            var expandable = document.getElementById('expand-' + itemId);
+            if (expandable) expandable.classList.toggle('show');
+        }
+        function navigateTo(lat, lng) {
+            window.open('https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng + '&travelmode=driving', '_blank');
+        }
+        function navigateToAddress(address) {
+            window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address) + '&travelmode=driving', '_blank');
+        }
+        function callNumber(phone) {
+            window.location.href = 'tel:' + phone;
+        }
+        function showCancelReason(itemId) {
+            var expandBlock = document.getElementById('expand-' + itemId);
+            if (expandBlock) expandBlock.classList.add('show');
+            var cancelBlock = document.getElementById('cancel-' + itemId);
+            if (cancelBlock) {
+                cancelBlock.classList.add('show');
+                setTimeout(function() {
+                    var textarea = document.getElementById('reason-' + itemId);
+                    if (textarea) textarea.focus();
+                }, 100);
+            }
+        }
+        function setDeliveryStatus(deliveryId, status) {
+            deliveryStatuses[deliveryId] = status;
+            saveStatuses();
+            renderDeliveries();
+            updateStats();
+            var delivery = deliveries.find(function(d) { return d.internalNumber === deliveryId; });
+            if (!delivery) return;
+            var logData = {
+                date: new Date().toLocaleDateString('uk-UA'),
+                time: new Date().toLocaleTimeString('uk-UA'),
+                driverId: driverName,
+                routeName: currentSheet,
+                deliveryNumber: deliveryId,
+                address: delivery.address,
+                status: status,
+                cancelReason: '',
+                phone: delivery.phone,
+                price: delivery.price
+            };
+            fetch(CONFIG.DELIVERY_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(logData)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var txt = status === 'completed' ? 'Готово!' : status === 'in-progress' ? 'В процесі' : 'Очікує';
+                    showToast(txt);
+                } else {
+                    showToast('Помилка збереження');
+                }
+            })
+            .catch(function(err) {
+                showToast('Помилка: ' + err.message);
+            });
+        }
+        function submitCancellation(deliveryId) {
+            var reason = document.getElementById('reason-' + deliveryId).value.trim();
+            if (!reason) {
+                showToast('Введи причину скасування');
+                return;
+            }
+            if (!confirm('Ви точно хочете скасувати цю посилку?')) return;
+            var delivery = deliveries.find(function(d) { return d.internalNumber === deliveryId; });
+            if (!delivery) return;
+            deliveryStatuses[deliveryId] = 'cancelled';
+            saveStatuses();
+            renderDeliveries();
+            updateStats();
+            var logData = {
+                date: new Date().toLocaleDateString('uk-UA'),
+                time: new Date().toLocaleTimeString('uk-UA'),
+                driverId: driverName,
+                routeName: currentSheet,
+                deliveryNumber: deliveryId,
+                address: delivery.address,
+                status: 'cancelled',
+                cancelReason: reason,
+                phone: delivery.phone,
+                price: delivery.price
+            };
+            fetch(CONFIG.DELIVERY_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(logData)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) showToast('Скасовано');
+                else showToast('Помилка');
+            })
+            .catch(function(err) {
+                showToast('Помилка: ' + err.message);
+            });
+        }
+        function undoStatus(deliveryId) {
+            var currentStatus = deliveryStatuses[deliveryId];
+            if (currentStatus !== 'completed' && currentStatus !== 'cancelled') return;
+            var confirmMsg = currentStatus === 'completed'
+                ? 'Змінити статус ГОТОВО на ОЧІКУЄ?'
+                : 'Змінити статус СКАСОВАНО на ОЧІКУЄ?';
+            if (!confirm(confirmMsg)) return;
+            deliveryStatuses[deliveryId] = 'pending';
+            saveStatuses();
+            renderDeliveries();
+            updateStats();
+            var delivery = deliveries.find(function(d) { return d.internalNumber === deliveryId; });
+            if (!delivery) return;
+            var logData = {
+                date: new Date().toLocaleDateString('uk-UA'),
+                time: new Date().toLocaleTimeString('uk-UA'),
+                driverId: driverName,
+                routeName: currentSheet,
+                deliveryNumber: deliveryId,
+                address: delivery.address,
+                status: 'pending',
+                cancelReason: 'Відміна статусу',
+                phone: delivery.phone,
+                price: delivery.price
+            };
+            fetch(CONFIG.DELIVERY_API_URL, {
+                method: 'POST',
+                body: JSON.stringify(logData)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) showToast('Статус відмінено');
+                else {
+                    showToast('Помилка');
+                    deliveryStatuses[deliveryId] = currentStatus;
+                    saveStatuses();
+                    renderDeliveries();
+                }
+            })
+            .catch(function(err) {
+                showToast('Помилка: ' + err.message);
+                deliveryStatuses[deliveryId] = currentStatus;
+                saveStatuses();
+                renderDeliveries();
+            });
+        }
+        function setPassengerStatus(rowNumber, status) {
+            deliveryStatuses[rowNumber] = status;
+            saveStatuses();
+            renderDeliveries();
+            updateStats();
+            var passenger = deliveries.find(function(d) { return d.rowNum === rowNumber; });
+            if (!passenger) return;
+            var markValue = status === 'completed' ? 'completed' : status === 'in-progress' ? 'in-progress' : status === 'cancelled' ? 'cancelled' : '';
+            fetch(CONFIG.PASSENGER_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'updatePassenger',
+                    payload: {
+                        sheet: currentSheet,
+                        rowNum: rowNumber,
+                        mark: markValue
+                    }
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    var txt = status === 'completed' ? 'Готово!' : status === 'in-progress' ? 'В процесі' : 'Очікує';
+                    showToast(txt);
+                } else {
+                    showToast('Помилка: ' + (data.error || ''));
+                }
+            })
+            .catch(function(err) {
+                showToast('Помилка: ' + err.message);
+            });
+        }
+        function submitCancellationPassenger(rowNumber) {
+            var reason = document.getElementById('reason-' + rowNumber).value.trim();
+            if (!reason) {
+                showToast('Введи причину скасування');
+                return;
+            }
+            if (!confirm('Ви точно хочете скасувати цього пасажира?')) return;
+            var passenger = deliveries.find(function(d) { return d.rowNum === rowNumber; });
+            if (!passenger) return;
+            deliveryStatuses[rowNumber] = 'cancelled';
+            saveStatuses();
+            renderDeliveries();
+            updateStats();
+            fetch(CONFIG.PASSENGER_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'updatePassenger',
+                    payload: {
+                        sheet: currentSheet,
+                        rowNum: rowNumber,
+                        mark: 'cancelled',
+                        note: reason
+                    }
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) showToast('Скасовано');
+                else showToast('Помилка: ' + (data.error || ''));
+            })
+            .catch(function(err) {
+                showToast('Помилка: ' + err.message);
+            });
+        }
+        function undoStatusPassenger(rowNumber) {
+            var currentStatus = deliveryStatuses[rowNumber];
+            if (currentStatus !== 'completed' && currentStatus !== 'cancelled') return;
+            var confirmMsg = currentStatus === 'completed'
+                ? 'Змінити статус ГОТОВО на ОЧІКУЄ?'
+                : 'Змінити статус СКАСОВАНО на ОЧІКУЄ?';
+            if (!confirm(confirmMsg)) return;
+            deliveryStatuses[rowNumber] = 'pending';
+            saveStatuses();
+            renderDeliveries();
+            updateStats();
+            fetch(CONFIG.PASSENGER_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'updatePassenger',
+                    payload: {
+                        sheet: currentSheet,
+                        rowNum: rowNumber,
+                        mark: ''
+                    }
+                })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showToast('Статус відмінено');
+                } else {
+                    showToast('Помилка');
+                    deliveryStatuses[rowNumber] = currentStatus;
+                    saveStatuses();
+                    renderDeliveries();
+                }
+            })
+            .catch(function(err) {
+                showToast('Помилка: ' + err.message);
+                deliveryStatuses[rowNumber] = currentStatus;
+                saveStatuses();
+                renderDeliveries();
+            });
+        }
+    </script>
+</body>
+</html>
