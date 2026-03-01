@@ -2230,6 +2230,25 @@ function silentSync() {
             const newCount = serverPackages.filter(p => p.isNew && p.status !== 'archived').length;
             const oldNewCount = packages.filter(p => p.isNew && p.status !== 'archived').length;
 
+            // Мержимо з локальними — зберігаємо локальні зміни якщо сервер повернув порожні значення
+            const localMap = {};
+            packages.forEach(p => {
+                if (p._sheet && p._rowNum) localMap[`${p._sheet}_${p._rowNum}`] = p;
+            });
+            serverPackages.forEach(sp => {
+                const key = `${sp._sheet}_${sp._rowNum}`;
+                const local = localMap[key];
+                if (local) {
+                    // Якщо сервер повернув порожнє авто, а локально є — зберігаємо локальне
+                    if (!sp.vehicle && local.vehicle) sp.vehicle = local.vehicle;
+                    // Зберігаємо локальний статус якщо він вже archived (з типом)
+                    if (!sp.status && local.status) sp.status = local.status;
+                    // Зберігаємо CRM-only поля (не зберігаються на сервері)
+                    if (local.prevStatus) sp.prevStatus = local.prevStatus;
+                    if (local.archiveType) sp.archiveType = local.archiveType;
+                }
+            });
+
             packages = serverPackages;
             saveSettings();
             
@@ -6599,35 +6618,50 @@ function syncWithSheets() {
     .then(data => {
         hideLoader();
         if (data.success) {
-            packages = data.packages.map(p => ({
-                id: p.id || 'srv_' + p.rowNum,
-                vo: p.vo || '',
-                number: p.number || '',
-                ttn: p.ttn || '',
-                weight: p.weight || '',
-                address: p.address || '',
-                directionRaw: p.directionRaw || '',
-                direction: p.direction || 'ua-eu',
-                phone: p.phone || '',
-                amount: p.amount || '',
-                payStatus: p.payStatus || '',
-                payment: p.payment || '',
-                phoneReg: p.phoneReg || '',
-                note: p.note || '',
-                parcelStatus: p.parcelStatus || '',
-                name: p.name || '',
-                dateReg: p.dateReg || '',
-                timing: p.timing || '',
-                smsNote: p.smsNote || '',
-                dateReceive: p.dateReceive || '',
-                photo: p.photo || '',
-                status: (p.status || '').toLowerCase().trim(),
-                dateArchive: p.dateArchive || '',
-                isNew: p.isNew || false,
-                vehicle: p.vehicle || '',
-                _sheet: p.sheet,
-                _rowNum: p.rowNum
-            }));
+            // Мержимо з локальними — зберігаємо vehicle та CRM-only поля
+            const localMap = {};
+            packages.forEach(p => {
+                if (p._sheet && p._rowNum) localMap[`${p._sheet}_${p._rowNum}`] = p;
+            });
+            const serverPkgs = data.packages.map(p => {
+                const sp = {
+                    id: p.id || 'srv_' + p.rowNum,
+                    vo: p.vo || '',
+                    number: p.number || '',
+                    ttn: p.ttn || '',
+                    weight: p.weight || '',
+                    address: p.address || '',
+                    directionRaw: p.directionRaw || '',
+                    direction: p.direction || 'ua-eu',
+                    phone: p.phone || '',
+                    amount: p.amount || '',
+                    payStatus: p.payStatus || '',
+                    payment: p.payment || '',
+                    phoneReg: p.phoneReg || '',
+                    note: p.note || '',
+                    parcelStatus: p.parcelStatus || '',
+                    name: p.name || '',
+                    dateReg: p.dateReg || '',
+                    timing: p.timing || '',
+                    smsNote: p.smsNote || '',
+                    dateReceive: p.dateReceive || '',
+                    photo: p.photo || '',
+                    status: (p.status || '').toLowerCase().trim(),
+                    dateArchive: p.dateArchive || '',
+                    isNew: p.isNew || false,
+                    vehicle: p.vehicle || '',
+                    _sheet: p.sheet,
+                    _rowNum: p.rowNum
+                };
+                const local = localMap[`${sp._sheet}_${sp._rowNum}`];
+                if (local) {
+                    if (!sp.vehicle && local.vehicle) sp.vehicle = local.vehicle;
+                    if (local.prevStatus) sp.prevStatus = local.prevStatus;
+                    if (local.archiveType) sp.archiveType = local.archiveType;
+                }
+                return sp;
+            });
+            packages = serverPkgs;
             saveSettings();
             render();
             updateAllCounts();
