@@ -4064,7 +4064,7 @@ function setVehicleFilter(id) {
     updatePcVehiclesList();
 }
 function filterByStatus(status) { filters.statusFilter = filters.statusFilter === status ? '' : status; filters.showArchive = false; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateFilterButtons(); }
-function toggleArchiveFilter() { filters.showArchive = !filters.showArchive; filters.statusFilter = ''; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateAllCounts(); updateFilterButtons(); }
+function toggleArchiveFilter() { const entering = !filters.showArchive; filters.showArchive = entering; filters.statusFilter = ''; filters.routeVehicle = ''; filters.specialStatus = ''; if (entering) { filters.date = ''; filters.showNewOnly = false; filters.search = ''; filters.statusDateFrom = ''; filters.statusDateTo = ''; const si = document.getElementById('searchInput'); if (si) si.value = ''; } routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateAllCounts(); updateFilterButtons(); renderCalendars(); }
 
 // SINGLE ACTIONS
 function moveOneToRoute(id) {
@@ -4857,7 +4857,9 @@ function showStatusFilter(status) {
     filters.vehicle = '';
     filters.showNewOnly = false;
     filters.search = '';
-    filters.specialStatus = status; // Новий фільтр
+    filters.specialStatus = status;
+    filters.statusDateFrom = '';
+    filters.statusDateTo = '';
 
     routePassengers = [];
     currentRouteVehicle = null;
@@ -4866,6 +4868,19 @@ function showStatusFilter(status) {
     // Очищаємо поле пошуку в UI
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.value = '';
+
+    // Оновлюємо UI кнопок напрямків
+    document.querySelectorAll('.direction-option').forEach(el => {
+        el.classList.toggle('active', el.dataset.dir === 'all');
+    });
+    document.getElementById('mobileDirectionAll')?.classList.add('active');
+    document.getElementById('mobileDirectionUaEu')?.classList.remove('active');
+    document.getElementById('mobileDirectionEuUa')?.classList.remove('active');
+    document.getElementById('mobileNewLeads')?.classList.remove('active');
+    document.getElementById('pcDirectionAll')?.classList.add('active');
+    document.getElementById('pcDirectionUaEu')?.classList.remove('active');
+    document.getElementById('pcDirectionEuUa')?.classList.remove('active');
+    document.getElementById('pcNewLeads')?.classList.remove('active');
 
     render();
     updateAllCounts();

@@ -4020,7 +4020,7 @@ function setVehicleFilter(id) {
     updatePcVehiclesList();
 }
 function filterByStatus(status) { filters.statusFilter = filters.statusFilter === status ? '' : status; filters.showArchive = false; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateFilterButtons(); }
-function toggleArchiveFilter() { filters.showArchive = !filters.showArchive; filters.statusFilter = ''; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateAllCounts(); updateFilterButtons(); }
+function toggleArchiveFilter() { const entering = !filters.showArchive; filters.showArchive = entering; filters.statusFilter = ''; filters.routeVehicle = ''; filters.specialStatus = ''; if (entering) { filters.date = ''; filters.showNewOnly = false; filters.search = ''; filters.statusDateFrom = ''; filters.statusDateTo = ''; const si = document.getElementById('searchInput'); if (si) si.value = ''; } routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateAllCounts(); updateFilterButtons(); renderCalendars(); }
 
 // SINGLE ACTIONS
 function moveOneToRoute(id) {
@@ -4769,17 +4769,29 @@ function applyStatusToSelected(status, note) {
 
 // Показати фільтр по статусу
 function showStatusFilter(status) {
+    // Скидаємо ВСІ фільтри щоб архів показував все
     filters.showArchive = false;
     filters.statusFilter = '';
     filters.routeVehicle = '';
-    filters.specialStatus = status; // Новий фільтр
-    
+    filters.date = '';
+    filters.vehicle = '';
+    filters.showNewOnly = false;
+    filters.search = '';
+    filters.specialStatus = status;
+    filters.statusDateFrom = '';
+    filters.statusDateTo = '';
+
     routePassengers = [];
     currentRouteVehicle = null;
-    
+
+    // Очищаємо поле пошуку в UI
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
+
     render();
     updateAllCounts();
     updateFilterButtons();
+    renderCalendars();
     showToast(`📋 ${getStatusName(status)}`);
 }
 
