@@ -3809,10 +3809,9 @@ function renderRoutePassengers() {
         const dOpen = openDetailsId === uk;
         const aOpen = openActionsId === uk;
         const veh = vehicles.find(v => v.id === p._vehicleId || v.name === p._vehicleName);
-        const isUaEu = p.direction === 'ua-eu';
-
-        const dirLabel = isUaEu ? 'UA→EU' : 'EU→UA';
-        const dirClass = isUaEu ? '' : ' eu-ua';
+        const isCodeDir = p.direction === 'ua-eu' || p.direction === 'eu-ua';
+        const dirLabel = isCodeDir ? (p.direction === 'ua-eu' ? 'UA→EU' : 'EU→UA') : (p.direction || '—');
+        const dirClass = p.direction === 'eu-ua' ? ' eu-ua' : '';
 
         const phoneRaw = p.phone || '—';
         const phoneDisplay = hasSearch ? highlightSearch(phoneRaw) : phoneRaw;
@@ -4409,11 +4408,20 @@ function handleRouteConflict(action) {
 
 function executeCopyToRoute(byVehicle, withVehicle, conflictAction) {
     showToast('📤 Записую в маршрут...');
-    
+
+    // Замінюємо direction на назву маршруту замість ua-eu/eu-ua
+    const routeData = {};
+    for (const [vehicleName, packages] of Object.entries(byVehicle)) {
+        routeData[vehicleName] = packages.map(p => ({
+            ...p,
+            direction: vehicleName
+        }));
+    }
+
     const payload = {
         action: 'copyToRoute',
         payload: {
-            packagesByVehicle: byVehicle,
+            packagesByVehicle: routeData,
             conflictAction: conflictAction // 'add', 'archive', 'clear'
         }
     };
