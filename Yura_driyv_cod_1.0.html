@@ -878,7 +878,7 @@
             }
             driverName = name;
             localStorage.setItem('driverName', name);
-            document.getElementById('driverInfoDisplay').textContent = '&#128100; Водій: ' + escapeHtml(name);
+            document.getElementById('driverInfoDisplay').innerHTML = '&#128100; Водій: ' + escapeHtml(name);
             showScreen('routeScreen');
             document.getElementById('errorMsg').style.display = 'none';
             document.getElementById('driverNameInput').value = '';
@@ -911,7 +911,7 @@
             document.querySelectorAll('.filter-btn').forEach(function(btn) { btn.classList.remove('active'); });
             document.getElementById('filterAll').classList.add('active');
             var headerIcon = document.getElementById('listHeaderIcon');
-            headerIcon.textContent = routeType === 'passenger' ? '&#128101; Пасажири' : '&#128230; Посилки';
+            headerIcon.innerHTML = routeType === 'passenger' ? '&#128101; Пасажири' : '&#128230; Посилки';
             showScreen('listScreen');
             document.getElementById('routeNameDisplay').textContent = route;
             showToast('Відкрито ' + route);
