@@ -2004,7 +2004,7 @@
         <div class="modal-body">
             <div class="form-group">
                 <label>Назва авто</label>
-                <input type="text" id="vName" placeholder="Наприклад: А-Братислава">
+                <input type="text" id="vName" placeholder="Наприклад: Братислава марш.">
             </div>
             <div class="form-group">
                 <label>Ліміт ваги (кг)</label>
@@ -2135,10 +2135,10 @@ let colSettings = {header:['ttn','weight','dateReg','phone','vehicle','amount','
 let packages = [];
 
 let vehicles = [
-    {id:'v1', name:'Братислава', maxWeight:2000, maxPoints:60},
-    {id:'v2', name:'Нітра', maxWeight:2000, maxPoints:60},
-    {id:'v3', name:'Словаччина', maxWeight:2000, maxPoints:60},
-    {id:'v4', name:'Кошице+Прешов', maxWeight:2000, maxPoints:60}
+    {id:'v1', name:'Братислава марш.', maxWeight:2000, maxPoints:60},
+    {id:'v2', name:'Нітра марш.', maxWeight:2000, maxPoints:60},
+    {id:'v3', name:'Словаччина марш.', maxWeight:2000, maxPoints:60},
+    {id:'v4', name:'Кошице+прешов марш.', maxWeight:2000, maxPoints:60}
 ];
 let filters = {date:'',vehicle:'',search:'',showArchive:false,statusFilter:'',routeVehicle:'',direction:'all',specialStatus:'',statusDateFrom:'',statusDateTo:'',showNewOnly:true};
 let selectedIds = new Set();
@@ -3382,14 +3382,12 @@ function updateRoutesList() {
                 const count = route.count || 0;
                 totalCount += count;
 
-                // Знаходимо відповідне авто (А-Братислава → Братислава)
+                // Знаходимо відповідне авто по назві
                 const matchedVehicle = vehicles.find(v => {
-                    const clean = v.name.replace(/^А-/i, '');
                     return v.name === route.vehicle ||
-                        clean === route.vehicle ||
                         v.name === route.name ||
-                        v.routeSheet === route.name ||
-                        route.name.includes(clean);
+                        route.name.includes(v.name) ||
+                        v.name.includes(route.name);
                 });
 
                 if (matchedVehicle) {
@@ -3640,14 +3638,12 @@ async function loadAllRoutePassengers() {
                 
                 const items = data.success ? (data.passengers || data.packages || []) : [];
                 if (items.length > 0) {
-                    // Знаходимо відповідне авто (А-Братислава → Братислава)
+                    // Знаходимо відповідне авто по назві
                     const matchedVehicle = vehicles.find(v => {
-                        const clean = v.name.replace(/^А-/i, '');
                         return v.name === route.vehicle ||
-                            clean === route.vehicle ||
                             v.name === route.name ||
-                            v.routeSheet === route.name ||
-                            route.name.includes(clean);
+                            route.name.includes(v.name) ||
+                            v.name.includes(route.name);
                     });
 
                     const mapped = items.map((p, idx) => ({

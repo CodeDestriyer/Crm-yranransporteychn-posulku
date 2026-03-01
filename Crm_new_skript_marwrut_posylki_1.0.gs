@@ -1390,16 +1390,17 @@ function sendToArchive(payload) {
 }
 
 // ============================================
-// ЛОГУВАННЯ
+// ЛОГУВАННЯ — пише в архівну таблицю, аркуш "Логи"
 // ============================================
+var ARCHIVE_SS_ID_LOG = '1Kmf6NF1sJUi-j3SamrhUqz337pcZSvZCUkGxBzari6U';
+
 function writeLog(action, sheetName, rowNum, detail, extra) {
   try {
-    var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    var logName = 'Логи';
-    var logSheet = ss.getSheetByName(logName);
+    var archiveSS = SpreadsheetApp.openById(ARCHIVE_SS_ID_LOG);
+    var logSheet = archiveSS.getSheetByName('Логи');
 
     if (!logSheet) {
-      logSheet = ss.insertSheet(logName);
+      logSheet = archiveSS.insertSheet('Логи');
       logSheet.appendRow(['Дата/Час', 'Дія', 'Аркуш', 'Рядок', 'Деталі', 'Дані']);
       logSheet.getRange(1, 1, 1, 6)
         .setBackground('#1a1a2e')
