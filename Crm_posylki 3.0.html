@@ -4451,9 +4451,10 @@ function bulkArchive() {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
-                    action: 'bulkUpdateStatus',
+                    action: 'bulkArchive',
                     items: mainPackages,
-                    status: 'archived'
+                    user: 'crm',
+                    reason: 'bulk_archive'
                 })
             }).then(r => r.json())
         );
@@ -5401,7 +5402,7 @@ function confirmDeletePassenger(uid) {
         const apiUrl = isRoute ? ROUTE_API_URL : API_URL;
         const body = isRoute
             ? { action: 'archivePackages', packages: [{ sheet: pSheet, rowNum: pRowNum }] }
-            : { action: 'updateStatus', sheet: pSheet, rowNum: pRowNum, status: 'archived' };
+            : { action: 'archivePackage', sheet: pSheet, rowNum: pRowNum, user: 'crm', reason: 'manual_delete' };
 
         fetch(apiUrl, {
             method: 'POST',

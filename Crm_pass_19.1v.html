@@ -4475,38 +4475,60 @@ function executeCopyToRoute(byVehicle, withVehicle, conflictAction) {
 
 function bulkArchive() {
     if (selectedIds.size === 0) return showToast('⚠️ Оберіть заявки');
-    
-    // Збираємо дані для API
-    const passengersToArchive = [];
+
+    // Розділяємо на основні та маршрутні
+    const mainPassengers = [];
+    const routePassengers = [];
     selectedIds.forEach(uid => {
         const p = findPassengerByUid(uid);
         if (p && p._sheet && p._rowNum) {
-            passengersToArchive.push({
-                sheet: p._sheet,
-                rowNum: p._rowNum
-            });
+            const item = { sheet: p._sheet, rowNum: p._rowNum };
+            if (p._isRouteData) {
+                routePassengers.push(item);
+            } else {
+                mainPassengers.push(item);
+            }
         }
     });
-    
-    if (passengersToArchive.length === 0) {
+
+    if (mainPassengers.length === 0 && routePassengers.length === 0) {
         return showToast('⚠️ Немає заявок для архівації');
     }
-    
+
     showLoader('Архівую...', '');
-    
-    // Викликаємо API
-    fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-            action: 'archivePassengers',
-            payload: { passengers: passengersToArchive }
-        })
-    })
-    .then(r => r.json())
-    .then(data => {
+
+    // Формуємо запити до правильних API
+    const requests = [];
+    if (mainPassengers.length > 0) {
+        requests.push(
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'bulkArchive',
+                    payload: { passengers: mainPassengers, user: 'crm', reason: 'bulk_archive' }
+                })
+            }).then(r => r.json())
+        );
+    }
+    if (routePassengers.length > 0) {
+        requests.push(
+            fetch(ROUTE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'archiveToExternal',
+                    payload: { passengers: routePassengers, user: 'crm', reason: 'bulk_archive' }
+                })
+            }).then(r => r.json())
+        );
+    }
+
+    Promise.all(requests)
+    .then(results => {
         hideLoader();
-        if (data.success) {
+        const allSuccess = results.every(d => d.success);
+        if (allSuccess) {
             // Оновлюємо локально
             selectedIds.forEach(uid => {
                 const p = findPassengerByUid(uid);
@@ -4519,9 +4541,11 @@ function bulkArchive() {
             render();
             updateAllCounts();
             renderCalendars();
-            showToast(`📦 Архівовано: ${data.archived}`);
+            const total = results.reduce((s, d) => s + (d.count || d.archived || 0), 0);
+            showToast(`📦 Архівовано: ${total}`);
         } else {
-            showToast('❌ ' + data.error);
+            const errors = results.filter(d => !d.success).map(d => d.error).join('; ');
+            showToast('❌ ' + errors);
         }
     })
     .catch(err => {
@@ -5667,31 +5691,33 @@ function showDeleteConfirmModal(uid, displayName, passengerId) {
 
 function confirmDeletePassenger(uid) {
     document.getElementById('deleteConfirmModal')?.remove();
-    
+
     const p = findPassengerByUid(uid);
     if (!p) return;
-    
-    // Встановлюємо статус deleted та дату
-    p.status = 'deleted';
-    p.statusDate = new Date().toISOString().split('T')[0];
+
+    // Встановлюємо статус archived та дату
+    p.status = 'archived';
+    p.archiveDate = new Date().toISOString().split('T')[0];
     p.isNew = false;
 
     // Закриваємо дії картки
     openActionsId = null;
 
-    // Якщо є серверні дані - видаляємо на сервері
-    if (p._sheet && p._rowNum) {
+    // Якщо є серверні дані - архівуємо на сервері
+    const pSheet = p._sheet;
+    const pRowNum = p._rowNum;
+    if (pSheet && pRowNum) {
         showLoader('Видалення...', '');
+        const isRoute = !!p._isRouteData;
+        const apiUrl = isRoute ? ROUTE_API_URL : API_URL;
+        const body = isRoute
+            ? { action: 'archiveToExternal', payload: { passengers: [{ sheet: pSheet, rowNum: pRowNum }], user: 'crm', reason: 'manual_delete' } }
+            : { action: 'archivePassenger', payload: { sheet: pSheet, rowNum: pRowNum, user: 'crm', reason: 'manual_delete' } };
 
-        fetch(ROUTE_API_URL, {
+        fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({
-                action: 'deletePassengers',
-                payload: {
-                    passengers: [{ sheet: p._sheet, rowNum: p._rowNum }]
-                }
-            })
+            body: JSON.stringify(body)
         })
         .then(r => r.json())
         .then(data => {
@@ -5701,7 +5727,7 @@ function confirmDeletePassenger(uid) {
                 render();
                 updateAllCounts();
                 renderCalendars();
-                showToast('🗑️ Видалено');
+                showToast('🗑️ Переміщено в архів');
             } else {
                 showToast('❌ ' + (data.error || 'Помилка'));
             }
@@ -5721,7 +5747,7 @@ function confirmDeletePassenger(uid) {
         render();
         updateAllCounts();
         renderCalendars();
-        showToast('🗑️ Видалено');
+        showToast('🗑️ Переміщено в архів');
     }
 }
 
