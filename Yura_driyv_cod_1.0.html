@@ -617,7 +617,7 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .toast {
             position: fixed;
-            bottom: 20px;
+            bottom: 80px;
             right: 20px;
             background: white;
             padding: 12px 16px;
@@ -636,6 +636,38 @@
                 grid-template-columns: 1fr 1fr;
             }
         }
+        /* BOTTOM NAV BAR */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, #1a3a5e 0%, #0d1f3c 100%); display: flex; justify-content: space-around; align-items: center; padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); border-top: 3px solid #d90d0d; z-index: 500; box-shadow: 0 -4px 16px rgba(0,0,0,0.25); }
+        .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 10px; border: none; background: none; color: rgba(255,255,255,0.6); font-size: 9px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .bottom-nav-item.active { color: #d90d0d; }
+        .bottom-nav-item span:first-child { font-size: 18px; }
+        .deliveries-container { padding-bottom: 70px; }
+        /* COLUMN EDITOR MODAL */
+        .col-editor-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
+        .col-editor-overlay.show { display: flex; }
+        .col-editor-box { background: white; width: 100%; max-width: 500px; max-height: 80vh; border-radius: 16px 16px 0 0; padding: 20px; overflow-y: auto; animation: slideUp 0.3s ease; }
+        .col-editor-title { font-size: 16px; font-weight: 700; color: #1a3a5e; margin-bottom: 16px; text-align: center; }
+        .col-toggle-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 8px; border-bottom: 1px solid #f0f0f0; }
+        .col-toggle-item label { font-size: 13px; font-weight: 600; color: #333; }
+        .col-toggle-switch { width: 44px; height: 24px; background: #ccc; border-radius: 12px; position: relative; cursor: pointer; transition: background 0.2s; }
+        .col-toggle-switch.on { background: #4CAF50; }
+        .col-toggle-switch::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .col-toggle-switch.on::after { transform: translateX(20px); }
+        .col-editor-close { width: 100%; padding: 12px; margin-top: 16px; background: #1a3a5e; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+        /* ADD LEAD MODAL */
+        .add-lead-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
+        .add-lead-overlay.show { display: flex; }
+        .add-lead-box { background: white; width: 100%; max-width: 500px; max-height: 85vh; border-radius: 16px 16px 0 0; padding: 20px; overflow-y: auto; animation: slideUp 0.3s ease; }
+        .add-lead-title { font-size: 16px; font-weight: 700; color: #1a3a5e; margin-bottom: 16px; text-align: center; }
+        .add-lead-field { margin-bottom: 12px; }
+        .add-lead-field label { display: block; font-size: 11px; font-weight: 700; color: #1a3a5e; margin-bottom: 4px; text-transform: uppercase; }
+        .add-lead-field input, .add-lead-field textarea, .add-lead-field select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 13px; font-family: inherit; }
+        .add-lead-field input:focus, .add-lead-field textarea:focus { border-color: #1a3a5e; outline: none; }
+        .add-lead-submit { width: 100%; padding: 12px; background: linear-gradient(135deg, #4CAF50, #2d5016); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 8px; }
+        .add-lead-cancel { width: 100%; padding: 10px; background: #e9ecef; color: #495057; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+        /* PHOTO BUTTON */
+        .btn-photo-link { display: inline-block; padding: 6px 12px; background: linear-gradient(135deg, #2196F3, #1565C0); color: white; border-radius: 6px; font-size: 11px; font-weight: 600; text-decoration: none; margin-top: 6px; }
+        .btn-photo-link:hover { opacity: 0.9; }
     </style>
 </head>
 <body>
@@ -1068,7 +1100,7 @@
                 list.innerHTML = '<div class="loading">&#128230; Нічого не знайдено</div>';
                 return;
             }
-            filteredDeliveries.forEach(function(delivery) {
+            filteredDeliveries.forEach(function(delivery, idx) {
                 var globalIndex = deliveries.findIndex(function(d) { return d.internalNumber === delivery.internalNumber; });
                 var status = deliveryStatuses[delivery.internalNumber] || 'pending';
                 var statusIcon = status === 'completed' ? '&#9989;' : status === 'cancelled' ? '&#10060;' : status === 'in-progress' ? '&#128260;' : '&#9203;';
@@ -1078,57 +1110,89 @@
                 if (isNew) card.classList.add('is-new');
                 var canUndo = status === 'completed' || status === 'cancelled';
                 var safeId = escapeHtml(delivery.internalNumber);
+                var uid = 'del_' + idx;
                 var safePhone = escapeHtml(delivery.phone);
                 var safeAddress = escapeHtml(delivery.address);
+                // Payment: support both field name variants from API
+                var priceVal = delivery.price || delivery.amount || '';
+                var paymentVal = delivery.payment || '';
+                var payStatusVal = delivery.paymentStatus || delivery.payStatus || '';
+                var statusVal = delivery.parcelStatus || delivery.status || '';
+                // Map button: use coords if available, otherwise address
+                var mapBtn = '';
+                if (delivery.coords && delivery.coords.lat) {
+                    mapBtn = '<button class="btn-small-card" onclick="navigateTo(' + delivery.coords.lat + ',' + delivery.coords.lng + ')">&#128506; Карта</button>';
+                } else if (delivery.address) {
+                    mapBtn = '<button class="btn-small-card" onclick="navigateToAddress(\'' + safeAddress.replace(/'/g, "\\'") + '\')">&#128506; Карта</button>';
+                }
+                // Visible columns
+                var hc = hiddenDriverCols;
+                var show = function(col) { return !hc.has(col); };
                 card.innerHTML = '<div class="card-row">' +
                         '<div class="delivery-number ' + (isNew ? 'new' : '') + '">' + (globalIndex + 1) + '</div>' +
                         '<div class="card-main-info">' +
-                            '<div class="card-address">#' + safeId + ' - ' + safeAddress + '</div>' +
+                            '<div class="card-address">' + (show('id') ? '#' + safeId + ' - ' : '') + safeAddress + '</div>' +
                         '</div>' +
                         '<span style="font-size: 16px; font-weight: bold;">' + statusIcon + '</span>' +
                     '</div>' +
                     '<div class="card-details-line">' +
-                        (delivery.ttn ? '<span class="detail-badge" style="font-weight:800;color:#C62828;">ТТН: <strong>' + escapeHtml(delivery.ttn) + '</strong></span>' : '') +
-                        (delivery.timing ? '<span class="detail-badge">&#9200; ' + escapeHtml(delivery.timing) + '</span>' : '') +
+                        (show('ttn') && delivery.ttn ? '<span class="detail-badge" style="font-weight:800;color:#C62828;">ТТН: <strong>' + escapeHtml(delivery.ttn) + '</strong></span>' : '') +
+                        (show('timing') && delivery.timing ? '<span class="detail-badge">&#9200; ' + escapeHtml(delivery.timing) + '</span>' : '') +
+                        (show('status') && statusVal ? '<span class="detail-badge" style="font-weight:700;color:#1565C0;">' + escapeHtml(statusVal) + '</span>' : '') +
                     '</div>' +
                     '<div class="card-details-line">' +
-                        '<span class="card-phone" style="font-weight:700;">&#128222; <strong>' + safePhone + '</strong></span>' +
-                        (delivery.price ? '<span class="detail-badge" style="font-weight:800;color:#2E7D32;">&#128176; <strong>&#8364;' + escapeHtml(delivery.price) + '</strong></span>' : '') +
-                        (delivery.payment ? '<span class="detail-badge" style="font-weight:700;"><strong>' + escapeHtml(delivery.payment) + '</strong></span>' : '') +
-                        (delivery.paymentStatus ? '<span class="detail-badge" style="font-weight:700;"><strong>' + escapeHtml(delivery.paymentStatus) + '</strong></span>' : '') +
+                        (show('phone') ? '<span class="card-phone" style="font-weight:700;">&#128222; <strong>' + safePhone + '</strong></span>' : '') +
+                        (show('price') && priceVal ? '<span class="detail-badge" style="font-weight:800;color:#2E7D32;">&#128176; <strong>&#8364;' + escapeHtml(priceVal) + '</strong></span>' : '') +
+                        (show('payment') && paymentVal ? '<span class="detail-badge" style="font-weight:700;"><strong>' + escapeHtml(paymentVal) + '</strong></span>' : '') +
+                        (show('payStatus') && payStatusVal ? '<span class="detail-badge" style="font-weight:700;color:' + (payStatusVal === 'Оплачено' ? '#2E7D32' : '#C62828') + ';"><strong>' + escapeHtml(payStatusVal) + '</strong></span>' : '') +
                     '</div>' +
                     '<div class="card-buttons">' +
                         '<button class="btn-small-card" onclick="callNumber(\'' + safePhone + '\')">&#9742; Дзвонити</button>' +
-                        (delivery.coords ? '<button class="btn-small-card" onclick="navigateTo(' + delivery.coords.lat + ',' + delivery.coords.lng + ')">&#128506; Карти</button>' : '') +
-                        '<button class="btn-small-card" onclick="toggleExpand(this.closest(\'.delivery-card\'),\'' + safeId + '\')">&#128194; Деталі</button>' +
+                        mapBtn +
+                        '<button class="btn-small-card" onclick="toggleExpand(\'' + uid + '\')">&#128194; Деталі</button>' +
                     '</div>' +
                     '<div class="status-buttons-card">' +
                         '<button class="status-btn-card status-in-progress-btn" onclick="setDeliveryStatus(\'' + safeId + '\',\'in-progress\')">&#128260;</button>' +
                         '<button class="status-btn-card status-completed-btn" onclick="setDeliveryStatus(\'' + safeId + '\',\'completed\')">&#9989;</button>' +
-                        '<button class="status-btn-card status-cancelled-btn" onclick="showCancelReason(\'' + safeId + '\')">&#10060;</button>' +
+                        '<button class="status-btn-card status-cancelled-btn" onclick="showCancelReason(\'' + uid + '\',\'' + safeId + '\')">&#10060;</button>' +
                         '<button class="status-btn-card status-undo-btn" onclick="undoStatus(\'' + safeId + '\')" ' + (canUndo ? '' : 'disabled') + '>&#8617;</button>' +
                     '</div>' +
-                    '<div class="card-expandable" id="expand-' + safeId + '">' +
+                    '<div class="card-expandable" id="expand-' + uid + '">' +
                         renderExpandedInfoDelivery(delivery) +
                     '</div>' +
-                    '<div class="cancel-reason" id="cancel-' + safeId + '">' +
-                        '<textarea id="reason-' + safeId + '" placeholder="Причина скасування..."></textarea>' +
-                        '<button class="btn-submit-cancel" onclick="submitCancellation(\'' + safeId + '\')">Підтвердити скасування</button>' +
+                    '<div class="cancel-reason" id="cancel-' + uid + '">' +
+                        '<textarea id="reason-' + uid + '" placeholder="Причина скасування..."></textarea>' +
+                        '<button class="btn-submit-cancel" onclick="submitCancellationByUid(\'' + uid + '\',\'' + safeId + '\')">Підтвердити скасування</button>' +
                     '</div>';
                 list.appendChild(card);
             });
         }
         function renderExpandedInfoDelivery(delivery) {
+            var priceVal = delivery.price || delivery.amount || '';
+            var paymentVal = delivery.payment || '';
+            var payStatusVal = delivery.paymentStatus || delivery.payStatus || '';
             var html = '<div class="detail-section"><div class="detail-label">&#128100; ПІБ</div><div class="detail-value">' + escapeHtml(delivery.name || 'N/A') + '</div></div>' +
                 '<div class="detail-section"><div class="detail-label">&#128290; Номер / ІД</div><div class="detail-value">' + escapeHtml(delivery.internalNumber) + (delivery.id ? ' / ' + escapeHtml(delivery.id) : '') + '</div></div>' +
                 '<div class="detail-section"><div class="detail-label">&#128196; ТТН</div><div class="detail-value">' + escapeHtml(delivery.ttn || 'N/A') + '</div></div>' +
                 '<div class="detail-section"><div class="detail-label">&#9878; Вага</div><div class="detail-value">' + escapeHtml(delivery.weight || 'N/A') + '</div></div>';
+            if (priceVal) {
+                html += '<div class="detail-section"><div class="detail-label">&#128176; Сума</div><div class="detail-value">&#8364;' + escapeHtml(priceVal) + '</div></div>';
+            }
+            if (paymentVal) {
+                html += '<div class="detail-section"><div class="detail-label">&#128179; Оплата</div><div class="detail-value">' + escapeHtml(paymentVal) + '</div></div>';
+            }
+            if (payStatusVal) {
+                html += '<div class="detail-section"><div class="detail-label">&#128203; Статус оплати</div><div class="detail-value" style="font-weight:700;color:' + (payStatusVal === 'Оплачено' ? '#2E7D32' : '#C62828') + ';">' + escapeHtml(payStatusVal) + '</div></div>';
+            }
+            if (delivery.smsNote && String(delivery.smsNote).trim()) {
+                html += '<div class="detail-section"><div class="detail-label">&#128172; SMS</div><div class="detail-value">' + escapeHtml(delivery.smsNote) + '</div></div>';
+            }
             if (delivery.note && String(delivery.note).trim()) {
                 html += '<div class="detail-section"><div class="detail-label">&#128221; Примітка</div><div class="detail-value">' + escapeHtml(delivery.note) + '</div></div>';
             }
             if (delivery.photo && String(delivery.photo).trim() && (delivery.photo.startsWith('http://') || delivery.photo.startsWith('https://'))) {
                 html += '<div class="detail-section"><div class="detail-label">&#128247; Фото</div>' +
-                    '<img src="' + escapeHtml(delivery.photo) + '" alt="Фото" class="detail-photo" onerror="this.style.display=\'none\'">' +
+                    '<a href="' + escapeHtml(delivery.photo) + '" target="_blank" rel="noopener" class="btn-photo-link">&#128247; Відкрити фото</a>' +
                 '</div>';
             }
             return html;
@@ -1147,6 +1211,7 @@
             }
             filteredPassengers.forEach(function(passenger, index) {
                 var uniqueId = passenger.rowNum;
+                var uid = 'pas_' + index;
                 var status = deliveryStatuses[uniqueId] || 'pending';
                 var statusIcon = status === 'completed' ? '&#9989;' : status === 'cancelled' ? '&#10060;' : status === 'in-progress' ? '&#128260;' : '&#9203;';
                 var isNew = newDeliveries.includes(uniqueId);
@@ -1182,20 +1247,20 @@
                         '<button class="btn-small-card" onclick="navigateToAddress(\'' + safeTo.replace(/'/g, "\\'") + '\')">&#127937; Прибуття</button>' +
                     '</div>' +
                     '<div class="card-buttons" style="grid-template-columns:1fr;margin-top:5px;">' +
-                        '<button class="btn-small-card" onclick="toggleExpand(this.closest(\'.delivery-card\'),\'' + uniqueId + '\')">&#128194; Деталі</button>' +
+                        '<button class="btn-small-card" onclick="toggleExpand(\'' + uid + '\')">&#128194; Деталі</button>' +
                     '</div>' +
                     '<div class="status-buttons-card">' +
                         '<button class="status-btn-card status-in-progress-btn" onclick="setPassengerStatus(' + uniqueId + ',\'in-progress\')">&#128260;</button>' +
                         '<button class="status-btn-card status-completed-btn" onclick="setPassengerStatus(' + uniqueId + ',\'completed\')">&#9989;</button>' +
-                        '<button class="status-btn-card status-cancelled-btn" onclick="showCancelReason(\'' + uniqueId + '\')">&#10060;</button>' +
+                        '<button class="status-btn-card status-cancelled-btn" onclick="showCancelReason(\'' + uid + '\',' + uniqueId + ')">&#10060;</button>' +
                         '<button class="status-btn-card status-undo-btn" onclick="undoStatusPassenger(' + uniqueId + ')" ' + (canUndo ? '' : 'disabled') + '>&#8617;</button>' +
                     '</div>' +
-                    '<div class="card-expandable" id="expand-' + uniqueId + '">' +
+                    '<div class="card-expandable" id="expand-' + uid + '">' +
                         renderExpandedInfoPassenger(passenger) +
                     '</div>' +
-                    '<div class="cancel-reason" id="cancel-' + uniqueId + '">' +
-                        '<textarea id="reason-' + uniqueId + '" placeholder="Причина скасування..."></textarea>' +
-                        '<button class="btn-submit-cancel" onclick="submitCancellationPassenger(' + uniqueId + ')">Підтвердити скасування</button>' +
+                    '<div class="cancel-reason" id="cancel-' + uid + '">' +
+                        '<textarea id="reason-' + uid + '" placeholder="Причина скасування..."></textarea>' +
+                        '<button class="btn-submit-cancel" onclick="submitCancellationPassenger(' + uniqueId + ',\'' + uid + '\')">Підтвердити скасування</button>' +
                     '</div>';
                 list.appendChild(card);
             });
@@ -1210,8 +1275,8 @@
                 '<div class="detail-section"><div class="detail-label">&#128663; Автомобіль</div><div class="detail-value">' + escapeHtml(passenger.vehicle || 'N/A') + '</div></div>' +
                 (passenger.note && String(passenger.note).trim() ? '<div class="detail-section"><div class="detail-label">&#128221; Примітка</div><div class="detail-value">' + escapeHtml(passenger.note) + '</div></div>' : '');
         }
-        function toggleExpand(cardElement, itemId) {
-            var expandable = document.getElementById('expand-' + itemId);
+        function toggleExpand(uid) {
+            var expandable = document.getElementById('expand-' + uid);
             if (expandable) expandable.classList.toggle('show');
         }
         function navigateTo(lat, lng) {
@@ -1223,14 +1288,14 @@
         function callNumber(phone) {
             window.location.href = 'tel:' + phone;
         }
-        function showCancelReason(itemId) {
-            var expandBlock = document.getElementById('expand-' + itemId);
+        function showCancelReason(uid, itemId) {
+            var expandBlock = document.getElementById('expand-' + uid);
             if (expandBlock) expandBlock.classList.add('show');
-            var cancelBlock = document.getElementById('cancel-' + itemId);
+            var cancelBlock = document.getElementById('cancel-' + uid);
             if (cancelBlock) {
                 cancelBlock.classList.add('show');
                 setTimeout(function() {
-                    var textarea = document.getElementById('reason-' + itemId);
+                    var textarea = document.getElementById('reason-' + uid);
                     if (textarea) textarea.focus();
                 }, 100);
             }
@@ -1271,8 +1336,16 @@
                 showToast('Помилка: ' + err.message);
             });
         }
-        function submitCancellation(deliveryId) {
-            var reason = document.getElementById('reason-' + deliveryId).value.trim();
+        function submitCancellationByUid(uid, deliveryId) {
+            var reason = document.getElementById('reason-' + uid).value.trim();
+            if (!reason) {
+                showToast('Введи причину скасування');
+                return;
+            }
+            submitCancellation(deliveryId, reason);
+        }
+        function submitCancellation(deliveryId, reasonOverride) {
+            var reason = reasonOverride || '';
             if (!reason) {
                 showToast('Введи причину скасування');
                 return;
@@ -1294,7 +1367,7 @@
                 status: 'cancelled',
                 cancelReason: reason,
                 phone: delivery.phone,
-                price: delivery.price
+                price: delivery.price || delivery.amount
             };
             fetch(CONFIG.DELIVERY_API_URL, {
                 method: 'POST',
@@ -1390,8 +1463,8 @@
                 showToast('Помилка: ' + err.message);
             });
         }
-        function submitCancellationPassenger(rowNumber) {
-            var reason = document.getElementById('reason-' + rowNumber).value.trim();
+        function submitCancellationPassenger(rowNumber, uid) {
+            var reason = document.getElementById('reason-' + (uid || rowNumber)).value.trim();
             if (!reason) {
                 showToast('Введи причину скасування');
                 return;
@@ -1472,6 +1545,203 @@
                 renderDeliveries();
             });
         }
+        // ============ COLUMN VISIBILITY ============
+        var hiddenDriverCols = new Set();
+        var allDriverCols = [
+            { key: 'id', label: '# Номер' },
+            { key: 'ttn', label: 'ТТН' },
+            { key: 'phone', label: 'Телефон' },
+            { key: 'price', label: 'Сума' },
+            { key: 'payment', label: 'Оплата' },
+            { key: 'payStatus', label: 'Статус оплати' },
+            { key: 'timing', label: 'Таймінг' },
+            { key: 'status', label: 'Статус посилки' }
+        ];
+        function loadDriverColSettings() {
+            try {
+                var saved = localStorage.getItem('driverHiddenCols');
+                if (saved) hiddenDriverCols = new Set(JSON.parse(saved));
+            } catch(e) {}
+        }
+        function saveDriverColSettings() {
+            localStorage.setItem('driverHiddenCols', JSON.stringify([...hiddenDriverCols]));
+        }
+        loadDriverColSettings();
+        function openColumnEditor() {
+            var overlay = document.getElementById('colEditorOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'col-editor-overlay';
+                overlay.id = 'colEditorOverlay';
+                overlay.onclick = function(e) { if (e.target === overlay) closeColumnEditor(); };
+                document.body.appendChild(overlay);
+            }
+            var html = '<div class="col-editor-box"><div class="col-editor-title">&#9881; Налаштування колонок</div>';
+            allDriverCols.forEach(function(col) {
+                var isOn = !hiddenDriverCols.has(col.key);
+                html += '<div class="col-toggle-item"><label>' + col.label + '</label>' +
+                    '<div class="col-toggle-switch ' + (isOn ? 'on' : '') + '" onclick="toggleDriverCol(\'' + col.key + '\',this)"></div></div>';
+            });
+            html += '<button class="col-editor-close" onclick="closeColumnEditor()">Готово</button></div>';
+            overlay.innerHTML = html;
+            overlay.classList.add('show');
+        }
+        function closeColumnEditor() {
+            var overlay = document.getElementById('colEditorOverlay');
+            if (overlay) overlay.classList.remove('show');
+        }
+        function toggleDriverCol(key, el) {
+            if (hiddenDriverCols.has(key)) {
+                hiddenDriverCols.delete(key);
+                el.classList.add('on');
+            } else {
+                hiddenDriverCols.add(key);
+                el.classList.remove('on');
+            }
+            saveDriverColSettings();
+            renderDeliveries();
+        }
+        // ============ ADD LEAD ============
+        function openAddLead() {
+            if (!currentSheet) { showToast('Спочатку оберіть маршрут'); return; }
+            var overlay = document.getElementById('addLeadOverlay');
+            if (!overlay) {
+                overlay = document.createElement('div');
+                overlay.className = 'add-lead-overlay';
+                overlay.id = 'addLeadOverlay';
+                overlay.onclick = function(e) { if (e.target === overlay) closeAddLead(); };
+                document.body.appendChild(overlay);
+            }
+            var isDelivery = currentRouteType === 'delivery';
+            var html = '<div class="add-lead-box"><div class="add-lead-title">&#10133; Додати ' + (isDelivery ? 'посилку' : 'пасажира') + '</div>';
+            if (isDelivery) {
+                html += mkField('Телефон', 'addPhone', 'tel', '+380...') +
+                    mkField('Адреса', 'addAddress', 'text', 'Адреса доставки') +
+                    mkField('ПІБ', 'addName', 'text', "Ім'я отримувача") +
+                    mkField('ТТН', 'addTtn', 'text', 'Номер ТТН') +
+                    mkField('Вага (кг)', 'addWeight', 'text', '0') +
+                    mkField('Сума (€)', 'addAmount', 'text', '0') +
+                    mkField('Примітка', 'addNote', 'text', '');
+            } else {
+                html += mkField("Ім'я", 'addName', 'text', "Ім'я пасажира") +
+                    mkField('Телефон', 'addPhone', 'tel', '+380...') +
+                    mkField('Звідки', 'addFrom', 'text', 'Місто відправки') +
+                    mkField('Куди', 'addTo', 'text', 'Місто прибуття') +
+                    mkField('Дата', 'addDate', 'date', '') +
+                    mkField('Місць', 'addSeats', 'number', '1') +
+                    mkField('Примітка', 'addNote', 'text', '');
+            }
+            html += '<button class="add-lead-submit" onclick="submitAddLead()">&#10133; Додати</button>';
+            html += '<button class="add-lead-cancel" onclick="closeAddLead()">Скасувати</button>';
+            html += '</div>';
+            overlay.innerHTML = html;
+            overlay.classList.add('show');
+        }
+        function mkField(label, id, type, ph) {
+            return '<div class="add-lead-field"><label>' + label + '</label><input type="' + type + '" id="' + id + '" placeholder="' + (ph||'') + '"></div>';
+        }
+        function closeAddLead() {
+            var overlay = document.getElementById('addLeadOverlay');
+            if (overlay) overlay.classList.remove('show');
+        }
+        async function submitAddLead() {
+            var isDelivery = currentRouteType === 'delivery';
+            var payload;
+            if (isDelivery) {
+                var phone = document.getElementById('addPhone').value.trim();
+                var address = document.getElementById('addAddress').value.trim();
+                if (!phone && !address) { showToast('Введіть телефон або адресу'); return; }
+                payload = {
+                    action: 'addPackageToRoute',
+                    payload: {
+                        vehicleName: currentSheet,
+                        phone: phone,
+                        address: address,
+                        name: document.getElementById('addName').value.trim(),
+                        ttn: document.getElementById('addTtn').value.trim(),
+                        weight: document.getElementById('addWeight').value.trim(),
+                        amount: document.getElementById('addAmount').value.trim(),
+                        note: document.getElementById('addNote').value.trim()
+                    }
+                };
+            } else {
+                var name = document.getElementById('addName').value.trim();
+                var phone = document.getElementById('addPhone').value.trim();
+                if (!name && !phone) { showToast("Введіть ім'я або телефон"); return; }
+                payload = {
+                    action: 'addPassengerToRoute',
+                    payload: {
+                        sheetName: currentSheet,
+                        name: name,
+                        phone: phone,
+                        from: document.getElementById('addFrom').value.trim(),
+                        to: document.getElementById('addTo').value.trim(),
+                        date: document.getElementById('addDate').value.trim(),
+                        seats: document.getElementById('addSeats').value.trim() || '1',
+                        note: document.getElementById('addNote').value.trim()
+                    }
+                };
+            }
+            showToast('&#9203; Збереження...');
+            try {
+                var apiUrl = isDelivery ? CONFIG.DELIVERY_API_URL : CONFIG.PASSENGER_API_URL;
+                var response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify(payload)
+                });
+                var data = await response.json();
+                if (data.success) {
+                    showToast('&#9989; Додано!');
+                    closeAddLead();
+                    lastUpdateTime = 0;
+                    await fetchDeliveries();
+                } else {
+                    showToast('&#10060; ' + (data.error || 'Помилка'));
+                }
+            } catch (err) {
+                showToast('&#10060; ' + err.message);
+            }
+        }
+        // ============ BOTTOM NAV INIT ============
+        function initBottomNav() {
+            if (document.getElementById('bottomNav')) return;
+            var nav = document.createElement('div');
+            nav.className = 'bottom-nav';
+            nav.id = 'bottomNav';
+            nav.innerHTML =
+                '<button class="bottom-nav-item active" onclick="bottomNavAction(\'list\',this)"><span>&#128230;</span>Посилки</button>' +
+                '<button class="bottom-nav-item" onclick="bottomNavAction(\'refresh\',this)"><span>&#128260;</span>Оновити</button>' +
+                '<button class="bottom-nav-item" onclick="bottomNavAction(\'add\',this)"><span>&#10133;</span>Додати</button>' +
+                '<button class="bottom-nav-item" onclick="bottomNavAction(\'columns\',this)"><span>&#9881;</span>Колонки</button>';
+            document.getElementById('listScreen').appendChild(nav);
+        }
+        function bottomNavAction(action, btn) {
+            if (action === 'list') {
+                // already on list - scroll to top
+                var container = document.getElementById('deliveriesList');
+                if (container) container.scrollTop = 0;
+            } else if (action === 'refresh') {
+                forceLoadDeliveries();
+            } else if (action === 'add') {
+                openAddLead();
+            } else if (action === 'columns') {
+                openColumnEditor();
+            }
+        }
+        // Inject bottom nav when listScreen is shown
+        var origShowScreen = showScreen;
+        showScreen = function(screenId) {
+            origShowScreen(screenId);
+            if (screenId === 'listScreen') {
+                initBottomNav();
+                var nav = document.getElementById('bottomNav');
+                if (nav) nav.style.display = 'flex';
+            } else {
+                var nav = document.getElementById('bottomNav');
+                if (nav) nav.style.display = 'none';
+            }
+        };
     </script>
 </body>
 </html>
