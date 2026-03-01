@@ -55,9 +55,10 @@ var COL = {
   PHOTO: 19,        // T — Фото
   STATUS: 20,       // U — Статус (CRM: new/work/route/archived/refused/transferred/deleted)
   DATE_ARCHIVE: 21, // V — Дата архів
-  ARCHIVE_ID: 22    // W — ARCHIVE_ID (зв'язок з таблицею Архіви)
+  ARCHIVE_ID: 22,   // W — ARCHIVE_ID (зв'язок з таблицею Архіви)
+  VEHICLE: 23       // X — Автомобіль
 };
-var TOTAL_COLS = 23;
+var TOTAL_COLS = 24;
 
 // Статуси для архівації
 var ARCHIVE_STATUSES = ['archived', 'refused', 'deleted', 'transferred'];
@@ -100,7 +101,8 @@ var FIELD_MAP = {
   photo: COL.PHOTO,
   status: COL.STATUS,
   dateArchive: COL.DATE_ARCHIVE,
-  archiveId: COL.ARCHIVE_ID
+  archiveId: COL.ARCHIVE_ID,
+  vehicle: COL.VEHICLE
 };
 
 // ============================================
@@ -267,6 +269,7 @@ function getAllPackages() {
         status: crmStatus,
         dateArchive: formatDate(row[COL.DATE_ARCHIVE]),
         archiveId: String(row[COL.ARCHIVE_ID] || ''),
+        vehicle: String(row[COL.VEHICLE] || ''),
 
         // Мета
         isNew: isNew24h,

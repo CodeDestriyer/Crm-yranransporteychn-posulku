@@ -2230,6 +2230,25 @@ function silentSync() {
             const newCount = serverPackages.filter(p => p.isNew && p.status !== 'archived').length;
             const oldNewCount = packages.filter(p => p.isNew && p.status !== 'archived').length;
 
+            // Мержимо з локальними — зберігаємо локальні зміни якщо сервер повернув порожні значення
+            const localMap = {};
+            packages.forEach(p => {
+                if (p._sheet && p._rowNum) localMap[`${p._sheet}_${p._rowNum}`] = p;
+            });
+            serverPackages.forEach(sp => {
+                const key = `${sp._sheet}_${sp._rowNum}`;
+                const local = localMap[key];
+                if (local) {
+                    // Якщо сервер повернув порожнє авто, а локально є — зберігаємо локальне
+                    if (!sp.vehicle && local.vehicle) sp.vehicle = local.vehicle;
+                    // Зберігаємо локальний статус якщо він вже archived (з типом)
+                    if (!sp.status && local.status) sp.status = local.status;
+                    // Зберігаємо CRM-only поля (не зберігаються на сервері)
+                    if (local.prevStatus) sp.prevStatus = local.prevStatus;
+                    if (local.archiveType) sp.archiveType = local.archiveType;
+                }
+            });
+
             packages = serverPackages;
             saveSettings();
             
@@ -2525,6 +2544,8 @@ function selectDate(dateStr) {
     filters.date = dateStr;
     filters.statusFilter = '';
     filters.showNewOnly = false;
+    filters.specialStatus = '';
+    filters.showArchive = false;
 
     // Синхронізуємо напрямок карток з напрямком календаря
     filters.direction = calendarDirection;
@@ -4018,7 +4039,7 @@ function setVehicleFilter(id) {
     updatePcVehiclesList();
 }
 function filterByStatus(status) { filters.statusFilter = filters.statusFilter === status ? '' : status; filters.showArchive = false; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateFilterButtons(); }
-function toggleArchiveFilter() { filters.showArchive = !filters.showArchive; filters.statusFilter = ''; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateAllCounts(); updateFilterButtons(); }
+function toggleArchiveFilter() { const entering = !filters.showArchive; filters.showArchive = entering; filters.statusFilter = ''; filters.routeVehicle = ''; filters.specialStatus = ''; if (entering) { filters.date = ''; filters.showNewOnly = false; filters.search = ''; filters.statusDateFrom = ''; filters.statusDateTo = ''; const si = document.getElementById('searchInput'); if (si) si.value = ''; } routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateAllCounts(); updateFilterButtons(); renderCalendars(); }
 
 // SINGLE ACTIONS
 function moveOneToRoute(id) {
@@ -4767,17 +4788,29 @@ function applyStatusToSelected(status, note) {
 
 // Показати фільтр по статусу
 function showStatusFilter(status) {
+    // Скидаємо ВСІ фільтри щоб архів показував все
     filters.showArchive = false;
     filters.statusFilter = '';
     filters.routeVehicle = '';
-    filters.specialStatus = status; // Новий фільтр
-    
+    filters.date = '';
+    filters.vehicle = '';
+    filters.showNewOnly = false;
+    filters.search = '';
+    filters.specialStatus = status;
+    filters.statusDateFrom = '';
+    filters.statusDateTo = '';
+
     routePassengers = [];
     currentRouteVehicle = null;
-    
+
+    // Очищаємо поле пошуку в UI
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.value = '';
+
     render();
     updateAllCounts();
     updateFilterButtons();
+    renderCalendars();
     showToast(`📋 ${getStatusName(status)}`);
 }
 
@@ -6544,7 +6577,7 @@ function openMapLocation(type) {
 // GOOGLE SHEETS API
 // ============================================
 // Посилки (основна таблиця даних)
-const API_URL = 'https://script.google.com/macros/s/AKfycbzxlrNh8aoo_qoYhEgyAdkF83K4gGqbX_ko9k5Tm1BEecZehYKKuPOqrRHp7PdAyQwp_g/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbzMeU2UXqFW1JTj85yIvHeCt_9YyLW2i6CeBq6F6tWY3lYAKAT1X9Ne-N28aiY7dGHMQQ/exec';
 
 // Маршрути посилок (окремий скрипт)
 const ROUTE_API_URL = 'https://script.google.com/macros/s/AKfycbwlo9O9RO_LUDmtTGD3GL8e1i1jkklM6heaypRGMZF_QidhBsDmagflqUhAMmwwguLYwg/exec';
@@ -6585,35 +6618,50 @@ function syncWithSheets() {
     .then(data => {
         hideLoader();
         if (data.success) {
-            packages = data.packages.map(p => ({
-                id: p.id || 'srv_' + p.rowNum,
-                vo: p.vo || '',
-                number: p.number || '',
-                ttn: p.ttn || '',
-                weight: p.weight || '',
-                address: p.address || '',
-                directionRaw: p.directionRaw || '',
-                direction: p.direction || 'ua-eu',
-                phone: p.phone || '',
-                amount: p.amount || '',
-                payStatus: p.payStatus || '',
-                payment: p.payment || '',
-                phoneReg: p.phoneReg || '',
-                note: p.note || '',
-                parcelStatus: p.parcelStatus || '',
-                name: p.name || '',
-                dateReg: p.dateReg || '',
-                timing: p.timing || '',
-                smsNote: p.smsNote || '',
-                dateReceive: p.dateReceive || '',
-                photo: p.photo || '',
-                status: (p.status || '').toLowerCase().trim(),
-                dateArchive: p.dateArchive || '',
-                isNew: p.isNew || false,
-                vehicle: p.vehicle || '',
-                _sheet: p.sheet,
-                _rowNum: p.rowNum
-            }));
+            // Мержимо з локальними — зберігаємо vehicle та CRM-only поля
+            const localMap = {};
+            packages.forEach(p => {
+                if (p._sheet && p._rowNum) localMap[`${p._sheet}_${p._rowNum}`] = p;
+            });
+            const serverPkgs = data.packages.map(p => {
+                const sp = {
+                    id: p.id || 'srv_' + p.rowNum,
+                    vo: p.vo || '',
+                    number: p.number || '',
+                    ttn: p.ttn || '',
+                    weight: p.weight || '',
+                    address: p.address || '',
+                    directionRaw: p.directionRaw || '',
+                    direction: p.direction || 'ua-eu',
+                    phone: p.phone || '',
+                    amount: p.amount || '',
+                    payStatus: p.payStatus || '',
+                    payment: p.payment || '',
+                    phoneReg: p.phoneReg || '',
+                    note: p.note || '',
+                    parcelStatus: p.parcelStatus || '',
+                    name: p.name || '',
+                    dateReg: p.dateReg || '',
+                    timing: p.timing || '',
+                    smsNote: p.smsNote || '',
+                    dateReceive: p.dateReceive || '',
+                    photo: p.photo || '',
+                    status: (p.status || '').toLowerCase().trim(),
+                    dateArchive: p.dateArchive || '',
+                    isNew: p.isNew || false,
+                    vehicle: p.vehicle || '',
+                    _sheet: p.sheet,
+                    _rowNum: p.rowNum
+                };
+                const local = localMap[`${sp._sheet}_${sp._rowNum}`];
+                if (local) {
+                    if (!sp.vehicle && local.vehicle) sp.vehicle = local.vehicle;
+                    if (local.prevStatus) sp.prevStatus = local.prevStatus;
+                    if (local.archiveType) sp.archiveType = local.archiveType;
+                }
+                return sp;
+            });
+            packages = serverPkgs;
             saveSettings();
             render();
             updateAllCounts();

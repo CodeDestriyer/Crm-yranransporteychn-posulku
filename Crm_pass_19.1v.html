@@ -2331,7 +2331,23 @@ function silentSync() {
             // Перевіряємо чи є нові ліди
             const newCount = serverPassengers.filter(p => p.isNew && p.status !== 'archived').length;
             const oldNewCount = passengers.filter(p => p.isNew && p.status !== 'archived').length;
-            
+
+            // Мержимо з локальними — зберігаємо vehicle та CRM-only поля
+            const localMap = {};
+            passengers.forEach(p => {
+                if (p._sheet && p._rowNum) localMap[`${p._sheet}_${p._rowNum}`] = p;
+            });
+            serverPassengers.forEach(sp => {
+                const key = `${sp._sheet}_${sp._rowNum}`;
+                const local = localMap[key];
+                if (local) {
+                    if (!sp.vehicle && local.vehicle) sp.vehicle = local.vehicle;
+                    if (!sp.status && local.status) sp.status = local.status;
+                    if (local.prevStatus) sp.prevStatus = local.prevStatus;
+                    if (local.archiveType) sp.archiveType = local.archiveType;
+                }
+            });
+
             passengers = serverPassengers;
             saveSettings();
             
@@ -2631,13 +2647,28 @@ function renderCalendarTo(containerId) {
 
 function changeMonth(delta) { calendarDate.setMonth(calendarDate.getMonth() + delta); renderCalendars(); }
 function goToday() { calendarDate = new Date(); selectDate(new Date().toISOString().split('T')[0]); }
-function selectDate(dateStr) { 
-    filters.date = dateStr; 
-    filters.statusFilter = ''; 
-    renderCalendars(); 
-    render(); 
-    updateFilterButtons(); 
-    updateVehiclesList(); 
+function selectDate(dateStr) {
+    filters.date = dateStr;
+    filters.statusFilter = '';
+    filters.showNewOnly = false;
+    filters.specialStatus = '';
+    filters.showArchive = false;
+
+    // Оновлюємо UI кнопок напрямку (знімаємо "Нові")
+    document.getElementById('mobileNewLeads')?.classList.remove('active');
+    document.getElementById('pcNewLeads')?.classList.remove('active');
+    const dir = filters.direction || 'all';
+    document.getElementById('mobileDirectionAll')?.classList.toggle('active', dir === 'all');
+    document.getElementById('mobileDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
+    document.getElementById('mobileDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
+    document.getElementById('pcDirectionAll')?.classList.toggle('active', dir === 'all');
+    document.getElementById('pcDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
+    document.getElementById('pcDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
+
+    renderCalendars();
+    render();
+    updateFilterButtons();
+    updateVehiclesList();
     document.getElementById('dateDropdown')?.classList.remove('show');
     
     // Перевірка на перевищення місткості
@@ -4049,7 +4080,7 @@ function setVehicleFilter(id) {
     updatePcVehiclesList();
 }
 function filterByStatus(status) { filters.statusFilter = filters.statusFilter === status ? '' : status; filters.showArchive = false; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateFilterButtons(); }
-function toggleArchiveFilter() { filters.showArchive = !filters.showArchive; filters.statusFilter = ''; filters.routeVehicle = ''; routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateAllCounts(); updateFilterButtons(); }
+function toggleArchiveFilter() { const entering = !filters.showArchive; filters.showArchive = entering; filters.statusFilter = ''; filters.routeVehicle = ''; filters.specialStatus = ''; if (entering) { filters.date = ''; filters.showNewOnly = false; filters.search = ''; filters.statusDateFrom = ''; filters.statusDateTo = ''; const si = document.getElementById('searchInput'); if (si) si.value = ''; } routePassengers = []; routeStats = { total: 0, pending: 0, inProgress: 0, completed: 0, cancelled: 0, archived: 0 }; currentRouteVehicle = null; routeStatusFilter = 'all'; render(); updateAllCounts(); updateFilterButtons(); renderCalendars(); }
 
 // SINGLE ACTIONS
 function moveOneToRoute(id) {
@@ -4842,7 +4873,9 @@ function showStatusFilter(status) {
     filters.vehicle = '';
     filters.showNewOnly = false;
     filters.search = '';
-    filters.specialStatus = status; // Новий фільтр
+    filters.specialStatus = status;
+    filters.statusDateFrom = '';
+    filters.statusDateTo = '';
 
     routePassengers = [];
     currentRouteVehicle = null;
@@ -4851,6 +4884,19 @@ function showStatusFilter(status) {
     // Очищаємо поле пошуку в UI
     const searchInput = document.getElementById('searchInput');
     if (searchInput) searchInput.value = '';
+
+    // Оновлюємо UI кнопок напрямків
+    document.querySelectorAll('.direction-option').forEach(el => {
+        el.classList.toggle('active', el.dataset.dir === 'all');
+    });
+    document.getElementById('mobileDirectionAll')?.classList.add('active');
+    document.getElementById('mobileDirectionUaEu')?.classList.remove('active');
+    document.getElementById('mobileDirectionEuUa')?.classList.remove('active');
+    document.getElementById('mobileNewLeads')?.classList.remove('active');
+    document.getElementById('pcDirectionAll')?.classList.add('active');
+    document.getElementById('pcDirectionUaEu')?.classList.remove('active');
+    document.getElementById('pcDirectionEuUa')?.classList.remove('active');
+    document.getElementById('pcNewLeads')?.classList.remove('active');
 
     render();
     updateAllCounts();
@@ -6108,12 +6154,26 @@ function syncWithSheets() {
                 };
             });
             
+            // Мержимо з локальними — зберігаємо vehicle та CRM-only поля
+            const localMapSync = {};
+            passengers.forEach(p => {
+                if (p._sheet && p._rowNum) localMapSync[`${p._sheet}_${p._rowNum}`] = p;
+            });
+            serverPassengers.forEach(sp => {
+                const local = localMapSync[`${sp._sheet}_${sp._rowNum}`];
+                if (local) {
+                    if (!sp.vehicle && local.vehicle) sp.vehicle = local.vehicle;
+                    if (local.prevStatus) sp.prevStatus = local.prevStatus;
+                    if (local.archiveType) sp.archiveType = local.archiveType;
+                }
+            });
+
             passengers = serverPassengers;
             saveSettings();
             render();
             updateAllCounts();
             renderCalendars();
-            
+
             showToast(`✅ Завантажено: ${data.counts.total}`);
         } else {
             showToast('❌ Помилка: ' + (data.error || 'Невідома'));
