@@ -729,9 +729,14 @@
         const CONFIG = {
             COMPANY_NAME: 'Юра Транспортейшн',
             DELIVERY_SPREADSHEET_ID: '1Pd3nv3fbwZ_0YSzdG4cda-q52BQT57E0hDe7eQej6z8',
+            // Маршрут Посилки API v1.0
             DELIVERY_API_URL: 'https://script.google.com/macros/s/AKfycbzd7aIwe6AiisrnDlUngC4ZgCe1RvHQs7jpXQbtQCenGYULsjnxvfOtlMCnTThar03eOg/exec',
-            PASSENGER_API_URL: 'https://script.google.com/macros/s/AKfycbwcota7jx-I9FTaRH3KmMqK3WX18-Fauy8uJfKxf0tMiShWCqSJoexobbQCIxGStXHN/exec',
-            ROUTES_API_URL: 'https://script.google.com/macros/s/AKfycbwcota7jx-I9FTaRH3KmMqK3WX18-Fauy8uJfKxf0tMiShWCqSJoexobbQCIxGStXHN/exec',
+            // Маршрут Пасажири API v1.0 (НОВИЙ)
+            PASSENGER_API_URL: 'https://script.google.com/macros/s/AKfycbwriNHsLTvGoH7esLmyfuOD5ZNyrApSr2hnTLGBPGLuq4nr-ylMGESI8SodcyWzIXs/exec',
+            // Список маршрутів пасажирів (той самий API)
+            ROUTES_API_URL: 'https://script.google.com/macros/s/AKfycbwriNHsLTvGoH7esLmyfuOD5ZNyrApSr2hnTLGBPGLuq4nr-ylMGESI8SodcyWzIXs/exec',
+            // Архів API v1.0
+            ARCHIVE_API_URL: 'https://script.google.com/macros/s/AKfycbwJLGZgYT333VdMW-nM5kPjYs2WIGGjfqkZnDJYjJxUt8nzE8GDGCPm7EzMHhcxNDOn/exec',
             GOOGLE_MAPS_KEY: 'AIzaSyDbSS6XSCJ3MafbrSp-rIX1-x130bwzevo',
             DELIVERY_ROUTES: [
                 { name: 'Братислава марш.', password: '1234' },
@@ -1351,17 +1356,19 @@
             updateStats();
             var passenger = deliveries.find(function(d) { return d.rowNum === rowNumber; });
             if (!passenger) return;
-            var markValue = status === 'completed' ? 'completed' : status === 'in-progress' ? 'in-progress' : status === 'cancelled' ? 'cancelled' : '';
+            // updateDriverStatus → пише mark + кольори в Sheet + логи
             fetch(CONFIG.PASSENGER_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
-                    action: 'updatePassenger',
-                    payload: {
-                        sheet: currentSheet,
-                        rowNum: rowNumber,
-                        mark: markValue
-                    }
+                    action: 'updateDriverStatus',
+                    driverId: driverName,
+                    routeName: currentSheet,
+                    passengerId: passenger.id || '',
+                    phone: passenger.phone || '',
+                    address: passenger.from || '',
+                    status: status,
+                    cancelReason: ''
                 })
             })
             .then(function(r) { return r.json(); })
@@ -1390,17 +1397,19 @@
             saveStatuses();
             renderDeliveries();
             updateStats();
+            // updateDriverStatus → пише mark + кольори + логи + причина
             fetch(CONFIG.PASSENGER_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
-                    action: 'updatePassenger',
-                    payload: {
-                        sheet: currentSheet,
-                        rowNum: rowNumber,
-                        mark: 'cancelled',
-                        note: reason
-                    }
+                    action: 'updateDriverStatus',
+                    driverId: driverName,
+                    routeName: currentSheet,
+                    passengerId: passenger.id || '',
+                    phone: passenger.phone || '',
+                    address: passenger.from || '',
+                    status: 'cancelled',
+                    cancelReason: reason
                 })
             })
             .then(function(r) { return r.json(); })
@@ -1419,20 +1428,24 @@
                 ? 'Змінити статус ГОТОВО на ОЧІКУЄ?'
                 : 'Змінити статус СКАСОВАНО на ОЧІКУЄ?';
             if (!confirm(confirmMsg)) return;
+            var passenger = deliveries.find(function(d) { return d.rowNum === rowNumber; });
             deliveryStatuses[rowNumber] = 'pending';
             saveStatuses();
             renderDeliveries();
             updateStats();
+            // updateDriverStatus → скидає mark + кольори на pending + логи
             fetch(CONFIG.PASSENGER_API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'text/plain' },
                 body: JSON.stringify({
-                    action: 'updatePassenger',
-                    payload: {
-                        sheet: currentSheet,
-                        rowNum: rowNumber,
-                        mark: ''
-                    }
+                    action: 'updateDriverStatus',
+                    driverId: driverName,
+                    routeName: currentSheet,
+                    passengerId: passenger ? (passenger.id || '') : '',
+                    phone: passenger ? (passenger.phone || '') : '',
+                    address: passenger ? (passenger.from || '') : '',
+                    status: 'pending',
+                    cancelReason: 'Відміна статусу водієм'
                 })
             })
             .then(function(r) { return r.json(); })
