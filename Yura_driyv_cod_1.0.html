@@ -1099,7 +1099,7 @@
                     '</div>' +
                     '<div class="card-buttons">' +
                         '<button class="btn-small-card" onclick="callNumber(\'' + safePhone + '\')">&#9742; Дзвонити</button>' +
-                        '<button class="btn-small-card" onclick="navigateTo(' + delivery.coords.lat + ',' + delivery.coords.lng + ')">&#128506; Карти</button>' +
+                        (delivery.coords ? '<button class="btn-small-card" onclick="navigateTo(' + delivery.coords.lat + ',' + delivery.coords.lng + ')">&#128506; Карти</button>' : '') +
                         '<button class="btn-small-card" onclick="toggleExpand(this.closest(\'.delivery-card\'),\'' + safeId + '\')">&#128194; Деталі</button>' +
                     '</div>' +
                     '<div class="status-buttons-card">' +
