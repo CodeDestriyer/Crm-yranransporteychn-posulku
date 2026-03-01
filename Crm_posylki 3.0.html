@@ -2227,9 +2227,8 @@ function silentSync() {
             });
 
             // Перевіряємо чи є нові ліди
-            const hiddenStatuses = ['archived', 'refused', 'transferred', 'deleted'];
-            const newCount = serverPackages.filter(p => p.isNew && !hiddenStatuses.includes(p.status)).length;
-            const oldNewCount = packages.filter(p => p.isNew && !hiddenStatuses.includes(p.status)).length;
+            const newCount = serverPackages.filter(p => p.isNew && p.status !== 'archived').length;
+            const oldNewCount = packages.filter(p => p.isNew && p.status !== 'archived').length;
 
             packages = serverPackages;
             saveSettings();
@@ -2450,9 +2449,8 @@ function renderCalendarTo(containerId) {
     // Рахуємо кількість посилок на кожну дату ВІДПРАВКИ (dateReceive) з урахуванням напрямку календаря
     const seatCounts = {};
     const leadCounts = {};
-    const hiddenInCalendar = ['archived', 'refused', 'transferred', 'deleted'];
     const dir = calendarDirection;
-    packages.filter(p => !hiddenInCalendar.includes(p.status)).filter(p => !dir || dir === 'all' || p.direction === dir).forEach(p => {
+    packages.filter(p => p.status !== 'archived').filter(p => !dir || dir === 'all' || p.direction === dir).forEach(p => {
         const shipDate = p.dateReceive || p.dateReg;
         if(shipDate) {
             leadCounts[shipDate] = (leadCounts[shipDate]||0) + 1;
@@ -2733,19 +2731,21 @@ function getFilteredData() {
             return false;
         });
         
-        // Приховуємо закриті статуси
-        const hiddenStatuses = ['archived', 'refused', 'transferred', 'deleted'];
-        data = data.filter(p => !hiddenStatuses.includes(p.status));
+        // Приховуємо архівовані
+        data = data.filter(p => p.status !== 'archived');
     }
-    // Спеціальний фільтр по статусу (archived, refused, transferred, deleted)
+    // Спеціальний фільтр по типу архіву (refused, transferred, deleted) або весь архів
     else if (filters.specialStatus) {
-        data = data.filter(p => p.status === filters.specialStatus);
+        if (filters.specialStatus === 'archived') {
+            data = data.filter(p => p.status === 'archived');
+        } else {
+            data = data.filter(p => p.status === 'archived' && p.archiveType === filters.specialStatus);
+        }
     } else if (filters.showArchive) {
         data = data.filter(p => p.status === 'archived');
     } else {
-        // Приховуємо всі "закриті" статуси в звичайному режимі
-        const hiddenStatuses = ['archived', 'refused', 'transferred', 'deleted'];
-        data = data.filter(p => !hiddenStatuses.includes(p.status));
+        // Приховуємо архівовані в звичайному режимі
+        data = data.filter(p => p.status !== 'archived');
     }
     
     if (!filters.showNewOnly && filters.direction && filters.direction !== 'all') data = data.filter(p => p.direction === filters.direction);
@@ -2946,7 +2946,7 @@ function render() {
         inlineHtml += `</div>`;
 
         // === BUILD CARD HTML - TABLE GRID LAYOUT ===
-        return `<div class="lead-card status-${p.status} ${sel?'selected':''} ${notGeocodedClass}" data-uid="${uk}" data-id="${p.id}" draggable="true" ondragstart="handleDragStart(event,'${uk}')" ondragend="handleDragEnd(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'${uk}')">
+        return `<div class="lead-card ${p.status === 'archived' && p.archiveType ? 'status-'+p.archiveType : 'status-'+p.status} ${sel?'selected':''} ${notGeocodedClass}" data-uid="${uk}" data-id="${p.id}" draggable="true" ondragstart="handleDragStart(event,'${uk}')" ondragend="handleDragEnd(event)" ondragover="handleDragOver(event)" ondrop="handleDrop(event,'${uk}')">
             <div class="card-main">
                 <div class="drag-handle"><span></span><span></span><span></span></div>
                 <div class="card-cb">
@@ -3254,13 +3254,12 @@ function updateBulkBar() {
 function handleSearch() { filters.search = document.getElementById('searchInput').value; render(); }
 
 function updateAllCounts() {
-    // Активні = без закритих статусів
-    const hiddenStatuses = ['archived', 'refused', 'transferred', 'deleted'];
-    const active = packages.filter(p => !hiddenStatuses.includes(p.status));
+    // Активні = не архівовані
+    const active = packages.filter(p => p.status !== 'archived');
     const archived = packages.filter(p => p.status === 'archived');
-    const refused = packages.filter(p => p.status === 'refused');
-    const transferred = packages.filter(p => p.status === 'transferred');
-    const deleted = packages.filter(p => p.status === 'deleted');
+    const refused = archived.filter(p => p.archiveType === 'refused');
+    const transferred = archived.filter(p => p.archiveType === 'transferred');
+    const deleted = archived.filter(p => p.archiveType === 'deleted');
     const inRoute = active.filter(p => p.status === 'route');
     const noVehicle = active.filter(p => !p.vehicle);
     const uaEu = active.filter(p => p.direction === 'ua-eu');
@@ -4035,28 +4034,29 @@ function moveOneToRoute(id) {
 
 function archivePackage(id) {
     const p = packages.find(x => x.id === id);
-    if (p) { p.status = 'archived'; saveSettings(); render(); updateAllCounts(); renderCalendars(); showToast('📦 В архіві'); }
+    if (p) { if (p.status !== 'archived') { p.prevStatus = p.status || 'new'; } p.archiveType = 'archived'; p.status = 'archived'; saveSettings(); render(); updateAllCounts(); renderCalendars(); showToast('📦 В архіві'); }
 }
 
 function restorePackage(id) {
     const p = packages.find(x => x.id === id);
-    if (p) { p.status = 'new'; saveSettings(); render(); updateAllCounts(); renderCalendars(); showToast('♻️ Відновлено'); }
+    if (p) { p.status = p.prevStatus || 'new'; delete p.prevStatus; delete p.archiveType; p.statusDate = ''; saveSettings(); render(); updateAllCounts(); renderCalendars(); showToast('♻️ Відновлено'); }
 }
 
 function bulkRestore() {
     if (selectedIds.size === 0) return showToast('⚠️ Оберіть заявки');
 
-    const closedStatuses = ['archived', 'refused', 'transferred', 'deleted'];
-
     // Збираємо дані для API — розділяємо на основні та маршрутні
     const mainPackages = [];
     const routePackages = [];
+    let totalCount = 0;
     selectedIds.forEach(uid => {
         const p = findPackageByUid(uid);
         if (!p) return;
+        if (p.status !== 'archived') return;
+        totalCount++;
         const sheet = p._sheet || p.sheet;
         const rowNum = p._rowNum || p.rowNum;
-        if (sheet && rowNum && closedStatuses.includes(p.status)) {
+        if (sheet && rowNum) {
             const item = { sheet, rowNum };
             if (p._isRouteData) {
                 routePackages.push(item);
@@ -4066,11 +4066,28 @@ function bulkRestore() {
         }
     });
 
-    if (mainPackages.length === 0 && routePackages.length === 0) {
+    if (mainPackages.length === 0 && routePackages.length === 0 && totalCount === 0) {
         return showToast('⚠️ Немає заявок для відновлення');
     }
 
     showLoader('Відновлюю...', '');
+
+    // Відновлюємо локально — повертаємо на попередній статус
+    const restoreLocally = () => {
+        selectedIds.forEach(uid => {
+            const p = findPackageByUid(uid);
+            if (p && p.status === 'archived') {
+                p.status = p.prevStatus || 'new';
+                p.statusDate = '';
+                delete p.prevStatus;
+                delete p.archiveType;
+                // Очищаємо причину відмови/пересадки з примітки
+                if (p.note) {
+                    p.note = p.note.replace(/^(Відмова|Перенос|Пересадка|Видалено):.*?\|?\s*/i, '');
+                }
+            }
+        });
+    };
 
     // Формуємо запити
     const requests = [];
@@ -4100,41 +4117,36 @@ function bulkRestore() {
         );
     }
 
-    Promise.all(requests)
-    .then(r => r.json())
-    .then(data => {
+    if (requests.length === 0) {
+        // Тільки локальні записи
         hideLoader();
-        if (data.success) {
-            // Оновлюємо локально
-            selectedIds.forEach(uid => {
-                const p = findPackageByUid(uid);
-                if (p && closedStatuses.includes(p.status)) {
-                    p.status = 'new';
-                    p.statusDate = '';
-                    // Очищаємо причину відмови/пересадки з примітки
-                    if (p.note) {
-                        p.note = p.note.replace(/^(Відмова|Перенос|Видалено):.*?\|?\s*/i, '');
-                    }
-                }
-            });
+        restoreLocally();
+        saveSettings();
+        refreshAfterAction();
+        updateAllCounts();
+        showToast(`↩️ Відновлено: ${totalCount}`);
+        return;
+    }
+
+    Promise.all(requests)
+    .then(results => {
+        hideLoader();
+        const allSuccess = results.every(d => d.success);
+        if (allSuccess) {
+            restoreLocally();
             refreshAfterAction();
             updateAllCounts();
-            showToast(`↩️ Відновлено: ${data.restored || packagesToRestore.length}`);
+            const total = results.reduce((s, d) => s + (d.restored || d.changed || 0), 0);
+            showToast(`↩️ Відновлено: ${total || totalCount}`);
         } else {
-            showToast('❌ ' + data.error);
+            const errors = results.filter(d => !d.success).map(d => d.error).join('; ');
+            showToast('❌ ' + errors);
         }
     })
     .catch(err => {
         hideLoader();
         console.error('Restore error:', err);
-        // Відновлюємо локально
-        selectedIds.forEach(uid => {
-            const p = findPackageByUid(uid);
-            if (p && closedStatuses.includes(p.status)) {
-                p.status = 'new';
-                p.statusDate = '';
-            }
-        });
+        restoreLocally();
         saveSettings();
         refreshAfterAction();
         updateAllCounts();
@@ -4481,6 +4493,10 @@ function bulkArchive() {
             selectedIds.forEach(uid => {
                 const p = findPackageByUid(uid);
                 if (p) {
+                    if (p.status !== 'archived') {
+                        p.prevStatus = p.status || 'new';
+                    }
+                    p.archiveType = 'archived';
                     p.status = 'archived';
                     p.statusDate = new Date().toISOString().split('T')[0];
                 }
@@ -4709,26 +4725,31 @@ function bulkDeleteForever() {
 // Універсальна функція застосування статусу
 function applyStatusToSelected(status, note) {
     showLoader('Обробка...', '');
-    
+
     const today = new Date().toISOString().split('T')[0];
     let count = 0;
-    
+
     selectedIds.forEach(uid => {
         const p = findPackageByUid(uid);
         if (p) {
-            p.status = status;
+            // Зберігаємо попередній статус для відновлення
+            if (p.status !== 'archived') {
+                p.prevStatus = p.status || 'new';
+            }
+            p.archiveType = status; // refused, transferred, deleted, archived
+            p.status = 'archived'; // Всі дії ведуть в Архів
             p.statusDate = today;
             p.note = note + (p.note ? ` | ${p.note}` : '');
             p.isNew = false;
             count++;
-            
+
             // Оновлюємо на сервері якщо є дані
             if (p._sheet || p.sheet) {
                 updatePackageOnServer(p);
             }
         }
     });
-    
+
     hideLoader();
     saveSettings();
     refreshAfterAction();
@@ -4736,9 +4757,9 @@ function applyStatusToSelected(status, note) {
     renderCalendars();
 
     const statusNames = {
-        'refused': '❌ Відмова',
-        'transferred': '📆 Перенос', 
-        'deleted': '🗑️ Видалено',
+        'refused': '❌ Відмова → Архів',
+        'transferred': '📆 Перенос → Архів',
+        'deleted': '🗑️ Видалено → Архів',
         'archived': '📦 Архів'
     };
     showToast(`${statusNames[status] || status}: ${count}`);
@@ -5384,8 +5405,12 @@ function confirmDeletePassenger(uid) {
     
     const p = findPackageByUid(uid);
     if (!p) return;
-    
-    // Встановлюємо статус archived та дату
+
+    // Зберігаємо попередній статус для відновлення
+    if (p.status !== 'archived') {
+        p.prevStatus = p.status || 'new';
+    }
+    p.archiveType = 'deleted';
     p.status = 'archived';
     p.archiveDate = new Date().toISOString().split('T')[0];
     p.isNew = false;
