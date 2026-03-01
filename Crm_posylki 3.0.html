@@ -2135,10 +2135,10 @@ let colSettings = {header:['ttn','weight','dateReg','phone','vehicle','amount','
 let packages = [];
 
 let vehicles = [
-    {id:'v1', name:'А-Братислава', maxWeight:2000, maxPoints:60},
-    {id:'v2', name:'А-Нітра', maxWeight:2000, maxPoints:60},
-    {id:'v3', name:'А-Словаччина', maxWeight:2000, maxPoints:60},
-    {id:'v4', name:'А-Кошице+Прешов', maxWeight:2000, maxPoints:60}
+    {id:'v1', name:'Братислава', maxWeight:2000, maxPoints:60},
+    {id:'v2', name:'Нітра', maxWeight:2000, maxPoints:60},
+    {id:'v3', name:'Словаччина', maxWeight:2000, maxPoints:60},
+    {id:'v4', name:'Кошице+Прешов', maxWeight:2000, maxPoints:60}
 ];
 let filters = {date:'',vehicle:'',search:'',showArchive:false,statusFilter:'',routeVehicle:'',direction:'all',specialStatus:'',statusDateFrom:'',statusDateTo:'',showNewOnly:true};
 let selectedIds = new Set();
@@ -2681,7 +2681,7 @@ function updateMobileVehicles() {
     el.innerHTML = vehicles.map(v => {
         const count = packages.filter(p => p.vehicle === v.id && p.status !== 'archived').length;
         const active = filters.vehicle === v.id;
-        return `<div class="side-menu-item ${active?'active':''}" onclick="mobileSetVehicle('${v.id}')"><span class="side-menu-item-left">🚐 ${v.name}</span><span class="side-menu-item-count">${count}</span></div>`;
+        return `<div class="side-menu-item ${active?'active':''}" onclick="mobileSetVehicle('${v.id}')" style="color:#2196F3;"><span class="side-menu-item-left">🚐 ${v.name}</span><span class="side-menu-item-count">${count}</span></div>`;
     }).join('');
 }
 
@@ -3352,7 +3352,7 @@ function updatePcVehiclesList() {
     container.innerHTML = vehicles.map(v => {
         const count = packages.filter(p => (p.vehicle === v.id || p.vehicle === v.name) && p.status !== 'archived').length;
         const isActive = filters.vehicle === v.id;
-        return `<div class="pc-sidebar-item ${isActive ? 'active' : ''}" style="display:flex;justify-content:space-between;align-items:center;">
+        return `<div class="pc-sidebar-item ${isActive ? 'active' : ''}" style="display:flex;justify-content:space-between;align-items:center;color:#2196F3;">
             <div onclick="setVehicleFilter('${v.id}')" style="flex:1;cursor:pointer;">
                 <span class="item-icon">🚐</span>${v.name}
             </div>
@@ -3429,7 +3429,7 @@ function updateRoutesList() {
 function renderRoutesListLocal() {
     const routesHtml = vehicles.map(v => {
         const count = packages.filter(p => (p.vehicle === v.id || p.vehicle === v.name) && p.status === 'route').length;
-        return `<div class="dropdown-item" data-vehicle="${v.id}" onclick="showVehicleRoute('${v.id}')">
+        return `<div class="dropdown-item" data-vehicle="${v.id}" onclick="showVehicleRoute('${v.id}')" style="color:#f97316;">
             <span>🚐 ${v.name}</span>
             <span class="badge" style="background:${count > 0 ? 'var(--success)' : 'var(--border)'};color:${count > 0 ? 'white' : 'var(--text-secondary)'}">${count}</span>
         </div>`;
@@ -3441,7 +3441,7 @@ function renderRoutesListLocal() {
     // Mobile routes
     const mobileRoutesHtml = vehicles.map(v => {
         const count = packages.filter(p => (p.vehicle === v.id || p.vehicle === v.name) && p.status === 'route').length;
-        return `<div class="side-menu-item route ${filters.routeVehicle === v.id ? 'active' : ''}" data-vehicle="${v.id}" onclick="showVehicleRoute('${v.id}'); closeSideMenu();">
+        return `<div class="side-menu-item route ${filters.routeVehicle === v.id ? 'active' : ''}" data-vehicle="${v.id}" onclick="showVehicleRoute('${v.id}'); closeSideMenu();" style="color:#f97316;">
             <span class="side-menu-item-left">🚐 ${v.name}</span>
             <span class="side-menu-item-count">${count}</span>
         </div>`;
@@ -3454,7 +3454,7 @@ function renderRoutesListLocal() {
     const pcRoutesHtml = vehicles.map(v => {
         const count = packages.filter(p => (p.vehicle === v.id || p.vehicle === v.name) && p.status === 'route').length;
         const isActive = filters.routeVehicle === v.id;
-        return `<div class="pc-sidebar-item route ${isActive ? 'active' : ''}" data-vehicle="${v.id}" onclick="showVehicleRoute('${v.id}')">
+        return `<div class="pc-sidebar-item route ${isActive ? 'active' : ''}" data-vehicle="${v.id}" onclick="showVehicleRoute('${v.id}')" style="color:#f97316;">
             <span><span class="item-icon">🚐</span>${v.name}</span>
             <span class="item-count">${count}</span>
         </div>`;
@@ -5137,7 +5137,7 @@ function updateVehiclesList() {
         }
 
         const count = filtered.length;
-        return `<div class="dropdown-item" onclick="setVehicleFilter('${v.id}')">${v.name} <span class="badge">${count}</span></div>`;
+        return `<div class="dropdown-item" onclick="setVehicleFilter('${v.id}')" style="color:#2196F3;">${v.name} <span class="badge">${count}</span></div>`;
     }).join('');
     document.getElementById('fVehicle').innerHTML = '<option value="">—</option>' + vehicles.map(v => `<option value="${v.name}">${v.name}</option>`).join('');
 
