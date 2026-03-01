@@ -1118,13 +1118,8 @@
                 var paymentVal = delivery.payment || '';
                 var payStatusVal = delivery.paymentStatus || delivery.payStatus || '';
                 var statusVal = delivery.parcelStatus || delivery.status || '';
-                // Map button: use coords if available, otherwise address
-                var mapBtn = '';
-                if (delivery.coords && delivery.coords.lat) {
-                    mapBtn = '<button class="btn-small-card" onclick="navigateTo(' + delivery.coords.lat + ',' + delivery.coords.lng + ')">&#128506; Карта</button>';
-                } else if (delivery.address) {
-                    mapBtn = '<button class="btn-small-card" onclick="navigateToAddress(\'' + safeAddress.replace(/'/g, "\\'") + '\')">&#128506; Карта</button>';
-                }
+                // Map button: always show, navigate by coords or address via index lookup
+                var mapBtn = '<button class="btn-small-card" onclick="navigateDelivery(' + globalIndex + ')">&#128506; Карта</button>';
                 // Visible columns
                 var hc = hiddenDriverCols;
                 var show = function(col) { return !hc.has(col); };
@@ -1243,8 +1238,8 @@
                     '</div>' +
                     '<div class="card-buttons">' +
                         '<button class="btn-small-card" onclick="callNumber(\'' + safePhone + '\')">&#9742; Дзвонити</button>' +
-                        '<button class="btn-small-card" onclick="navigateToAddress(\'' + safeFrom.replace(/'/g, "\\'") + '\')">&#128663; Відправка</button>' +
-                        '<button class="btn-small-card" onclick="navigateToAddress(\'' + safeTo.replace(/'/g, "\\'") + '\')">&#127937; Прибуття</button>' +
+                        '<button class="btn-small-card" onclick="navigatePassenger(' + index + ',\'from\')">&#128663; Відправка</button>' +
+                        '<button class="btn-small-card" onclick="navigatePassenger(' + index + ',\'to\')">&#127937; Прибуття</button>' +
                     '</div>' +
                     '<div class="card-buttons" style="grid-template-columns:1fr;margin-top:5px;">' +
                         '<button class="btn-small-card" onclick="toggleExpand(\'' + uid + '\')">&#128194; Деталі</button>' +
@@ -1279,11 +1274,26 @@
             var expandable = document.getElementById('expand-' + uid);
             if (expandable) expandable.classList.toggle('show');
         }
-        function navigateTo(lat, lng) {
-            window.open('https://www.google.com/maps/dir/?api=1&destination=' + lat + ',' + lng + '&travelmode=driving', '_blank');
+        function navigateDelivery(index) {
+            var d = deliveries[index];
+            if (!d) return showToast('Запис не знайдено');
+            if (d.coords && d.coords.lat) {
+                window.open('https://www.google.com/maps/dir/?api=1&destination=' + d.coords.lat + ',' + d.coords.lng + '&travelmode=driving', '_blank');
+            } else if (d.address) {
+                window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(d.address) + '&travelmode=driving', '_blank');
+            } else {
+                showToast('Немає адреси для навігації');
+            }
         }
-        function navigateToAddress(address) {
-            window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(address) + '&travelmode=driving', '_blank');
+        function navigatePassenger(index, field) {
+            var p = deliveries[index];
+            if (!p) return showToast('Запис не знайдено');
+            var addr = field === 'to' ? p.to : p.from;
+            if (addr) {
+                window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(addr) + '&travelmode=driving', '_blank');
+            } else {
+                showToast('Немає адреси');
+            }
         }
         function callNumber(phone) {
             window.location.href = 'tel:' + phone;
