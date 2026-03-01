@@ -689,7 +689,6 @@ function archivePackage(data) {
 
   // Читаємо поточний рядок
   var rowData = sheet.getRange(rowNum, 1, 1, TOTAL_COLS).getValues()[0];
-  var recordId = String(rowData[COL.ID] || '').trim();
 
   // Перевірка: чи не вже архівований
   var existingArchiveId = String(rowData[COL.ARCHIVE_ID] || '').trim();
@@ -701,37 +700,55 @@ function archivePackage(data) {
     };
   }
 
-  // Ставимо статус archived + дату
+  var dateNow = Utilities.formatDate(new Date(), 'Europe/Kiev', 'yyyy-MM-dd HH:mm:ss');
+  var archiveId = generateArchiveId_();
+
+  // === КРОК 1: Пишемо НАПРЯМУ в архівну таблицю ===
+  try {
+    var archiveSS = SpreadsheetApp.openById(ARCHIVE_SS_ID_LOG);
+    var archiveSheet = archiveSS.getSheetByName('Посилки');
+    if (!archiveSheet) {
+      return { success: false, error: 'Архівний аркуш "Посилки" не знайдено' };
+    }
+
+    // Будуємо рядок: 26 колонок (A-Z)
+    // A-U (0-20): дані | V(21): дата | W(22): хто | X(23): причина | Y(24): аркуш | Z(25): ARCHIVE_ID
+    var archiveRow = [];
+    for (var i = 0; i < 21; i++) {
+      archiveRow.push(rowData[i] !== undefined ? rowData[i] : '');
+    }
+    archiveRow.push(dateNow);       // V - DATE_ARCHIVE
+    archiveRow.push(user);          // W - ARCHIVED_BY
+    archiveRow.push(reason);        // X - ARCHIVE_REASON
+    archiveRow.push(sheetName);     // Y - SOURCE_SHEET
+    archiveRow.push(archiveId);     // Z - ARCHIVE_ID
+
+    archiveSheet.appendRow(archiveRow);
+  } catch (err) {
+    return { success: false, error: 'Помилка запису в архів: ' + err.toString() };
+  }
+
+  // === КРОК 2: Оновлюємо джерело (тільки після успішного запису в архів) ===
   sheet.getRange(rowNum, COL.STATUS + 1).setValue('archived');
-  sheet.getRange(rowNum, COL.DATE_ARCHIVE + 1).setValue(
-    Utilities.formatDate(new Date(), 'Europe/Kiev', 'yyyy-MM-dd')
-  );
+  sheet.getRange(rowNum, COL.DATE_ARCHIVE + 1).setValue(dateNow.substring(0, 10));
+  sheet.getRange(rowNum, COL.ARCHIVE_ID + 1).setValue(archiveId);
 
-  // Відправляємо в архівний скрипт
-  var archiveResult = sendToArchive({
-    action: 'archiveByIds',
-    source: 'BOT_POSYLKY',
-    sheet: sheetName,
-    ids: [recordId],
-    user: user,
-    reason: reason,
-    deleteFromSource: false  // не видаляємо — CRM сам керує
-  });
-
+  var recordId = String(rowData[COL.ID] || '');
   writeLog('archivePackage', sheetName, rowNum, 'archived',
-    'ІД: ' + recordId + ' | Архів: ' + (archiveResult.success ? 'OK' : archiveResult.error));
+    'ІД: ' + recordId + ' | ArchiveID: ' + archiveId);
 
   return {
     success: true,
     sheet: sheetName,
     rowNum: rowNum,
     id: recordId,
-    archiveResult: archiveResult
+    archiveId: archiveId
   };
 }
 
 // ============================================
 // bulkArchive — Масова архівація
+// Пише НАПРЯМУ в архівну таблицю (без HTTP)
 // ============================================
 function bulkArchive(data) {
   var items = data.items; // масив { sheet, rowNum }
@@ -742,10 +759,24 @@ function bulkArchive(data) {
     return { success: false, error: 'Відсутні items' };
   }
 
+  // Відкриваємо архівну таблицю
+  var archiveSS;
+  var archiveSheet;
+  try {
+    archiveSS = SpreadsheetApp.openById(ARCHIVE_SS_ID_LOG);
+    archiveSheet = archiveSS.getSheetByName('Посилки');
+    if (!archiveSheet) {
+      return { success: false, error: 'Архівний аркуш "Посилки" не знайдено' };
+    }
+  } catch (err) {
+    return { success: false, error: 'Не вдалося відкрити архів: ' + err.toString() };
+  }
+
   var ss = SpreadsheetApp.getActiveSpreadsheet();
-  var dateNow = Utilities.formatDate(new Date(), 'Europe/Kiev', 'yyyy-MM-dd');
-  var archivedIds = [];
-  var count = 0;
+  var dateNow = Utilities.formatDate(new Date(), 'Europe/Kiev', 'yyyy-MM-dd HH:mm:ss');
+  var dateShort = dateNow.substring(0, 10);
+  var archiveRows = [];
+  var successItems = []; // { sheet, rowNum, archiveId }
   var errors = [];
 
   for (var i = 0; i < items.length; i++) {
@@ -763,45 +794,65 @@ function bulkArchive(data) {
     var rowData = sheet.getRange(item.rowNum, 1, 1, TOTAL_COLS).getValues()[0];
     var existingArchiveId = String(rowData[COL.ARCHIVE_ID] || '').trim();
     if (existingArchiveId) {
-      errors.push({ sheet: item.sheet, rowNum: item.rowNum, error: 'Вже архівовано: ' + existingArchiveId });
+      errors.push({ sheet: item.sheet, rowNum: item.rowNum, error: 'Вже архівовано' });
       continue;
     }
 
-    var recordId = String(rowData[COL.ID] || '').trim();
+    var archiveId = generateArchiveId_();
 
-    // Ставимо статус
-    sheet.getRange(item.rowNum, COL.STATUS + 1).setValue('archived');
-    sheet.getRange(item.rowNum, COL.DATE_ARCHIVE + 1).setValue(dateNow);
-
-    if (recordId) {
-      archivedIds.push(recordId);
+    // Будуємо рядок архіву: 26 колонок
+    var archiveRow = [];
+    for (var j = 0; j < 21; j++) {
+      archiveRow.push(rowData[j] !== undefined ? rowData[j] : '');
     }
-    count++;
+    archiveRow.push(dateNow);       // V - DATE_ARCHIVE
+    archiveRow.push(user);          // W - ARCHIVED_BY
+    archiveRow.push(reason);        // X - ARCHIVE_REASON
+    archiveRow.push(item.sheet);    // Y - SOURCE_SHEET
+    archiveRow.push(archiveId);     // Z - ARCHIVE_ID
+
+    archiveRows.push(archiveRow);
+    successItems.push({ sheet: item.sheet, rowNum: item.rowNum, archiveId: archiveId, srcSheet: sheet });
   }
 
-  // Відправляємо всі ІД в архів одним запитом
-  var archiveResult = { success: false, error: 'Немає ІД для архівації' };
-  if (archivedIds.length > 0) {
-    archiveResult = sendToArchive({
-      action: 'archiveByIds',
-      source: 'BOT_POSYLKY',
-      ids: archivedIds,
-      user: user,
-      reason: reason,
-      deleteFromSource: false
-    });
+  if (archiveRows.length === 0) {
+    return { success: true, count: 0, total: items.length, errors: errors.length > 0 ? errors : undefined };
+  }
+
+  // === КРОК 1: Batch-запис в архів ===
+  try {
+    var startRow = archiveSheet.getLastRow() + 1;
+    archiveSheet.getRange(startRow, 1, archiveRows.length, 26).setValues(archiveRows);
+  } catch (err) {
+    return { success: false, error: 'Помилка batch-запису в архів: ' + err.toString() };
+  }
+
+  // === КРОК 2: Оновлюємо джерело ===
+  for (var k = 0; k < successItems.length; k++) {
+    var si = successItems[k];
+    si.srcSheet.getRange(si.rowNum, COL.STATUS + 1).setValue('archived');
+    si.srcSheet.getRange(si.rowNum, COL.DATE_ARCHIVE + 1).setValue(dateShort);
+    si.srcSheet.getRange(si.rowNum, COL.ARCHIVE_ID + 1).setValue(si.archiveId);
   }
 
   writeLog('bulkArchive', 'bulk', 0, 'archived',
-    count + '/' + items.length + ' архівовано | Архів: ' + (archiveResult.success ? 'OK' : archiveResult.error));
+    archiveRows.length + '/' + items.length + ' записано в архів');
 
   return {
     success: true,
-    count: count,
+    count: archiveRows.length,
     total: items.length,
-    errors: errors.length > 0 ? errors : undefined,
-    archiveResult: archiveResult
+    errors: errors.length > 0 ? errors : undefined
   };
+}
+
+// Генерація ARCHIVE_ID
+function generateArchiveId_() {
+  var now = new Date();
+  var ts = Utilities.formatDate(now, 'Europe/Kiev', 'yyyyMMddHHmmss');
+  var rnd = Math.floor(Math.random() * 10000).toString();
+  while (rnd.length < 4) rnd = '0' + rnd;
+  return 'ARC_' + ts + '_' + rnd;
 }
 
 // ============================================

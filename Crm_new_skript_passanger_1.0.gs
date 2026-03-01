@@ -722,7 +722,6 @@ function archivePassenger(payload) {
   if (rowNum > sheet.getLastRow()) return { success: false, error: 'Рядок не існує' };
 
   var rowData = sheet.getRange(rowNum, 1, 1, TOTAL_COLS).getValues()[0];
-  var recordId = String(rowData[COL.ID] || '').trim();
 
   // Перевірка: вже архівований?
   var existingArchiveId = String(rowData[COL.ARCHIVE_ID] || '').trim();
@@ -734,37 +733,55 @@ function archivePassenger(payload) {
     };
   }
 
-  // Ставимо статус
+  var dateNow = Utilities.formatDate(new Date(), 'Europe/Kiev', 'yyyy-MM-dd HH:mm:ss');
+  var archiveId = generateArchiveId_();
+
+  // === КРОК 1: Пишемо НАПРЯМУ в архівну таблицю ===
+  try {
+    var archiveSS = SpreadsheetApp.openById(ARCHIVE_SS_ID_LOG);
+    var archiveSheet = archiveSS.getSheetByName('Пасажири');
+    if (!archiveSheet) {
+      return { success: false, error: 'Архівний аркуш "Пасажири" не знайдено' };
+    }
+
+    // Будуємо рядок: 23 колонки (A-W)
+    // A-R (0-17): дані | S(18): дата | T(19): хто | U(20): причина | V(21): аркуш | W(22): ARCHIVE_ID
+    var archiveRow = [];
+    for (var i = 0; i < 18; i++) {
+      archiveRow.push(rowData[i] !== undefined ? rowData[i] : '');
+    }
+    archiveRow.push(dateNow);       // S - DATE_ARCHIVE
+    archiveRow.push(user);          // T - ARCHIVED_BY
+    archiveRow.push(reason);        // U - ARCHIVE_REASON
+    archiveRow.push(sheetName);     // V - SOURCE_SHEET
+    archiveRow.push(archiveId);     // W - ARCHIVE_ID
+
+    archiveSheet.appendRow(archiveRow);
+  } catch (err) {
+    return { success: false, error: 'Помилка запису в архів: ' + err.toString() };
+  }
+
+  // === КРОК 2: Оновлюємо джерело (тільки після успішного запису) ===
   sheet.getRange(rowNum, COL.STATUS + 1).setValue('archived');
-  sheet.getRange(rowNum, COL.DATE_ARCHIVE + 1).setValue(
-    Utilities.formatDate(new Date(), 'Europe/Kiev', 'yyyy-MM-dd')
-  );
+  sheet.getRange(rowNum, COL.DATE_ARCHIVE + 1).setValue(dateNow.substring(0, 10));
+  sheet.getRange(rowNum, COL.ARCHIVE_ID + 1).setValue(archiveId);
 
-  // Відправляємо в архів
-  var archiveResult = sendToArchive({
-    action: 'archiveByIds',
-    source: 'BOT_PASAZHYRY',
-    sheet: sheetName,
-    ids: [recordId],
-    user: user,
-    reason: reason,
-    deleteFromSource: false
-  });
-
+  var recordId = String(rowData[COL.ID] || '');
   writeLog('archivePassenger', sheetName, rowNum, 'archived',
-    'ІД: ' + recordId + ' | Архів: ' + (archiveResult.success ? 'OK' : archiveResult.error));
+    'ІД: ' + recordId + ' | ArchiveID: ' + archiveId);
 
   return {
     success: true,
     sheet: sheetName,
     rowNum: rowNum,
     id: recordId,
-    archiveResult: archiveResult
+    archiveId: archiveId
   };
 }
 
 // ============================================
 // bulkArchive — Масова архівація
+// Пише НАПРЯМУ в архівну таблицю (без HTTP)
 // ============================================
 function bulkArchive(payload) {
   var items = payload.items || payload.passengers || [];
@@ -775,10 +792,24 @@ function bulkArchive(payload) {
     return { success: false, error: 'Немає items' };
   }
 
+  // Відкриваємо архівну таблицю
+  var archiveSS;
+  var archiveSheet;
+  try {
+    archiveSS = SpreadsheetApp.openById(ARCHIVE_SS_ID_LOG);
+    archiveSheet = archiveSS.getSheetByName('Пасажири');
+    if (!archiveSheet) {
+      return { success: false, error: 'Архівний аркуш "Пасажири" не знайдено' };
+    }
+  } catch (err) {
+    return { success: false, error: 'Не вдалося відкрити архів: ' + err.toString() };
+  }
+
   var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  var dateNow = Utilities.formatDate(new Date(), 'Europe/Kiev', 'yyyy-MM-dd');
-  var archivedIds = [];
-  var count = 0;
+  var dateNow = Utilities.formatDate(new Date(), 'Europe/Kiev', 'yyyy-MM-dd HH:mm:ss');
+  var dateShort = dateNow.substring(0, 10);
+  var archiveRows = [];
+  var successItems = [];
   var errors = [];
 
   for (var i = 0; i < items.length; i++) {
@@ -795,36 +826,61 @@ function bulkArchive(payload) {
       continue;
     }
 
-    var recordId = String(rowData[COL.ID] || '').trim();
-    sheet.getRange(rowNum, COL.STATUS + 1).setValue('archived');
-    sheet.getRange(rowNum, COL.DATE_ARCHIVE + 1).setValue(dateNow);
+    var archiveId = generateArchiveId_();
 
-    if (recordId) archivedIds.push(recordId);
-    count++;
+    // Будуємо рядок архіву: 23 колонки
+    var archiveRow = [];
+    for (var j = 0; j < 18; j++) {
+      archiveRow.push(rowData[j] !== undefined ? rowData[j] : '');
+    }
+    archiveRow.push(dateNow);       // S - DATE_ARCHIVE
+    archiveRow.push(user);          // T - ARCHIVED_BY
+    archiveRow.push(reason);        // U - ARCHIVE_REASON
+    archiveRow.push(item.sheet);    // V - SOURCE_SHEET
+    archiveRow.push(archiveId);     // W - ARCHIVE_ID
+
+    archiveRows.push(archiveRow);
+    successItems.push({ sheet: item.sheet, rowNum: rowNum, archiveId: archiveId, srcSheet: sheet });
   }
 
-  var archiveResult = { success: false, error: 'Немає ІД' };
-  if (archivedIds.length > 0) {
-    archiveResult = sendToArchive({
-      action: 'archiveByIds',
-      source: 'BOT_PASAZHYRY',
-      ids: archivedIds,
-      user: user,
-      reason: reason,
-      deleteFromSource: false
-    });
+  if (archiveRows.length === 0) {
+    return { success: true, count: 0, total: items.length, errors: errors.length > 0 ? errors : undefined };
+  }
+
+  // === КРОК 1: Batch-запис в архів ===
+  try {
+    var startRow = archiveSheet.getLastRow() + 1;
+    archiveSheet.getRange(startRow, 1, archiveRows.length, 23).setValues(archiveRows);
+  } catch (err) {
+    return { success: false, error: 'Помилка batch-запису в архів: ' + err.toString() };
+  }
+
+  // === КРОК 2: Оновлюємо джерело ===
+  for (var k = 0; k < successItems.length; k++) {
+    var si = successItems[k];
+    si.srcSheet.getRange(si.rowNum, COL.STATUS + 1).setValue('archived');
+    si.srcSheet.getRange(si.rowNum, COL.DATE_ARCHIVE + 1).setValue(dateShort);
+    si.srcSheet.getRange(si.rowNum, COL.ARCHIVE_ID + 1).setValue(si.archiveId);
   }
 
   writeLog('bulkArchive', 'bulk', 0, 'archived',
-    count + '/' + items.length + ' | Архів: ' + (archiveResult.success ? 'OK' : archiveResult.error));
+    archiveRows.length + '/' + items.length + ' записано в архів');
 
   return {
     success: true,
-    count: count,
+    count: archiveRows.length,
     total: items.length,
-    errors: errors.length > 0 ? errors : undefined,
-    archiveResult: archiveResult
+    errors: errors.length > 0 ? errors : undefined
   };
+}
+
+// Генерація ARCHIVE_ID
+function generateArchiveId_() {
+  var now = new Date();
+  var ts = Utilities.formatDate(now, 'Europe/Kiev', 'yyyyMMddHHmmss');
+  var rnd = Math.floor(Math.random() * 10000).toString();
+  while (rnd.length < 4) rnd = '0' + rnd;
+  return 'ARC_' + ts + '_' + rnd;
 }
 
 // ============================================
