@@ -326,7 +326,7 @@ function getRoutePackages(payload) {
     var sheetName = payload.sheetName || '';
 
     if (vehicleName && !sheetName) {
-      sheetName = vehicleName + ' марш.';
+      sheetName = vehicleName;
     }
     if (!sheetName) {
       return { success: false, error: 'Не вказано маршрут' };
@@ -417,31 +417,26 @@ function getAvailableRoutes() {
     var routes = [];
 
     // Службові аркуші які НЕ є маршрутами
-    var excludePatterns = ['логи', 'logs', 'водіїв', 'розсилк', 'провірка', 'перевірка', 'template', 'шаблон', 'тест', 'test', 'архів'];
+    var excludePatterns = ['логи', 'logs', 'водіїв', 'розсилк', 'провірка', 'перевірка', 'template', 'шаблон', 'тест', 'test', 'архів', 'маршрути'];
 
     for (var i = 0; i < sheets.length; i++) {
       var name = sheets[i].getName();
       var nameLower = name.toLowerCase();
 
-      // Маршрутні аркуші закінчуються на " марш."
-      var isRoute = nameLower.indexOf('марш') !== -1;
-
+      // Пропускаємо службові аркуші
       var isExcluded = false;
       for (var e = 0; e < excludePatterns.length; e++) {
-        if (nameLower.indexOf(excludePatterns[e]) !== -1 && !isRoute) {
+        if (nameLower.indexOf(excludePatterns[e]) !== -1) {
           isExcluded = true;
           break;
         }
       }
       if (isExcluded) continue;
 
-      // Для маршрутних аркушів обов'язково " марш."
-      if (!isRoute) continue;
-
       var count = Math.max(0, sheets[i].getLastRow() - 1);
       routes.push({
         name: name,
-        vehicle: name.replace(' марш.', ''),
+        vehicle: name,
         count: count,
         sheetId: sheets[i].getSheetId()
       });
@@ -476,7 +471,7 @@ function copyToRoute(payload) {
       var packages = packagesByVehicle[vehicleName];
       if (!packages || !packages.length) continue;
 
-      var sheetName = vehicleName + ' марш.';
+      var sheetName = vehicleName;
       var sheet = ss.getSheetByName(sheetName);
 
       // Створюємо аркуш якщо не існує
@@ -589,7 +584,7 @@ function checkRouteSheets(payload) {
     var existing = [];
 
     for (var i = 0; i < vehicleNames.length; i++) {
-      var sheetName = vehicleNames[i] + ' марш.';
+      var sheetName = vehicleNames[i];
       var sheet = ss.getSheetByName(sheetName);
       if (sheet && sheet.getLastRow() > 1) {
         existing.push({
@@ -615,7 +610,7 @@ function createRouteSheet(payload) {
     if (!vehicleName) return { success: false, error: 'Не вказано назву авто' };
 
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    var sheetName = vehicleName + ' марш.';
+    var sheetName = vehicleName;
 
     var existing = ss.getSheetByName(sheetName);
     if (existing) {
@@ -647,7 +642,7 @@ function deleteRouteSheet(payload) {
     if (!vehicleName) return { success: false, error: 'Не вказано назву авто' };
 
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-    var sheetName = vehicleName + ' марш.';
+    var sheetName = vehicleName;
     var sheet = ss.getSheetByName(sheetName);
 
     if (!sheet) {
