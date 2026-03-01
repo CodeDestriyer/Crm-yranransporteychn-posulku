@@ -21,7 +21,7 @@
 // Назви аркушів — ТОЧНО як в таблиці
 var SHEET_REG = 'Реєстрація ТТН';     // UA→EU посилки
 var SHEET_COURIER = 'Виклик курєра';   // EU→UA посилки
-var SHEET_LOGS = 'Логи';               // Логування дій
+var SHEET_LOGS = 'Логи';               // Логування дій (в архівній таблиці)
 
 // URL архівного скрипта (Crm_Arhiv_1.0)
 var ARCHIVE_API_URL = 'https://script.google.com/macros/s/AKfycbwJLGZgYT333VdMW-nM5kPjYs2WIGGjfqkZnDJYjJxUt8nzE8GDGCPm7EzMHhcxNDOn/exec';
@@ -959,15 +959,17 @@ function sendToArchive(payload) {
 }
 
 // ============================================
-// ЛОГУВАННЯ — запис дій в аркуш "Логи"
+// ЛОГУВАННЯ — пише в архівну таблицю, аркуш "Логи"
 // ============================================
+var ARCHIVE_SS_ID_LOG = '1Kmf6NF1sJUi-j3SamrhUqz337pcZSvZCUkGxBzari6U';
+
 function writeLog(action, sheetName, rowNum, detail, extra) {
   try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var logSheet = ss.getSheetByName(SHEET_LOGS);
+    var archiveSS = SpreadsheetApp.openById(ARCHIVE_SS_ID_LOG);
+    var logSheet = archiveSS.getSheetByName('Логи');
 
     if (!logSheet) {
-      logSheet = ss.insertSheet(SHEET_LOGS);
+      logSheet = archiveSS.insertSheet('Логи');
       logSheet.appendRow(['Дата/Час', 'Дія', 'Аркуш', 'Рядок', 'Деталі', 'Дані']);
       logSheet.getRange(1, 1, 1, 6)
         .setBackground('#1a1a2e')
