@@ -595,8 +595,8 @@
     // ═══════════════════════════════════════
     const AUTH_API_URL = 'https://script.google.com/macros/s/AKfycbzZ6QAMEANL2DI5cbBgSpcg5KaW9xW8643u5SEkbQplljr4fh3BU_bek4WBQH6ikO34ww/exec';
     const REDIRECT = {
-      'Менеджер': 'manager/index_pass_19v.html',
-      'Власник': 'manager/index_pass_19v.html'
+      'Менеджер': 'index_pass_19v.html',
+      'Власник': 'index_pass_19v.html'
     };
     // Дані поточного сеансу
     let currentUser = { name: '', password: '', role: '' };
@@ -721,7 +721,7 @@
             sessionStorage.setItem('yura_auth', JSON.stringify({
               role: result.role, name: result.name, time: Date.now()
             }));
-            window.location.href = REDIRECT[result.role] || 'manager/index_pass_19v.html';
+            window.location.href = REDIRECT[result.role] || 'index_pass_19v.html';
           }
         } else {
           showError(errorId, result.error || 'Помилка входу');

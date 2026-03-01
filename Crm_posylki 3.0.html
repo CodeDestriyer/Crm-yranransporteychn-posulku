@@ -1376,6 +1376,24 @@
                 </div>
             </div>
         </div>
+
+        <!-- Навігація -->
+        <div class="side-menu-section">
+            <div class="side-menu-section-header" onclick="toggleMobileSection('navigation')">
+                <span class="side-menu-section-title">🔀 Навігація</span>
+                <span class="section-toggle" id="toggleNavigation">▼</span>
+            </div>
+            <div class="side-menu-collapsible" id="mobileNavigationSection">
+                <div class="side-menu-item" style="opacity:0.7;font-weight:600;">
+                    <span class="side-menu-item-left">📦 Посилки (поточна)</span>
+                </div>
+                <a href="index_pass_19v.html" style="text-decoration:none;display:block;">
+                    <div class="side-menu-item" style="color:var(--info);font-weight:600;">
+                        <span class="side-menu-item-left">🧑‍🤝‍🧑 Пасажири →</span>
+                    </div>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -1500,8 +1518,26 @@
                 </div>
             </div>
         </div>
+        <!-- Навігація -->
+        <div class="pc-sidebar-section">
+            <div class="pc-sidebar-header" onclick="togglePcSection('navigation')">
+                <span class="pc-sidebar-title"><span>🔀</span> Навігація</span>
+                <span class="pc-sidebar-toggle" id="pcToggleNavigation">▼</span>
+            </div>
+            <div class="pc-sidebar-content" id="pcSectionNavigation">
+                <div class="pc-sidebar-item active" style="cursor:default;opacity:0.7;">
+                    <span><span class="item-icon">📦</span><span class="item-text">Посилки</span></span>
+                </div>
+                <a href="index_pass_19v.html" style="text-decoration:none;">
+                    <div class="pc-sidebar-item" style="color:var(--info);font-weight:600;">
+                        <span><span class="item-icon">🧑‍🤝‍🧑</span><span class="item-text">Пасажири</span></span>
+                        <span style="font-size:12px;">→</span>
+                    </div>
+                </a>
+            </div>
+        </div>
     </aside>
-    
+
     <!-- MAIN CONTENT AREA -->
     <main class="main-content-area">
         <!-- DASHBOARD - Owner Only -->
@@ -6467,11 +6503,14 @@ function openMapLocation(type) {
 // ============================================
 // GOOGLE SHEETS API
 // ============================================
-// 📦 API для посилок — ЗАМІНІТЬ НА СВІЙ URL ПІСЛЯ ДЕПЛОЯ
-const API_URL = 'https://script.google.com/macros/s/AKfycby35ZXeqMKfdGJbTZW-TqMslq30tM2ju7It_KWJgSV-aEBti6r_3LD_orYnSy3wGc-yYQ/exec';
+// Посилки v1.0 (основна таблиця)
+const API_URL = 'https://script.google.com/macros/s/AKfycbzd7aIwe6AiisrnDlUngC4ZgCe1RvHQs7jpXQbtQCenGYULsjnxvfOtlMCnTThar03eOg/exec';
 
-// 🚐 API для маршрутів посилок (route_api_posylka.gs)
+// Маршрути посилок v1.0 (той самий скрипт)
 const ROUTE_API_URL = 'https://script.google.com/macros/s/AKfycbzd7aIwe6AiisrnDlUngC4ZgCe1RvHQs7jpXQbtQCenGYULsjnxvfOtlMCnTThar03eOg/exec';
+
+// Архів v1.0
+const ARCHIVE_API_URL = 'https://script.google.com/macros/s/AKfycbwJLGZgYT333VdMW-nM5kPjYs2WIGGjfqkZnDJYjJxUt8nzE8GDGCPm7EzMHhcxNDOn/exec';
 
 // Нормалізація дати до формату YYYY-MM-DD
 function normalizeDate(dateStr) {
