@@ -1274,21 +1274,28 @@
             var expandable = document.getElementById('expand-' + uid);
             if (expandable) expandable.classList.toggle('show');
         }
+        function cleanAddress(addr) {
+            if (!addr) return '';
+            return String(addr).replace(/[\n\r\t]/g, ' ').replace(/\s+/g, ' ').trim();
+        }
         function navigateDelivery(index) {
             var d = deliveries[index];
             if (!d) return showToast('Запис не знайдено');
             if (d.coords && d.coords.lat) {
                 window.open('https://www.google.com/maps/dir/?api=1&destination=' + d.coords.lat + ',' + d.coords.lng + '&travelmode=driving', '_blank');
-            } else if (d.address) {
-                window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(d.address) + '&travelmode=driving', '_blank');
             } else {
-                showToast('Немає адреси для навігації');
+                var addr = cleanAddress(d.address);
+                if (addr) {
+                    window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(addr) + '&travelmode=driving', '_blank');
+                } else {
+                    showToast('Немає адреси для навігації');
+                }
             }
         }
         function navigatePassenger(index, field) {
             var p = deliveries[index];
             if (!p) return showToast('Запис не знайдено');
-            var addr = field === 'to' ? p.to : p.from;
+            var addr = cleanAddress(field === 'to' ? p.to : p.from);
             if (addr) {
                 window.open('https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(addr) + '&travelmode=driving', '_blank');
             } else {
