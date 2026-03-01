@@ -4045,37 +4045,62 @@ function restorePackage(id) {
 
 function bulkRestore() {
     if (selectedIds.size === 0) return showToast('⚠️ Оберіть заявки');
-    
+
     const closedStatuses = ['archived', 'refused', 'transferred', 'deleted'];
-    
-    // Збираємо дані для API
-    const packagesToRestore = [];
+
+    // Збираємо дані для API — розділяємо на основні та маршрутні
+    const mainPackages = [];
+    const routePackages = [];
     selectedIds.forEach(uid => {
         const p = findPackageByUid(uid);
-        if (p && p._sheet && p._rowNum && closedStatuses.includes(p.status)) {
-            packagesToRestore.push({
-                sheet: p._sheet,
-                rowNum: p._rowNum
-            });
+        if (!p) return;
+        const sheet = p._sheet || p.sheet;
+        const rowNum = p._rowNum || p.rowNum;
+        if (sheet && rowNum && closedStatuses.includes(p.status)) {
+            const item = { sheet, rowNum };
+            if (p._isRouteData) {
+                routePackages.push(item);
+            } else {
+                mainPackages.push(item);
+            }
         }
     });
-    
-    if (packagesToRestore.length === 0) {
+
+    if (mainPackages.length === 0 && routePackages.length === 0) {
         return showToast('⚠️ Немає заявок для відновлення');
     }
-    
+
     showLoader('Відновлюю...', '');
-    
-    // Викликаємо API
-    fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-            action: 'bulkUpdateStatus',
-            items: packagesToRestore,
-            status: 'new'
-        })
-    })
+
+    // Формуємо запити
+    const requests = [];
+    if (mainPackages.length > 0) {
+        requests.push(
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'bulkUpdateStatus',
+                    items: mainPackages,
+                    status: 'new'
+                })
+            }).then(r => r.json())
+        );
+    }
+    if (routePackages.length > 0) {
+        requests.push(
+            fetch(ROUTE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'restorePackages',
+                    packages: routePackages
+                })
+            }).then(r => r.json())
+        );
+    }
+
+    Promise.all(requests)
     .then(r => r.json())
     .then(data => {
         hideLoader();
@@ -4393,39 +4418,64 @@ function executeCopyToRoute(byVehicle, withVehicle, conflictAction) {
 
 function bulkArchive() {
     if (selectedIds.size === 0) return showToast('⚠️ Оберіть заявки');
-    
-    // Збираємо дані для API
-    const packagesToArchive = [];
+
+    // Збираємо дані для API — розділяємо на основні та маршрутні
+    const mainPackages = [];
+    const routePackages = [];
     selectedIds.forEach(uid => {
         const p = findPackageByUid(uid);
-        if (p && p._sheet && p._rowNum) {
-            packagesToArchive.push({
-                sheet: p._sheet,
-                rowNum: p._rowNum
-            });
+        if (!p) return;
+        const sheet = p._sheet || p.sheet;
+        const rowNum = p._rowNum || p.rowNum;
+        if (sheet && rowNum) {
+            const item = { sheet, rowNum };
+            if (p._isRouteData) {
+                routePackages.push(item);
+            } else {
+                mainPackages.push(item);
+            }
         }
     });
-    
-    if (packagesToArchive.length === 0) {
+
+    if (mainPackages.length === 0 && routePackages.length === 0) {
         return showToast('⚠️ Немає заявок для архівації');
     }
-    
+
     showLoader('Архівую...', '');
-    
-    // Викликаємо API
-    fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain' },
-        body: JSON.stringify({
-            action: 'bulkUpdateStatus',
-            items: packagesToArchive,
-            status: 'archived'
-        })
-    })
-    .then(r => r.json())
-    .then(data => {
+
+    // Формуємо запити
+    const requests = [];
+    if (mainPackages.length > 0) {
+        requests.push(
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'bulkUpdateStatus',
+                    items: mainPackages,
+                    status: 'archived'
+                })
+            }).then(r => r.json())
+        );
+    }
+    if (routePackages.length > 0) {
+        requests.push(
+            fetch(ROUTE_API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({
+                    action: 'archivePackages',
+                    packages: routePackages
+                })
+            }).then(r => r.json())
+        );
+    }
+
+    Promise.all(requests)
+    .then(results => {
         hideLoader();
-        if (data.success) {
+        const allSuccess = results.every(d => d.success);
+        if (allSuccess) {
             // Оновлюємо локально
             selectedIds.forEach(uid => {
                 const p = findPackageByUid(uid);
@@ -4437,9 +4487,11 @@ function bulkArchive() {
             refreshAfterAction();
             updateAllCounts();
             renderCalendars();
-            showToast(`📦 Архівовано: ${data.archived}`);
+            const total = results.reduce((s, d) => s + (d.archived || d.changed || 0), 0);
+            showToast(`📦 Архівовано: ${total}`);
         } else {
-            showToast('❌ ' + data.error);
+            const errors = results.filter(d => !d.success).map(d => d.error).join('; ');
+            showToast('❌ ' + errors);
         }
     })
     .catch(err => {
@@ -4670,7 +4722,7 @@ function applyStatusToSelected(status, note) {
             count++;
             
             // Оновлюємо на сервері якщо є дані
-            if (p._sheet && p._rowNum) {
+            if (p._sheet || p.sheet) {
                 updatePackageOnServer(p);
             }
         }
@@ -5341,18 +5393,20 @@ function confirmDeletePassenger(uid) {
     openActionsId = null;
     
     // Якщо є серверні дані - архівуємо на сервері
-    if (p._sheet && p._rowNum) {
+    const pSheet = p._sheet || p.sheet;
+    const pRowNum = p._rowNum || p.rowNum;
+    if (pSheet && pRowNum) {
         showLoader('Видалення...', '');
-        
-        fetch(API_URL, {
+        const isRoute = !!p._isRouteData;
+        const apiUrl = isRoute ? ROUTE_API_URL : API_URL;
+        const body = isRoute
+            ? { action: 'archivePackages', packages: [{ sheet: pSheet, rowNum: pRowNum }] }
+            : { action: 'updateStatus', sheet: pSheet, rowNum: pRowNum, status: 'archived' };
+
+        fetch(apiUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'text/plain' },
-            body: JSON.stringify({
-                action: 'updateStatus',
-                sheet: p._sheet,
-                rowNum: p._rowNum,
-                status: 'archived'
-            })
+            body: JSON.stringify(body)
         })
         .then(r => r.json())
         .then(data => {
@@ -6615,16 +6669,21 @@ function savePackageToServer(pkg) {
 
 // UPDATE - Оновити посилку на сервері
 function updatePackageOnServer(pkg) {
-    if (!pkg._sheet || !pkg._rowNum) {
-        console.warn('Немає _sheet або _rowNum:', pkg);
+    const pSheet = pkg._sheet || pkg.sheet;
+    const pRowNum = pkg._rowNum || pkg.rowNum;
+    if (!pSheet || !pRowNum) {
+        console.warn('Немає sheet або rowNum:', pkg);
         showToast('Синхронізуй спочатку');
         return;
     }
 
+    const isRoute = !!pkg._isRouteData;
+    const apiUrl = isRoute ? ROUTE_API_URL : API_URL;
+
     const payload = {
         action: 'updatePackage',
-        sheet: pkg._sheet,
-        rowNum: pkg._rowNum,
+        sheet: pSheet,
+        rowNum: pRowNum,
         fields: {
             vo: pkg.vo || '',
             number: pkg.number || '',
@@ -6649,7 +6708,7 @@ function updatePackageOnServer(pkg) {
         }
     };
 
-    fetch(API_URL, {
+    fetch(apiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify(payload)
