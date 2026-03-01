@@ -1126,20 +1126,30 @@
                 card.innerHTML = '<div class="card-row">' +
                         '<div class="delivery-number ' + (isNew ? 'new' : '') + '">' + (globalIndex + 1) + '</div>' +
                         '<div class="card-main-info">' +
-                            '<div class="card-address">' + (show('id') ? '#' + safeId + ' - ' : '') + safeAddress + '</div>' +
+                            '<div class="card-address">' + (show('id') ? '#' + safeId + ' ' : '') + (show('vo') && delivery.vo ? escapeHtml(delivery.vo) + ' | ' : '') + (show('address') ? safeAddress : '') + '</div>' +
+                            (show('name') && delivery.name ? '<div style="font-size:11px;color:#1a3a5e;font-weight:600;">' + escapeHtml(delivery.name) + '</div>' : '') +
                         '</div>' +
                         '<span style="font-size: 16px; font-weight: bold;">' + statusIcon + '</span>' +
                     '</div>' +
                     '<div class="card-details-line">' +
                         (show('ttn') && delivery.ttn ? '<span class="detail-badge" style="font-weight:800;color:#C62828;">ТТН: <strong>' + escapeHtml(delivery.ttn) + '</strong></span>' : '') +
+                        (show('weight') && delivery.weight ? '<span class="detail-badge">&#9878; ' + escapeHtml(delivery.weight) + ' кг</span>' : '') +
+                        (show('direction') && delivery.direction ? '<span class="detail-badge" style="color:#6A1B9A;">&#128687; ' + escapeHtml(delivery.direction) + '</span>' : '') +
                         (show('timing') && delivery.timing ? '<span class="detail-badge">&#9200; ' + escapeHtml(delivery.timing) + '</span>' : '') +
                         (show('status') && statusVal ? '<span class="detail-badge" style="font-weight:700;color:#1565C0;">' + escapeHtml(statusVal) + '</span>' : '') +
                     '</div>' +
                     '<div class="card-details-line">' +
                         (show('phone') ? '<span class="card-phone" style="font-weight:700;">&#128222; <strong>' + safePhone + '</strong></span>' : '') +
+                        (show('registrarPhone') && delivery.registrarPhone ? '<span class="detail-badge">&#128241; Рег: ' + escapeHtml(delivery.registrarPhone) + '</span>' : '') +
                         (show('price') && priceVal ? '<span class="detail-badge" style="font-weight:800;color:#2E7D32;">&#128176; <strong>&#8364;' + escapeHtml(priceVal) + '</strong></span>' : '') +
                         (show('payment') && paymentVal ? '<span class="detail-badge" style="font-weight:700;"><strong>' + escapeHtml(paymentVal) + '</strong></span>' : '') +
                         (show('payStatus') && payStatusVal ? '<span class="detail-badge" style="font-weight:700;color:' + (payStatusVal === 'Оплачено' ? '#2E7D32' : '#C62828') + ';"><strong>' + escapeHtml(payStatusVal) + '</strong></span>' : '') +
+                    '</div>' +
+                    '<div class="card-details-line">' +
+                        (show('createdAt') && delivery.createdAt ? '<span class="detail-badge">&#128197; ' + escapeHtml(delivery.createdAt) + '</span>' : '') +
+                        (show('receiveDate') && delivery.receiveDate ? '<span class="detail-badge" style="color:#2E7D32;">&#128198; Отр: ' + escapeHtml(delivery.receiveDate) + '</span>' : '') +
+                        (show('note') && delivery.note && String(delivery.note).trim() ? '<span class="detail-badge" style="color:#555;">&#128221; ' + escapeHtml(delivery.note) + '</span>' : '') +
+                        (show('smsNote') && delivery.smsNote && String(delivery.smsNote).trim() ? '<span class="detail-badge" style="color:#0277BD;">&#128172; ' + escapeHtml(delivery.smsNote) + '</span>' : '') +
                     '</div>' +
                     '<div class="card-buttons">' +
                         '<button class="btn-small-card" onclick="callNumber(\'' + safePhone + '\')">&#9742; Дзвонити</button>' +
@@ -1166,10 +1176,23 @@
             var priceVal = delivery.price || delivery.amount || '';
             var paymentVal = delivery.payment || '';
             var payStatusVal = delivery.paymentStatus || delivery.payStatus || '';
-            var html = '<div class="detail-section"><div class="detail-label">&#128100; ПІБ</div><div class="detail-value">' + escapeHtml(delivery.name || 'N/A') + '</div></div>' +
-                '<div class="detail-section"><div class="detail-label">&#128290; Номер / ІД</div><div class="detail-value">' + escapeHtml(delivery.internalNumber) + (delivery.id ? ' / ' + escapeHtml(delivery.id) : '') + '</div></div>' +
-                '<div class="detail-section"><div class="detail-label">&#128196; ТТН</div><div class="detail-value">' + escapeHtml(delivery.ttn || 'N/A') + '</div></div>' +
-                '<div class="detail-section"><div class="detail-label">&#9878; Вага</div><div class="detail-value">' + escapeHtml(delivery.weight || 'N/A') + '</div></div>';
+            var hc = hiddenDriverCols;
+            var html = '';
+            html += '<div class="detail-section"><div class="detail-label">&#128100; ПІБ</div><div class="detail-value">' + escapeHtml(delivery.name || 'N/A') + '</div></div>';
+            html += '<div class="detail-section"><div class="detail-label">&#128290; Номер / ІД</div><div class="detail-value">' + escapeHtml(delivery.internalNumber) + (delivery.id ? ' / ' + escapeHtml(delivery.id) : '') + '</div></div>';
+            if (delivery.vo) {
+                html += '<div class="detail-section"><div class="detail-label">&#128101; ВО</div><div class="detail-value">' + escapeHtml(delivery.vo) + '</div></div>';
+            }
+            html += '<div class="detail-section"><div class="detail-label">&#128205; Адреса</div><div class="detail-value">' + escapeHtml(delivery.address || 'N/A') + '</div></div>';
+            html += '<div class="detail-section"><div class="detail-label">&#128196; ТТН</div><div class="detail-value">' + escapeHtml(delivery.ttn || 'N/A') + '</div></div>';
+            html += '<div class="detail-section"><div class="detail-label">&#9878; Вага</div><div class="detail-value">' + escapeHtml(delivery.weight || 'N/A') + '</div></div>';
+            if (delivery.direction) {
+                html += '<div class="detail-section"><div class="detail-label">&#128687; Напрямок</div><div class="detail-value">' + escapeHtml(delivery.direction) + '</div></div>';
+            }
+            html += '<div class="detail-section"><div class="detail-label">&#128222; Телефон</div><div class="detail-value">' + escapeHtml(delivery.phone || 'N/A') + '</div></div>';
+            if (delivery.registrarPhone) {
+                html += '<div class="detail-section"><div class="detail-label">&#128241; Тел. Реєстратора</div><div class="detail-value">' + escapeHtml(delivery.registrarPhone) + '</div></div>';
+            }
             if (priceVal) {
                 html += '<div class="detail-section"><div class="detail-label">&#128176; Сума</div><div class="detail-value">&#8364;' + escapeHtml(priceVal) + '</div></div>';
             }
@@ -1178,6 +1201,15 @@
             }
             if (payStatusVal) {
                 html += '<div class="detail-section"><div class="detail-label">&#128203; Статус оплати</div><div class="detail-value" style="font-weight:700;color:' + (payStatusVal === 'Оплачено' ? '#2E7D32' : '#C62828') + ';">' + escapeHtml(payStatusVal) + '</div></div>';
+            }
+            if (delivery.timing) {
+                html += '<div class="detail-section"><div class="detail-label">&#9200; Таймінг</div><div class="detail-value">' + escapeHtml(delivery.timing) + '</div></div>';
+            }
+            if (delivery.createdAt) {
+                html += '<div class="detail-section"><div class="detail-label">&#128197; Дата оформлення</div><div class="detail-value">' + escapeHtml(delivery.createdAt) + '</div></div>';
+            }
+            if (delivery.receiveDate) {
+                html += '<div class="detail-section"><div class="detail-label">&#128198; Дата отримання</div><div class="detail-value">' + escapeHtml(delivery.receiveDate) + '</div></div>';
             }
             if (delivery.smsNote && String(delivery.smsNote).trim()) {
                 html += '<div class="detail-section"><div class="detail-label">&#128172; SMS</div><div class="detail-value">' + escapeHtml(delivery.smsNote) + '</div></div>';
@@ -1566,13 +1598,24 @@
         var hiddenDriverCols = new Set();
         var allDriverCols = [
             { key: 'id', label: '# Номер' },
+            { key: 'vo', label: 'ВО' },
+            { key: 'name', label: 'ПІБ' },
+            { key: 'address', label: 'Адреса' },
             { key: 'ttn', label: 'ТТН' },
+            { key: 'weight', label: 'Вага' },
+            { key: 'direction', label: 'Напрямок' },
             { key: 'phone', label: 'Телефон' },
+            { key: 'registrarPhone', label: 'Тел. Реєстратора' },
             { key: 'price', label: 'Сума' },
             { key: 'payment', label: 'Оплата' },
             { key: 'payStatus', label: 'Статус оплати' },
             { key: 'timing', label: 'Таймінг' },
-            { key: 'status', label: 'Статус посилки' }
+            { key: 'status', label: 'Статус посилки' },
+            { key: 'note', label: 'Примітка' },
+            { key: 'smsNote', label: 'SMS Примітка' },
+            { key: 'createdAt', label: 'Дата оформлення' },
+            { key: 'receiveDate', label: 'Дата отримання' },
+            { key: 'photo', label: 'Фото' }
         ];
         function loadDriverColSettings() {
             try {
