@@ -2631,13 +2631,28 @@ function renderCalendarTo(containerId) {
 
 function changeMonth(delta) { calendarDate.setMonth(calendarDate.getMonth() + delta); renderCalendars(); }
 function goToday() { calendarDate = new Date(); selectDate(new Date().toISOString().split('T')[0]); }
-function selectDate(dateStr) { 
-    filters.date = dateStr; 
-    filters.statusFilter = ''; 
-    renderCalendars(); 
-    render(); 
-    updateFilterButtons(); 
-    updateVehiclesList(); 
+function selectDate(dateStr) {
+    filters.date = dateStr;
+    filters.statusFilter = '';
+    filters.showNewOnly = false;
+    filters.specialStatus = '';
+    filters.showArchive = false;
+
+    // Оновлюємо UI кнопок напрямку (знімаємо "Нові")
+    document.getElementById('mobileNewLeads')?.classList.remove('active');
+    document.getElementById('pcNewLeads')?.classList.remove('active');
+    const dir = filters.direction || 'all';
+    document.getElementById('mobileDirectionAll')?.classList.toggle('active', dir === 'all');
+    document.getElementById('mobileDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
+    document.getElementById('mobileDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
+    document.getElementById('pcDirectionAll')?.classList.toggle('active', dir === 'all');
+    document.getElementById('pcDirectionUaEu')?.classList.toggle('active', dir === 'ua-eu');
+    document.getElementById('pcDirectionEuUa')?.classList.toggle('active', dir === 'eu-ua');
+
+    renderCalendars();
+    render();
+    updateFilterButtons();
+    updateVehiclesList();
     document.getElementById('dateDropdown')?.classList.remove('show');
     
     // Перевірка на перевищення місткості

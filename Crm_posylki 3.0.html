@@ -2525,6 +2525,8 @@ function selectDate(dateStr) {
     filters.date = dateStr;
     filters.statusFilter = '';
     filters.showNewOnly = false;
+    filters.specialStatus = '';
+    filters.showArchive = false;
 
     // Синхронізуємо напрямок карток з напрямком календаря
     filters.direction = calendarDirection;
