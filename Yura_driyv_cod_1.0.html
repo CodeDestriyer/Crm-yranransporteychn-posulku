@@ -739,10 +739,10 @@
             ARCHIVE_API_URL: 'https://script.google.com/macros/s/AKfycbwJLGZgYT333VdMW-nM5kPjYs2WIGGjfqkZnDJYjJxUt8nzE8GDGCPm7EzMHhcxNDOn/exec',
             GOOGLE_MAPS_KEY: 'AIzaSyDbSS6XSCJ3MafbrSp-rIX1-x130bwzevo',
             DELIVERY_ROUTES: [
-                { name: 'Братислава марш.', password: '1234' },
-                { name: 'Нітра марш.', password: '12345' },
-                { name: 'Словаччина марш.', password: '123456' },
-                { name: 'Кошице+прешов марш.', password: '1234567' }
+                { name: 'А-Братислава', password: '1234' },
+                { name: 'А-Нітра', password: '12345' },
+                { name: 'А-Словаччина', password: '123456' },
+                { name: 'А-Кошице+Прешов', password: '1234567' }
             ]
         };
         let currentSheet = '';
@@ -952,14 +952,20 @@
             try {
                 var url, response, data, items;
                 if (currentRouteType === 'delivery') {
-                    url = CONFIG.DELIVERY_API_URL + '?action=getDeliveries&sheet=' + encodeURIComponent(currentSheet);
-                    response = await fetch(url);
+                    response = await fetch(CONFIG.DELIVERY_API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain' },
+                        body: JSON.stringify({
+                            action: 'getRoutePassengers',
+                            payload: { vehicleName: currentSheet }
+                        })
+                    });
                     data = await response.json();
-                    if (data.error) {
-                        list.innerHTML = '<div class="loading">&#10060; Помилка: ' + escapeHtml(data.error) + '</div>';
+                    if (!data.success) {
+                        list.innerHTML = '<div class="loading">&#10060; Помилка: ' + escapeHtml(data.error || 'Невідома помилка') + '</div>';
                         return;
                     }
-                    items = data.deliveries;
+                    items = data.passengers || data.packages || data.deliveries || [];
                 } else {
                     response = await fetch(CONFIG.PASSENGER_API_URL, {
                         method: 'POST',
