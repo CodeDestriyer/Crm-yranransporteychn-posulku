@@ -7575,6 +7575,84 @@ function syncWithSheets() {
     });
 }
 
+// Вікно «схоже, така посилка вже є». Раніше тут був стандартний confirm()
+// браузера — сірий системний прямокутник, у якому не видно, ЧОМУ саме
+// запис вважається дублем. Тепер це звичайна модалка CRM: кожен збіг
+// окремою карткою з ПІБ, ТТН, телефоном і статусом.
+//
+// confirm() синхронний, а модалка — ні, тому відповідь повертається
+// колбеком onAnswer(true|false).
+function showDuplicateModal(dups, onAnswer) {
+    document.getElementById('dupModal')?.remove();
+
+    var cards = dups.map(function (d) {
+        var line = function (label, val, extra) {
+            if (!val) return '';
+            return '<div style="display:flex;gap:8px;font-size:12px;line-height:1.7;">' +
+                   '<span style="color:var(--text-secondary);min-width:74px;">' + label + '</span>' +
+                   '<span style="color:var(--text-primary);font-weight:600;' + (extra || '') + '">' + val + '</span></div>';
+        };
+        return '<div style="border:1px solid var(--border);border-left:3px solid var(--warning);' +
+               'border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#fff;">' +
+               line('ПІБ', d.name) +
+               line('ТТН', d.ttn, 'font-family:monospace;') +
+               line('Телефон', d.phone) +
+               line('Статус', d.status) +
+               line('Збіг за', d.reason) +
+               '</div>';
+    }).join('');
+
+    var html =
+      '<div class="modal-overlay show" id="dupModal" style="z-index:9999;">' +
+        '<div class="modal" style="max-width:440px;">' +
+          '<div class="modal-header">' +
+            '<span class="modal-title">⚠️ Схоже, така посилка вже є</span>' +
+            '<button class="modal-close" data-dup="no">×</button>' +
+          '</div>' +
+          '<div class="modal-body">' +
+            '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">' +
+              'Знайдено збігів: <b style="color:var(--text-primary);">' + dups.length + '</b>' +
+            '</div>' +
+            cards +
+            '<div style="background:#fff3e0;padding:10px 12px;border-radius:6px;' +
+                 'font-size:12px;color:#e65100;line-height:1.6;margin-top:12px;">' +
+              '💡 Найчастіша причина — <b>стару посилку не заархівували</b>.<br>' +
+              'Якщо це справді нова посилка того самого клієнта — додавайте.' +
+            '</div>' +
+          '</div>' +
+          '<div class="modal-footer">' +
+            '<button class="btn-cancel" data-dup="no">Скасувати</button>' +
+            '<button class="btn-save" data-dup="yes">Все одно додати</button>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+
+    var wrap = document.createElement('div');
+    wrap.innerHTML = html;
+    var overlay = wrap.firstElementChild;
+    document.body.appendChild(overlay);
+
+    var done = false;
+    function answer(yes) {
+        if (done) return;
+        done = true;
+        document.removeEventListener('keydown', onKey);
+        overlay.remove();
+        onAnswer(yes);
+    }
+    function onKey(e) {
+        if (e.key === 'Escape') answer(false);
+        if (e.key === 'Enter') answer(true);
+    }
+
+    overlay.addEventListener('click', function (e) {
+        var v = e.target.getAttribute && e.target.getAttribute('data-dup');
+        if (v) return answer(v === 'yes');
+        if (e.target === overlay) answer(false);
+    });
+    document.addEventListener('keydown', onKey);
+}
+
 // SAVE - Додати нового пасажира на сервер
 function savePackageToServer(pkg, force) {
     showLoader('Збереження...', '');
@@ -7635,23 +7713,13 @@ function savePackageToServer(pkg, force) {
             // був просто showToast('Помилка: duplicate') — посилка лишалась
             // тільки в localStorage браузера, у «Бот Посилки» не потрапляла,
             // і менеджер був певен, що додав її.
-            const dups = data.duplicates || [];
-            const list = dups.map(function (d) {
-                return '• ' + [d.name, d.ttn && ('ТТН ' + d.ttn), d.phone,
-                               d.status && ('статус: ' + d.status), d.reason]
-                    .filter(Boolean).join(' | ');
-            }).join('\n');
-            const ok = confirm(
-                'Схоже, така посилка вже є (' + dups.length + '):\n\n' +
-                list + '\n\n' +
-                'Найчастіша причина — стару посилку не заархівували.\n' +
-                'Додати все одно?'
-            );
-            if (ok) {
-                savePackageToServer(pkg, true);
-            } else {
-                showToast('❌ Не збережено на сервері — дублікат');
-            }
+            showDuplicateModal(data.duplicates || [], function (yes) {
+                if (yes) {
+                    savePackageToServer(pkg, true);
+                } else {
+                    showToast('❌ Не збережено на сервері — дублікат');
+                }
+            });
         } else {
             showToast('⚠️ Помилка: ' + data.error);
         }
